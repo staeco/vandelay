@@ -12,6 +12,13 @@ describe('parse/autoParse', () => {
     should.not.exist(parse('     '))
     should.not.exist(parse(' \n \t'))
   })
+  it('should parse nulls', async () => {
+    should.equal(parse('null', null))
+    should.equal(parse('nUll', null))
+    should.equal(parse('NULL', null))
+    should.equal(parse('-', null))
+    should.equal(parse(' - ', null))
+  })
   it('should parse booleans', async () => {
     parse('true').should.equal(true)
     parse('tRue').should.equal(true)
@@ -28,6 +35,7 @@ describe('parse/autoParse', () => {
     parse('123').should.equal(123)
     parse('-123').should.equal(-123)
     parse('-129,000.9451234567').should.equal(-129000.9451234567)
+    parse('NaN').should.eql(NaN)
   })
   it('should parse dates', async () => {
     const sampleDate = new Date('Tue May 15 2018 12:07:52 GMT-0400 (EDT)')
@@ -35,7 +43,6 @@ describe('parse/autoParse', () => {
     parse('2018-05-15T16:07:52.000Z').should.eql(sampleDate)
     parse('May 15, 2018 12:07:52 EDT').should.eql(sampleDate)
     parse('Tue, 15 May 2018 16:07:52 GMT').should.eql(sampleDate)
-
     // awaiting https://github.com/date-fns/date-fns/issues/450
     // parse('/Date(1526400472000)/').should.eql(sampleDate)
     // parse('/Date(1526400472000+0400)/').should.eql(sampleDate)

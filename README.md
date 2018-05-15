@@ -101,23 +101,30 @@ Built in parsers are:
 
 ### transform(transformer[, options])
 
-#### transformer
+#### transformer(row, meta)
 
+- Asynchronous function, receives the current row and the meta information object.
+- If transformer is a string, it will compile it and sandbox it using [vm2](https://github.com/patriksimek/vm2).
+- Returning an object will pass it on, and null or undefined will remove the item from the stream (skip).
 
 #### options
 
 - sandbox - Optional `Object`
   - Creates a frozen global context, used for sandboxed transformers
+- timeout - Optional `Number`
+- compiler - Optional `Function`
 - concurrency - Optional `Number`, defaults to 50
-- onBegin - Optional `Function`
-- onError - Optional `Function`
-- onSkip - Optional `Function`
-- onSuccess - Optional `Function`
+- onBegin(row, meta) - Optional `Function`
+- onError(err, row, meta) - Optional `Function`
+- onSkip(row, meta) - Optional `Function`
+- onSuccess(row, meta) - Optional `Function`
 
 ### tap(fn[, options])
 
-#### fn
+#### fn(row, meta)
 
+- Asynchronous function, receives the current row and the meta information object.
+- Returning an object will pass it on, and null or undefined will remove the item from the stream.
 
 #### options
 
