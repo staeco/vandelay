@@ -1,15 +1,20 @@
-const isInt = (v) => /^(-|\+)?([1-9]+[0-9]*)$/.test(v)
-const isFloat = (v) => v - parseFloat(v) + 1 >= 0
+import parseNumber from 'parse-decimal-number'
+import parseDate from 'date-fns/parse'
 
 export default (v) => {
-  if (v.trim() === '') return undefined
+  if (typeof v !== 'string') throw new Error('Invalid value passed to autoParse')
+  v = v.trim()
+  if (v === '') return undefined
+  if (v.toLowerCase() === 'null') return null
   if (v === '-') return null
-  if (v === 'true' || v === 'TRUE') return true
-  if (v === 'false' || v === 'FALSE') return false
-  if (isInt(v)) return parseInt(v)
-  if (isFloat(v)) return parseFloat(v)
+  if (v.toLowerCase() === 'true') return true
+  if (v.toLowerCase() === 'false') return false
+  if (v === 'NaN') return NaN
 
-  const d = Date.parse(v)
+  const n = parseNumber(v)
+  if (!isNaN(n)) return n
+
+  const d = parseDate(v)
   if (!isNaN(d)) return d
 
   return v

@@ -7,20 +7,21 @@ import duplex from 'duplexify'
 import pumpify from 'pumpify'
 import pump from 'pump'
 import JSONStream from 'JSONStream'
+import camelize from 'camelize'
 import autoParse from './autoParse'
 
 // these formatters receive one argument, "data source" object
 // and return a stream that maps strings to items
 export const csv = (opt) =>
   parse({
-    mapHeaders: (v) => v.trim(),
-    mapValues: (v) => opt.autoParse ? autoParse(v.trim()) : v.trim()
+    mapHeaders: (v) => opt.camelize ? camelize(v) : v.trim(),
+    mapValues: (v) => opt.autoParse ? autoParse(v) : v
   })
 
 export const excel = (opt) =>
   excelStream({
-    mapHeaders: (v) => v.trim(),
-    mapValues: (v) => opt.autoParse ? autoParse(v.trim()) : v.trim()
+    mapHeaders: (v) => opt.autoParse ? camelize(v) : v.trim(),
+    mapValues: (v) => opt.autoParse ? autoParse(v) : v
   })
 
 export const json = (opt) => {

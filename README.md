@@ -91,11 +91,13 @@ Built in parsers are:
 
 - csv
   - Optional `autoParse` option, to automatically infer types of values and convert them.
+  - Optional `camelize` option, to camelcase and normalize header keys.
 - excel
   - Optional `autoParse` option, to automatically infer types of values and convert them.
+  - Optional `camelize` option, to camelcase and normalize header keys.
+- shp
 - json
   - Requires a `selector` option that specifies where to grab rows in the data.
-- geojson
 - xml
   - Requires a `selector` option that specifies where to grab rows in the data.
     - Note that the selector applies to the [xml2js](https://github.com/Leonidas-from-XIV/node-xml2js) output.
