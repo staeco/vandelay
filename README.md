@@ -15,20 +15,20 @@ npm install vandelay --save
 ## Example - Flat File
 
 ```js
-import van from 'vandelay'
+import { tap, fetch, transform, parse } from 'vandelay'
 
-van.fetch({
+fetch({
   url: 'http://google.com/example.geojson',
-  parser: van.parse('geojson')
+  parser: parse('geojson')
 })
-  .pipe(van.transform(async (row) => {
+  .pipe(transform(async (row) => {
     const external = await otherApi(row.field)
     return {
       ...row,
       external
     }
   }))
-  .pipe(van.tap(async (row, meta) => {
+  .pipe(tap(async (row, meta) => {
     // send row to an external api, db, or whatever!
   }))
 ```
@@ -36,24 +36,24 @@ van.fetch({
 ## Example - API
 
 ```js
-import van from 'vandelay'
+import { tap, fetch, transform, parse } from 'vandelay'
 
-van.fetch({
+fetch({
   url: 'http://google.com/api/example',
-  parser: van.parse('json', { selector: 'results.*' }),
+  parser: parse('json', { selector: 'results.*' }),
   pagination: {
     offsetParam: 'offset',
     limitParam: 'limit'
   }
 })
-  .pipe(van.transform(async (row, meta) => {
+  .pipe(transform(async (row, meta) => {
     const external = await otherApi(row.field)
     return {
       ...row,
       external
     }
   }))
-  .pipe(van.tap(async (row, meta) => {
+  .pipe(tap(async (row, meta) => {
     // send row to an external api, db, or whatever!
   }))
 ```
