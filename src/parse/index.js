@@ -5,6 +5,6 @@ export default (format, opt={}) => {
   const fmt = formats[format]
   if (!fmt) throw new Error(`${format} is not a support parser format`)
   const out = () => fmt(opt)
-  out().end() // create a test one to validate the options
+  out() // create a test one to validate the options
   return out
 }

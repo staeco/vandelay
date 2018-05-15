@@ -16,7 +16,6 @@ npm install vandelay --save
 
 ```js
 import van from 'vandelay'
-import bs from 'bluestream'
 
 van.fetch({
   url: 'http://google.com/example.geojson',
@@ -29,7 +28,7 @@ van.fetch({
       external
     }
   }))
-  .pipe(bs.transform({ concurrent: 100 }, async (row) => {
+  .pipe(van.tap(async (row, meta) => {
     // send row to an external api, db, or whatever!
   }))
 ```
@@ -38,7 +37,6 @@ van.fetch({
 
 ```js
 import van from 'vandelay'
-import bs from 'bluestream'
 
 van.fetch({
   url: 'http://google.com/api/example',
@@ -48,14 +46,14 @@ van.fetch({
     limitParam: 'limit'
   }
 })
-  .pipe(van.transform(async (row) => {
+  .pipe(van.transform(async (row, meta) => {
     const external = await otherApi(row.field)
     return {
       ...row,
       external
     }
   }))
-  .pipe(bs.transform({ concurrent: 100 }, async (row) => {
+  .pipe(van.tap(async (row, meta) => {
     // send row to an external api, db, or whatever!
   }))
 ```
@@ -79,7 +77,6 @@ van.fetch({
 
 - modifyRequest - Optional `Function`
   - Receives a superagent request object prior to execution, so you can add on any additional headers/querystring parameters.
-- concurrency - Optional `Number`, defaults to 50
 
 ### parse(format[, options])
 
@@ -105,6 +102,21 @@ Built in parsers are:
 ### transform(transformer[, options])
 
 #### transformer
+
+
+#### options
+
+- sandbox - Optional `Object`
+  - Creates a frozen global context, used for sandboxed transformers
+- concurrency - Optional `Number`, defaults to 50
+- onBegin - Optional `Function`
+- onError - Optional `Function`
+- onSkip - Optional `Function`
+- onSuccess - Optional `Function`
+
+### tap(fn[, options])
+
+#### fn
 
 
 #### options
