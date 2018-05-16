@@ -21,7 +21,7 @@ export default (transformer, opt={}) => {
       if (opt.onSkip) opt.onSkip(record, meta)
       return
     }
-    if (opt.onSuccess) opt.onSuccess(record, meta)
+    if (opt.onSuccess) opt.onSuccess(transformed, record, meta)
     return transformed
   }
   return tap(transform, opt)

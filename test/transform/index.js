@@ -34,13 +34,31 @@ describe('transform', () => {
   })
   it('should pass on changes', async () => {
     const map = (row) => ({ ...row, a: null })
-    const stream = streamify.obj(data).pipe(transform(map))
+    const stream = streamify.obj(data).pipe(transform(map, {
+      onSuccess: (record, old) => {
+        should.exist(record)
+        should.exist(old)
+        should.equal(old.a != null, true)
+        should.equal(record.a, null)
+      }
+    }))
     const res = await collect.array(stream)
     res.should.eql(data.map(map))
   })
   it('should skip when null returned', async () => {
     const filter = (row) => row.a > 1 ? null : row
-    const stream = streamify.obj(data).pipe(transform(filter))
+    const stream = streamify.obj(data).pipe(transform(filter, {
+      onSuccess: (record, old) => {
+        should.exist(record)
+        should.exist(old)
+        should.equal(record, old)
+        should.equal(record.a <= 1, true)
+      },
+      onSkip: (record) => {
+        should.exist(record)
+        should.equal(record.a > 1, true)
+      }
+    }))
     const res = await collect.array(stream)
     res.should.eql(data.filter(filter))
   })
@@ -51,10 +69,17 @@ describe('transform', () => {
       return row
     }
     const stream = streamify.obj(data).pipe(transform(map, {
+      onSuccess: (record, old) => {
+        should.exist(record)
+        should.exist(old)
+        should.equal(record, old)
+        should.equal(record.a <= 1, true)
+      },
       onError: (err, record) => {
         should.exist(err)
         should.exist(record)
         should.equal(record.a > 1, true)
+        err.message.should.equal('wot')
       }
     }))
     const res = await collect.array(stream)

@@ -4,10 +4,6 @@ exports.__esModule = true;
 
 var _bluestream = require('bluestream');
 
-var _bluestream2 = _interopRequireDefault(_bluestream);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
 exports.default = (fn, opt = {}) => {
   if (typeof fn !== 'function') throw 'Invalid function!';
 
@@ -20,7 +16,7 @@ exports.default = (fn, opt = {}) => {
     if (meta) record.___meta = meta; // tack meta back on
     return record;
   };
-  return _bluestream2.default.transform({
+  return (0, _bluestream.transform)({
     concurrent: opt.concurrency != null ? opt.concurrency : 50
   }, tap);
 };

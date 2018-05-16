@@ -13,7 +13,7 @@ var _parse2 = _interopRequireDefault(_parse);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.default = v => {
-  if (typeof v !== 'string') throw new Error('Invalid value passed to autoParse');
+  if (typeof v !== 'string') return v; // already parsed upstream!
   v = v.trim();
   if (v === '') return undefined;
   if (v.toLowerCase() === 'null') return null;

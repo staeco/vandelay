@@ -49,35 +49,59 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 // these formatters receive one argument, "data source" object
 // and return a stream that maps strings to items
-const csv = exports.csv = opt => (0, _csvParser2.default)({
-  mapHeaders: v => opt.camelcase ? (0, _camelcase2.default)(v) : v.trim(),
-  mapValues: v => opt.autoParse ? (0, _autoParse2.default)(v) : v
-});
+const csv = exports.csv = opt => {
+  if (opt.camelcase && typeof opt.camelcase !== 'boolean') throw new Error('Invalid camelcase option');
+  if (opt.autoParse && typeof opt.autoParse !== 'boolean') throw new Error('Invalid autoParse option');
 
-const excel = exports.excel = opt => (0, _exceljsTransformStream2.default)({
-  mapHeaders: v => opt.autoParse ? (0, _camelcase2.default)(v) : v.trim(),
-  mapValues: v => opt.autoParse ? (0, _autoParse2.default)(v) : v
-});
-
+  const head = (0, _csvParser2.default)({
+    mapHeaders: v => opt.camelcase ? (0, _camelcase2.default)(v) : v.trim(),
+    mapValues: v => opt.autoParse ? (0, _autoParse2.default)(v) : v
+  });
+  // convert into normal objects
+  const tail = _through2.default.obj((row, _, cb) => {
+    delete row.headers;
+    cb(null, Object.assign({}, row));
+  });
+  return _pumpify2.default.obj(head, tail);
+};
+const excel = exports.excel = opt => {
+  if (opt.camelcase && typeof opt.camelcase !== 'boolean') throw new Error('Invalid camelcase option');
+  if (opt.autoParse && typeof opt.autoParse !== 'boolean') throw new Error('Invalid autoParse option');
+  return (0, _exceljsTransformStream2.default)({
+    mapHeaders: v => opt.camelcase ? (0, _camelcase2.default)(v) : v.trim(),
+    mapValues: v => opt.autoParse ? (0, _autoParse2.default)(v) : v
+  });
+};
 const json = exports.json = opt => {
-  if (!opt.selector) throw new Error('Missing selector for JSON parser!');
+  if (typeof opt.selector !== 'string') throw new Error('Missing selector for JSON parser!');
+  if (!opt.selector.includes('*')) throw new Error('Selector must contain a * somewhere!');
+
   const head = _JSONStream2.default.parse(opt.selector);
   let header;
   head.on('header', data => header = data);
   const tail = _through2.default.obj((row, _, cb) => {
-    if (header) row.___header = header; // internal attr, json header info for fetch stream
+    if (header && typeof row === 'object') row.___header = header; // internal attr, json header info for fetch stream
     cb(null, row);
   });
   return _pumpify2.default.obj(head, tail);
 };
 
 const xml = exports.xml = opt => {
-  const xmlParser = new _xml2jsParser.Parser({ explicitArray: false });
+  if (opt.camelcase && typeof opt.camelcase !== 'boolean') throw new Error('Invalid camelcase option');
+  if (opt.autoParse && typeof opt.autoParse !== 'boolean') throw new Error('Invalid autoParse option');
+  const valueProcessors = opt.autoParse ? [_autoParse2.default] : null;
+  const nameProcessors = opt.camelcase ? [_camelcase2.default] : null;
+  const xmlParser = new _xml2jsParser.Parser({
+    explicitArray: false,
+    valueProcessors,
+    attrValueProcessors: valueProcessors,
+    tagNameProcessors: nameProcessors,
+    attrNameProcessors: nameProcessors
+  });
   const xml2JsonStream = _through2.default.obj((row, _, cb) => {
-    const xml = row.toString();
-    const js = xmlParser.parseStringSync(xml);
-    const json = JSON.stringify(js);
-    cb(null, json);
+    xmlParser.parseString(row.toString(), (err, js) => {
+      cb(err, JSON.stringify(js));
+    });
   });
   return _pumpify2.default.obj(xml2JsonStream, json(opt));
 };
