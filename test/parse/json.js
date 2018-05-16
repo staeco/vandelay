@@ -2,7 +2,7 @@
 
 import should from 'should'
 import parse from '../../src/parse'
-import streamify from 'string-to-stream'
+import streamify from 'into-stream'
 import collect from 'get-stream'
 
 describe('parse json', () => {

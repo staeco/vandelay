@@ -31,6 +31,7 @@ export const excel = (opt) => {
   if (opt.camelcase && typeof opt.camelcase !== 'boolean') throw new Error('Invalid camelcase option')
   if (opt.autoParse && typeof opt.autoParse !== 'boolean') throw new Error('Invalid autoParse option')
   return excelStream({
+    objectMode: true,
     mapHeaders: (v) => opt.camelcase ? camelcase(v) : v.trim(),
     mapValues: (v) => opt.autoParse ? autoParse(v) : v
   })

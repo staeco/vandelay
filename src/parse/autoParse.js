@@ -2,7 +2,7 @@ import parseNumber from 'parse-decimal-number'
 import parseDate from 'date-fns/parse'
 
 export default (v) => {
-  if (typeof v !== 'string') throw new Error('Invalid value passed to autoParse')
+  if (typeof v !== 'string') return v // already parsed upstream!
   v = v.trim()
   if (v === '') return undefined
   if (v.toLowerCase() === 'null') return null
