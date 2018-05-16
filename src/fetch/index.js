@@ -3,7 +3,7 @@ import qs from 'qs'
 import continueStream from 'continue-stream'
 import request from 'superagent'
 import through2 from 'through2'
-import pump from 'pump'
+import pumpify from 'pumpify'
 
 const mergeURL = (origUrl, newQuery) => {
   const sourceUrl = url.parse(origUrl)
@@ -40,14 +40,18 @@ export default (source, opt={}) => {
 
   // attaches some meta to the object for the transform fn to use
   let rows = -1
-  const map = function (row, _, cb) {
+  const map = function (url, row, _, cb) {
     if (!row || typeof row !== 'object') throw new Error(`Invalid row - ${row}`)
     row.___meta = {
       row: ++rows,
-      source,
-      header: row.___header // internal attr, json header info from the parser
+      url
     }
-    delete row.___header
+
+    // internal attr, json header info from the parser
+    if (row.___header) {
+      row.___meta = row.___header
+      delete row.___header
+    }
     cb(null, row)
   }
 
@@ -55,7 +59,7 @@ export default (source, opt={}) => {
   const fetch = (url) => {
     let req = fetchURL(url)
     if (opt.modifyRequest) req = opt.modifyRequest(source, req)
-    return pump(req, source.parser(), through2.obj(map))
+    return pumpify.obj(req, source.parser(), through2.obj(map.bind(null, url)))
   }
 
   if (source.pagination) {
