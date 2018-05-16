@@ -37,9 +37,9 @@ var _JSONStream = require('JSONStream');
 
 var _JSONStream2 = _interopRequireDefault(_JSONStream);
 
-var _camelize = require('camelize');
+var _camelcase = require('camelcase');
 
-var _camelize2 = _interopRequireDefault(_camelize);
+var _camelcase2 = _interopRequireDefault(_camelcase);
 
 var _autoParse = require('./autoParse');
 
@@ -50,12 +50,12 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 // these formatters receive one argument, "data source" object
 // and return a stream that maps strings to items
 const csv = exports.csv = opt => (0, _csvParser2.default)({
-  mapHeaders: v => opt.camelize ? (0, _camelize2.default)(v) : v.trim(),
+  mapHeaders: v => opt.camelcase ? (0, _camelcase2.default)(v) : v.trim(),
   mapValues: v => opt.autoParse ? (0, _autoParse2.default)(v) : v
 });
 
 const excel = exports.excel = opt => (0, _exceljsTransformStream2.default)({
-  mapHeaders: v => opt.autoParse ? (0, _camelize2.default)(v) : v.trim(),
+  mapHeaders: v => opt.autoParse ? (0, _camelcase2.default)(v) : v.trim(),
   mapValues: v => opt.autoParse ? (0, _autoParse2.default)(v) : v
 });
 

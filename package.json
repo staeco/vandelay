@@ -35,9 +35,11 @@
     "eslint": "^4.0.0",
     "eslint-cli": "^1.0.0",
     "eslint-config-rackt": "^1.1.1",
+    "get-stream": "^3.0.0",
     "mocha": "^5.0.0",
     "rimraf": "^2.5.0",
-    "should": "^13.0.0"
+    "should": "^13.0.0",
+    "string-to-stream": "^1.1.1"
   },
   "babel": {
     "plugins": [
@@ -162,13 +164,14 @@
     }
   },
   "resolutions": {
-    "end-of-stream": "github:isaacs/end-of-stream#custom-stream-premature-close-fix"
+    "end-of-stream": "github:isaacs/end-of-stream#custom-stream-premature-close-fix",
+    "gdal": "github:Algunenano/node-gdal#node10"
   },
   "dependencies": {
     "JSONStream": "^1.3.2",
     "babel-runtime": "^6.3.19",
     "bluestream": "^9.0.0",
-    "camelize": "^1.0.0",
+    "camelcase": "^5.0.0",
     "continue-stream": "^2.0.0",
     "csv-parser": "^1.12.1",
     "date-fns": "^1.29.0",

@@ -11,8 +11,4 @@ describe('parse', () => {
     should.equal(typeof parse('excel'), 'function')
     should.equal(typeof parse('shp'), 'function')
   })
-  it('should validate options on construct', async () => {
-    should.throws(() => parse('json'))
-    should.throws(() => parse('xml'))
-  })
 })
