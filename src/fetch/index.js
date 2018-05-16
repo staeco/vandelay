@@ -38,28 +38,28 @@ export default (source, opt={}) => {
   if (typeof source.parser !== 'function') throw new Error('Invalid parser function')
   if (opt.modifyRequest && typeof opt.modifyRequest !== 'function') throw new Error('Invalid modifyRequest function')
 
-  // attaches some meta to the object for the transform fn to use
-  let rows = -1
-  const map = function (url, row, _, cb) {
-    if (!row || typeof row !== 'object') throw new Error(`Invalid row - ${row}`)
-    row.___meta = {
-      row: ++rows,
-      url
-    }
-
-    // internal attr, json header info from the parser
-    if (row.___header) {
-      row.___meta = row.___header
-      delete row.___header
-    }
-    cb(null, row)
-  }
-
   // URL + Parser
   const fetch = (url) => {
+    // attaches some meta to the object for the transform fn to use
+    let rows = -1
+    const map = function (row, _, cb) {
+      if (!row || typeof row !== 'object') throw new Error(`Invalid row - ${row}`)
+      row.___meta = {
+        row: ++rows,
+        url
+      }
+
+      // internal attr, json header info from the parser
+      if (row.___header) {
+        row.___meta.header = row.___header
+        delete row.___header
+      }
+      cb(null, row)
+    }
+
     let req = fetchURL(url)
     if (opt.modifyRequest) req = opt.modifyRequest(source, req)
-    return pumpify.obj(req, source.parser(), through2.obj(map.bind(null, url)))
+    return pumpify.obj(req, source.parser(), through2.obj(map))
   }
 
   if (source.pagination) {
@@ -69,6 +69,7 @@ export default (source, opt={}) => {
       if (pageDatums === 0) return cb()
       pageDatums = 0
       const newURL = mergeURL(source.url, getQuery(source.pagination, page))
+      console.log(newURL)
       page++
       cb(null, fetch(newURL))
     }).on('data', () => ++pageDatums)

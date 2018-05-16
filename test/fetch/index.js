@@ -21,6 +21,10 @@ describe('fetch', () => {
     app.get('/file.json', (req, res) => {
       res.json({ data: sample })
     })
+    app.get('/data', (req, res) => {
+      const data = sample.slice(req.query.offset, req.query.limit)
+      res.json({ data })
+    })
     server = app.listen(port)
   })
   after((cb) => server.close(cb))
@@ -32,13 +36,31 @@ describe('fetch', () => {
     should.throws(() => fetch({ url: '', parser: '' }))
   })
   it('should work with valid options', async () => {
-    fetch({ url: 'http://google.com', parser: parse('json', { selector: '*' }) })
+    fetch({ url: `http://localhost:${port}/file.json`, parser: parse('json', { selector: '*' }) })
     fetch(() => {})
   })
   it('should request a flat json file', async () => {
     const source = {
       url: `http://localhost:${port}/file.json`,
       parser: parse('json', { selector: 'data.*' })
+    }
+    const stream = fetch(source)
+    const res = await collect.array(stream)
+    res.should.eql([
+      { a: 1, b: 2, c: 3, ___meta: { row: 0, url: source.url } },
+      { a: 4, b: 5, c: 6, ___meta: { row: 1, url: source.url } },
+      { a: 7, b: 8, c: 9, ___meta: { row: 2, url: source.url } }
+    ])
+  })
+  it('should request with pagination', async () => {
+    const source = {
+      url: `http://localhost:${port}/data`,
+      parser: parse('json', { selector: 'data.*' }),
+      pagination: {
+        limitParam: 'limit',
+        offsetParam: 'offset',
+        limit: 1
+      }
     }
     const stream = fetch(source)
     const res = await collect.array(stream)

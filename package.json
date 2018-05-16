@@ -176,7 +176,7 @@
     "babel-runtime": "^6.3.19",
     "bluestream": "^9.0.0",
     "camelcase": "^5.0.0",
-    "continue-stream": "^2.0.0",
+    "continue-stream": "github:contra/continue-stream",
     "csv-parser": "^1.12.1",
     "date-fns": "^1.29.0",
     "duplexify": "^3.6.0",
