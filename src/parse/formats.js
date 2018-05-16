@@ -43,17 +43,28 @@ export const json = (opt) => {
   let header
   head.on('header', (data) => header = data)
   const tail = through2.obj((row, _, cb) => {
-    if (header) row.___header = header // internal attr, json header info for fetch stream
+    if (header && typeof row === 'object') row.___header = header // internal attr, json header info for fetch stream
     cb(null, row)
   })
   return pumpify.obj(head, tail)
 }
 
 export const xml = (opt) => {
-  const xmlParser = new Parser({ explicitArray: false })
+  if (opt.camelcase && typeof opt.camelcase !== 'boolean') throw new Error('Invalid camelcase option')
+  if (opt.autoParse && typeof opt.autoParse !== 'boolean') throw new Error('Invalid autoParse option')
+  const valueProcessors = opt.autoParse ? [ autoParse ] : null
+  const nameProcessors = opt.camelcase ? [ camelcase ] : null
+  const xmlParser = new Parser({
+    explicitArray: false,
+    valueProcessors,
+    attrValueProcessors: valueProcessors,
+    tagNameProcessors: nameProcessors,
+    attrNameProcessors: nameProcessors
+  })
   const xml2JsonStream = through2.obj((row, _, cb) => {
-    const js = xmlParser.parseStringSync(row.toString())
-    cb(null, JSON.stringify(js))
+    xmlParser.parseString(row.toString(), (err, js) => {
+      cb(err, JSON.stringify(js))
+    })
   })
   return pumpify.obj(xml2JsonStream, json(opt))
 }
