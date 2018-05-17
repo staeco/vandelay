@@ -22,9 +22,9 @@ var _through = require('through2');
 
 var _through2 = _interopRequireDefault(_through);
 
-var _pump = require('pump');
+var _pumpify = require('pumpify');
 
-var _pump2 = _interopRequireDefault(_pump);
+var _pumpify2 = _interopRequireDefault(_pumpify);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -42,36 +42,43 @@ const getQuery = (opt, page) => {
   return out;
 };
 
-const fetchURL = url => _superagent2.default.get(url).buffer(false).redirects(10).retry(10);
+const fetchURL = url => {
+  const req = _superagent2.default.get(url).buffer(false).redirects(10).retry(10);
+  // funky forwarding because superagent is not a real stream
+  const out = (0, _through2.default)();
+  req.pipe(out);
+  req.once('error', err => out.emit('error', err));
+  return out;
+};
 
 exports.default = (source, opt = {}) => {
-  // custom stream source
-  if (typeof source === 'function') return source();
-
   // validate params
   if (!source) throw new Error('Missing source argument');
-  if (typeof source.url !== 'string') throw new Error('Invalid source url');
+  if (!source.url || typeof source.url !== 'string') throw new Error('Invalid source url');
   if (typeof source.parser !== 'function') throw new Error('Invalid parser function');
   if (opt.modifyRequest && typeof opt.modifyRequest !== 'function') throw new Error('Invalid modifyRequest function');
 
-  // attaches some meta to the object for the transform fn to use
-  let rows = -1;
-  const map = function (row, _, cb) {
-    if (!row || typeof row !== 'object') throw new Error(`Invalid row - ${row}`);
-    row.___meta = {
-      row: ++rows,
-      source,
-      header: row.___header // internal attr, json header info from the parser
-    };
-    delete row.___header;
-    cb(null, row);
-  };
-
   // URL + Parser
   const fetch = url => {
+    // attaches some meta to the object for the transform fn to use
+    let rows = -1;
+    const map = function (row, _, cb) {
+      if (!row || typeof row !== 'object') throw new Error(`Invalid row - ${row}`);
+      row.___meta = {
+        row: ++rows,
+        url
+
+        // internal attr, json header info from the parser
+      };if (row.___header) {
+        row.___meta.header = row.___header;
+        delete row.___header;
+      }
+      cb(null, row);
+    };
+
     let req = fetchURL(url);
     if (opt.modifyRequest) req = opt.modifyRequest(source, req);
-    return (0, _pump2.default)(req, source.parser(), _through2.default.obj(map));
+    return _pumpify2.default.obj(req, source.parser(), _through2.default.obj(map));
   };
 
   if (source.pagination) {
