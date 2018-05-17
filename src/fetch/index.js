@@ -22,19 +22,22 @@ const getQuery = (opt, page) => {
   return out
 }
 
-const fetchURL = (url) =>
-  request.get(url)
+const fetchURL = (url) => {
+  const req = request.get(url)
     .buffer(false)
     .redirects(10)
     .retry(10)
+  // funky forwarding because superagent is not a real stream
+  const out = through2()
+  req.pipe(out)
+  req.once('error', (err) => out.emit('error', err))
+  return out
+}
 
 export default (source, opt={}) => {
-  // custom stream source
-  if (typeof source === 'function') return source()
-
   // validate params
   if (!source) throw new Error('Missing source argument')
-  if (typeof source.url !== 'string') throw new Error('Invalid source url')
+  if (!source.url || typeof source.url !== 'string') throw new Error('Invalid source url')
   if (typeof source.parser !== 'function') throw new Error('Invalid parser function')
   if (opt.modifyRequest && typeof opt.modifyRequest !== 'function') throw new Error('Invalid modifyRequest function')
 
@@ -69,7 +72,6 @@ export default (source, opt={}) => {
       if (pageDatums === 0) return cb()
       pageDatums = 0
       const newURL = mergeURL(source.url, getQuery(source.pagination, page))
-      console.log(newURL)
       page++
       cb(null, fetch(newURL))
     }).on('data', () => ++pageDatums)

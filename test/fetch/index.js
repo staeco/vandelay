@@ -22,7 +22,9 @@ describe('fetch', () => {
       res.json({ data: sample })
     })
     app.get('/data', (req, res) => {
-      const data = sample.slice(req.query.offset, req.query.limit)
+      const { offset, limit } = req.query
+      const end = parseInt(offset) + parseInt(limit)
+      const data = sample.slice(offset, Math.min(sample.length, end))
       res.json({ data })
     })
     server = app.listen(port)
@@ -34,10 +36,6 @@ describe('fetch', () => {
     should.throws(() => fetch({ url: 1 }))
     should.throws(() => fetch({ url: '', parser: () => {} }))
     should.throws(() => fetch({ url: '', parser: '' }))
-  })
-  it('should work with valid options', async () => {
-    fetch({ url: `http://localhost:${port}/file.json`, parser: parse('json', { selector: '*' }) })
-    fetch(() => {})
   })
   it('should request a flat json file', async () => {
     const source = {
@@ -65,9 +63,9 @@ describe('fetch', () => {
     const stream = fetch(source)
     const res = await collect.array(stream)
     res.should.eql([
-      { a: 1, b: 2, c: 3, ___meta: { row: 0, url: source.url } },
-      { a: 4, b: 5, c: 6, ___meta: { row: 1, url: source.url } },
-      { a: 7, b: 8, c: 9, ___meta: { row: 2, url: source.url } }
+      { a: 1, b: 2, c: 3, ___meta: { row: 0, url: `${source.url}?limit=1&offset=0` } },
+      { a: 4, b: 5, c: 6, ___meta: { row: 0, url: `${source.url}?limit=1&offset=1` } },
+      { a: 7, b: 8, c: 9, ___meta: { row: 0, url: `${source.url}?limit=1&offset=2` } }
     ])
   })
   it('should emit http errors', (done) => {
