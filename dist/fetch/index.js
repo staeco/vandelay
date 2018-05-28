@@ -28,6 +28,16 @@ var _pumpify2 = _interopRequireDefault(_pumpify);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+const iterateStream = (sources, opt) => {
+  if (sources.length === 1) return fetchStream(sources[0], opt);
+  let currStream = 0;
+  return _continueStream2.default.obj(cb => {
+    const nextSource = sources[currStream++];
+    if (!nextSource) return cb();
+    cb(null, fetchStream(nextSource, opt));
+  });
+};
+
 const mergeURL = (origUrl, newQuery) => {
   const sourceUrl = _url2.default.parse(origUrl);
   const query = _qs2.default.stringify(Object.assign({}, _qs2.default.parse(sourceUrl.query), newQuery));
@@ -51,7 +61,8 @@ const fetchURL = url => {
   return out;
 };
 
-exports.default = (source, opt = {}) => {
+const fetchStream = (source, opt = {}) => {
+  if (Array.isArray(source)) return iterateStream(source, opt);
   // validate params
   if (!source) throw new Error('Missing source argument');
   if (!source.url || typeof source.url !== 'string') throw new Error('Invalid source url');
@@ -96,4 +107,5 @@ exports.default = (source, opt = {}) => {
   return fetch(source.url);
 };
 
+exports.default = fetchStream;
 module.exports = exports['default'];
