@@ -5,6 +5,16 @@ import request from 'superagent'
 import through2 from 'through2'
 import pumpify from 'pumpify'
 
+const iterateStream = (sources, opt) => {
+  if (sources.length === 1) return fetchStream(sources[0], opt)
+  let currStream = 0
+  return continueStream.obj((cb) => {
+    const nextSource = sources[currStream++]
+    if (!nextSource) return cb()
+    cb(null, fetchStream(nextSource, opt))
+  })
+}
+
 const mergeURL = (origUrl, newQuery) => {
   const sourceUrl = url.parse(origUrl)
   const query = qs.stringify({
@@ -34,7 +44,8 @@ const fetchURL = (url) => {
   return out
 }
 
-export default (source, opt={}) => {
+const fetchStream = (source, opt={}) => {
+  if (Array.isArray(source)) return iterateStream(source, opt)
   // validate params
   if (!source) throw new Error('Missing source argument')
   if (!source.url || typeof source.url !== 'string') throw new Error('Invalid source url')
@@ -79,3 +90,5 @@ export default (source, opt={}) => {
 
   return fetch(source.url)
 }
+
+export default fetchStream

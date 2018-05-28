@@ -50,6 +50,22 @@ describe('fetch', () => {
       { a: 7, b: 8, c: 9, ___meta: { row: 2, url: source.url } }
     ])
   })
+  it('should work with multiple sources', async () => {
+    const source = {
+      url: `http://localhost:${port}/file.json`,
+      parser: parse('json', { selector: 'data.*' })
+    }
+    const stream = fetch([ source, source ])
+    const res = await collect.array(stream)
+    res.should.eql([
+      { a: 1, b: 2, c: 3, ___meta: { row: 0, url: source.url } },
+      { a: 4, b: 5, c: 6, ___meta: { row: 1, url: source.url } },
+      { a: 7, b: 8, c: 9, ___meta: { row: 2, url: source.url } },
+      { a: 1, b: 2, c: 3, ___meta: { row: 0, url: source.url } },
+      { a: 4, b: 5, c: 6, ___meta: { row: 1, url: source.url } },
+      { a: 7, b: 8, c: 9, ___meta: { row: 2, url: source.url } }
+    ])
+  })
   it('should request with pagination', async () => {
     const source = {
       url: `http://localhost:${port}/data`,
