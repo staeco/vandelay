@@ -21,6 +21,12 @@ describe('fetch', () => {
     app.get('/file.json', (req, res) => {
       res.json({ data: sample })
     })
+    app.get('/404.json', (req, res) => {
+      res.status(404).end()
+    })
+    app.get('/500.json', (req, res) => {
+      res.status(500).end()
+    })
     app.get('/data', (req, res) => {
       const { offset, limit } = req.query
       const end = parseInt(offset) + parseInt(limit)
@@ -41,6 +47,20 @@ describe('fetch', () => {
     const source = {
       url: `http://localhost:${port}/file.json`,
       parser: parse('json', { selector: 'data.*' })
+    }
+    const stream = fetch(source)
+    const res = await collect.array(stream)
+    res.should.eql([
+      { a: 1, b: 2, c: 3, ___meta: { row: 0, url: source.url } },
+      { a: 4, b: 5, c: 6, ___meta: { row: 1, url: source.url } },
+      { a: 7, b: 8, c: 9, ___meta: { row: 2, url: source.url } }
+    ])
+  })
+  it('should work with declarative parser', async () => {
+    const source = {
+      url: `http://localhost:${port}/file.json`,
+      parser: 'json',
+      parserOptions: { selector: 'data.*' }
     }
     const stream = fetch(source)
     const res = await collect.array(stream)
@@ -84,13 +104,25 @@ describe('fetch', () => {
       { a: 7, b: 8, c: 9, ___meta: { row: 0, url: `${source.url}?limit=1&offset=2` } }
     ])
   })
-  it('should emit http errors', (done) => {
+  it('should emit 404 http errors', (done) => {
     const stream = fetch({
-      url: 'http://nothing:1234/file.json',
+      url: `http://localhost:${port}/404.json`,
       parser: parse('json', { selector: 'data.*' })
     })
     stream.once('error', (err) => {
       should.exist(err)
+      err.status.should.equal(404)
+      done()
+    })
+  })
+  it('should emit 500 http errors', (done) => {
+    const stream = fetch({
+      url: `http://localhost:${port}/500.json`,
+      parser: parse('json', { selector: 'data.*' })
+    })
+    stream.once('error', (err) => {
+      should.exist(err)
+      err.status.should.equal(500)
       done()
     })
   })

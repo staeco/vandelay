@@ -4,6 +4,7 @@ import continueStream from 'continue-stream'
 import request from 'superagent'
 import through2 from 'through2'
 import pumpify from 'pumpify'
+import parse from '../parse'
 
 const iterateStream = (sources, opt) => {
   if (sources.length === 1) return fetchStream(sources[0], opt)
@@ -33,23 +34,30 @@ const getQuery = (opt, page) => {
 }
 
 const fetchURL = (url) => {
+  const out = through2()
   const req = request.get(url)
     .buffer(false)
     .redirects(10)
-    .retry(10)
-  // funky forwarding because superagent is not a real stream
-  const out = through2()
-  req.pipe(out)
-  req.once('error', (err) => out.emit('error', err))
-  return out
+    .retry(5)
+    .once('response', (res) => {
+      if (res.error) out.emit('error', res.error)
+    })
+    .once('error', (err) => out.emit('error', err))
+  return req.pipe(out)
 }
 
 const fetchStream = (source, opt={}) => {
   if (Array.isArray(source)) return iterateStream(source, opt)
+
   // validate params
   if (!source) throw new Error('Missing source argument')
-  if (!source.url || typeof source.url !== 'string') throw new Error('Invalid source url')
-  if (typeof source.parser !== 'function') throw new Error('Invalid parser function')
+  const src = { ...source } // clone
+  if (!src.url || typeof src.url !== 'string') throw new Error('Invalid source url')
+  if (typeof src.parser === 'string') {
+    if (src.parserOptions && typeof src.parserOptions !== 'object') throw new Error('Invalid source parserOptions')
+    src.parser = parse(src.parser, src.parserOptions) // JSON shorthand
+  }
+  if (typeof src.parser !== 'function') throw new Error('Invalid parser function')
   if (opt.modifyRequest && typeof opt.modifyRequest !== 'function') throw new Error('Invalid modifyRequest function')
 
   // URL + Parser
@@ -72,23 +80,23 @@ const fetchStream = (source, opt={}) => {
     }
 
     let req = fetchURL(url)
-    if (opt.modifyRequest) req = opt.modifyRequest(source, req)
-    return pumpify.obj(req, source.parser(), through2.obj(map))
+    if (opt.modifyRequest) req = opt.modifyRequest(src, req)
+    return pumpify.obj(req, src.parser(), through2.obj(map))
   }
 
-  if (source.pagination) {
-    let page = source.pagination.startPage || 0
+  if (src.pagination) {
+    let page = src.pagination.startPage || 0
     let pageDatums // gets reset on each page to 0
     return continueStream.obj((cb) => {
       if (pageDatums === 0) return cb()
       pageDatums = 0
-      const newURL = mergeURL(source.url, getQuery(source.pagination, page))
+      const newURL = mergeURL(src.url, getQuery(src.pagination, page))
       page++
       cb(null, fetch(newURL))
     }).on('data', () => ++pageDatums)
   }
 
-  return fetch(source.url)
+  return fetch(src.url)
 }
 
 export default fetchStream

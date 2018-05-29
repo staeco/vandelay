@@ -26,6 +26,10 @@ var _pumpify = require('pumpify');
 
 var _pumpify2 = _interopRequireDefault(_pumpify);
 
+var _parse = require('../parse');
+
+var _parse2 = _interopRequireDefault(_parse);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const iterateStream = (sources, opt) => {
@@ -53,20 +57,25 @@ const getQuery = (opt, page) => {
 };
 
 const fetchURL = url => {
-  const req = _superagent2.default.get(url).buffer(false).redirects(10).retry(10);
-  // funky forwarding because superagent is not a real stream
   const out = (0, _through2.default)();
-  req.pipe(out);
-  req.once('error', err => out.emit('error', err));
-  return out;
+  const req = _superagent2.default.get(url).buffer(false).redirects(10).retry(5).once('response', res => {
+    if (res.error) out.emit('error', res.error);
+  }).once('error', err => out.emit('error', err));
+  return req.pipe(out);
 };
 
 const fetchStream = (source, opt = {}) => {
   if (Array.isArray(source)) return iterateStream(source, opt);
+
   // validate params
   if (!source) throw new Error('Missing source argument');
-  if (!source.url || typeof source.url !== 'string') throw new Error('Invalid source url');
-  if (typeof source.parser !== 'function') throw new Error('Invalid parser function');
+  const src = Object.assign({}, source); // clone
+  if (!src.url || typeof src.url !== 'string') throw new Error('Invalid source url');
+  if (typeof src.parser === 'string') {
+    if (src.parserOptions && typeof src.parserOptions !== 'object') throw new Error('Invalid source parserOptions');
+    src.parser = (0, _parse2.default)(src.parser, src.parserOptions); // JSON shorthand
+  }
+  if (typeof src.parser !== 'function') throw new Error('Invalid parser function');
   if (opt.modifyRequest && typeof opt.modifyRequest !== 'function') throw new Error('Invalid modifyRequest function');
 
   // URL + Parser
@@ -88,23 +97,23 @@ const fetchStream = (source, opt = {}) => {
     };
 
     let req = fetchURL(url);
-    if (opt.modifyRequest) req = opt.modifyRequest(source, req);
-    return _pumpify2.default.obj(req, source.parser(), _through2.default.obj(map));
+    if (opt.modifyRequest) req = opt.modifyRequest(src, req);
+    return _pumpify2.default.obj(req, src.parser(), _through2.default.obj(map));
   };
 
-  if (source.pagination) {
-    let page = source.pagination.startPage || 0;
+  if (src.pagination) {
+    let page = src.pagination.startPage || 0;
     let pageDatums; // gets reset on each page to 0
     return _continueStream2.default.obj(cb => {
       if (pageDatums === 0) return cb();
       pageDatums = 0;
-      const newURL = mergeURL(source.url, getQuery(source.pagination, page));
+      const newURL = mergeURL(src.url, getQuery(src.pagination, page));
       page++;
       cb(null, fetch(newURL));
     }).on('data', () => ++pageDatums);
   }
 
-  return fetch(source.url);
+  return fetch(src.url);
 };
 
 exports.default = fetchStream;
