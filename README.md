@@ -113,8 +113,11 @@ Built in parsers are:
 
 - sandbox - Optional `Object`
   - Creates a frozen global context, used for sandboxed transformers
+  - Only applies when using a string transformer
 - timeout - Optional `Number`
+  - Only applies when using a string transformer
 - compiler - Optional `Function`
+  - Only applies when using a string transformer
 - concurrency - Optional `Number`, defaults to 50
 - onBegin(row, meta) - Optional `Function`
 - onError(err, row, meta) - Optional `Function`

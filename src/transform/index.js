@@ -2,7 +2,7 @@ import sandbox from './sandbox'
 import tap from '../tap'
 
 export default (transformer, opt={}) => {
-  if (typeof transformer === 'string') transformer = sandbox(transformer, opt.sandbox)
+  if (typeof transformer === 'string') transformer = sandbox(transformer, opt)
   const transformFn = transformer.default || transformer
   if (typeof transformFn !== 'function') throw 'Invalid transform function!'
 
