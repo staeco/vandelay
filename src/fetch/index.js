@@ -69,7 +69,7 @@ const fetchStream = (source, opt={}) => {
       row.___meta = {
         row: ++rows,
         url,
-        source: src
+        source
       }
 
       // internal attr, json header info from the parser

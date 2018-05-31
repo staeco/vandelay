@@ -51,9 +51,9 @@ describe('fetch', () => {
     const stream = fetch(source)
     const res = await collect.array(stream)
     res.should.eql([
-      { a: 1, b: 2, c: 3, ___meta: { row: 0, url: source.url } },
-      { a: 4, b: 5, c: 6, ___meta: { row: 1, url: source.url } },
-      { a: 7, b: 8, c: 9, ___meta: { row: 2, url: source.url } }
+      { a: 1, b: 2, c: 3, ___meta: { row: 0, url: source.url, source } },
+      { a: 4, b: 5, c: 6, ___meta: { row: 1, url: source.url, source } },
+      { a: 7, b: 8, c: 9, ___meta: { row: 2, url: source.url, source } }
     ])
   })
   it('should work with declarative parser', async () => {
@@ -65,9 +65,9 @@ describe('fetch', () => {
     const stream = fetch(source)
     const res = await collect.array(stream)
     res.should.eql([
-      { a: 1, b: 2, c: 3, ___meta: { row: 0, url: source.url } },
-      { a: 4, b: 5, c: 6, ___meta: { row: 1, url: source.url } },
-      { a: 7, b: 8, c: 9, ___meta: { row: 2, url: source.url } }
+      { a: 1, b: 2, c: 3, ___meta: { row: 0, url: source.url, source } },
+      { a: 4, b: 5, c: 6, ___meta: { row: 1, url: source.url, source } },
+      { a: 7, b: 8, c: 9, ___meta: { row: 2, url: source.url, source } }
     ])
   })
   it('should work with multiple sources', async () => {
@@ -78,12 +78,12 @@ describe('fetch', () => {
     const stream = fetch([ source, source ])
     const res = await collect.array(stream)
     res.should.eql([
-      { a: 1, b: 2, c: 3, ___meta: { row: 0, url: source.url } },
-      { a: 4, b: 5, c: 6, ___meta: { row: 1, url: source.url } },
-      { a: 7, b: 8, c: 9, ___meta: { row: 2, url: source.url } },
-      { a: 1, b: 2, c: 3, ___meta: { row: 0, url: source.url } },
-      { a: 4, b: 5, c: 6, ___meta: { row: 1, url: source.url } },
-      { a: 7, b: 8, c: 9, ___meta: { row: 2, url: source.url } }
+      { a: 1, b: 2, c: 3, ___meta: { row: 0, url: source.url, source } },
+      { a: 4, b: 5, c: 6, ___meta: { row: 1, url: source.url, source } },
+      { a: 7, b: 8, c: 9, ___meta: { row: 2, url: source.url, source } },
+      { a: 1, b: 2, c: 3, ___meta: { row: 0, url: source.url, source } },
+      { a: 4, b: 5, c: 6, ___meta: { row: 1, url: source.url, source } },
+      { a: 7, b: 8, c: 9, ___meta: { row: 2, url: source.url, source } }
     ])
   })
   it('should request with pagination', async () => {
@@ -99,9 +99,9 @@ describe('fetch', () => {
     const stream = fetch(source)
     const res = await collect.array(stream)
     res.should.eql([
-      { a: 1, b: 2, c: 3, ___meta: { row: 0, url: `${source.url}?limit=1&offset=0` } },
-      { a: 4, b: 5, c: 6, ___meta: { row: 0, url: `${source.url}?limit=1&offset=1` } },
-      { a: 7, b: 8, c: 9, ___meta: { row: 0, url: `${source.url}?limit=1&offset=2` } }
+      { a: 1, b: 2, c: 3, ___meta: { row: 0, url: `${source.url}?limit=1&offset=0`, source } },
+      { a: 4, b: 5, c: 6, ___meta: { row: 0, url: `${source.url}?limit=1&offset=1`, source } },
+      { a: 7, b: 8, c: 9, ___meta: { row: 0, url: `${source.url}?limit=1&offset=2`, source } }
     ])
   })
   it('should emit 404 http errors', (done) => {
