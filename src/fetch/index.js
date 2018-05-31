@@ -68,7 +68,8 @@ const fetchStream = (source, opt={}) => {
       if (!row || typeof row !== 'object') throw new Error(`Invalid row - ${row}`)
       row.___meta = {
         row: ++rows,
-        url
+        url,
+        source: src
       }
 
       // internal attr, json header info from the parser
