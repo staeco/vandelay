@@ -14,10 +14,6 @@ var _continueStream = require('continue-stream');
 
 var _continueStream2 = _interopRequireDefault(_continueStream);
 
-var _superagent = require('superagent');
-
-var _superagent2 = _interopRequireDefault(_superagent);
-
 var _through = require('through2');
 
 var _through2 = _interopRequireDefault(_through);
@@ -25,6 +21,10 @@ var _through2 = _interopRequireDefault(_through);
 var _pumpify = require('pumpify');
 
 var _pumpify2 = _interopRequireDefault(_pumpify);
+
+var _fetchURL = require('./fetchURL');
+
+var _fetchURL2 = _interopRequireDefault(_fetchURL);
 
 var _parse = require('../parse');
 
@@ -54,14 +54,6 @@ const getQuery = (opt, page) => {
   if (opt.limitParam && opt.limit) out[opt.limitParam] = opt.limit;
   if (opt.offsetParam) out[opt.offsetParam] = page * opt.limit;
   return out;
-};
-
-const fetchURL = url => {
-  const out = (0, _through2.default)();
-  const req = _superagent2.default.get(url).buffer(false).redirects(10).retry(5).once('response', res => {
-    if (res.error) out.emit('error', res.error);
-  }).once('error', err => out.emit('error', err));
-  return req.pipe(out);
 };
 
 const fetchStream = (source, opt = {}) => {
@@ -97,7 +89,7 @@ const fetchStream = (source, opt = {}) => {
       cb(null, row);
     };
 
-    let req = fetchURL(url);
+    let req = (0, _fetchURL2.default)(url);
     if (opt.modifyRequest) req = opt.modifyRequest(src, req);
     return _pumpify2.default.obj(req, src.parser(), _through2.default.obj(map));
   };

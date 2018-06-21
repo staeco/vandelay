@@ -1,9 +1,9 @@
 import url from 'url'
 import qs from 'qs'
 import continueStream from 'continue-stream'
-import request from 'superagent'
 import through2 from 'through2'
 import pumpify from 'pumpify'
+import fetchURL from './fetchURL'
 import parse from '../parse'
 
 const iterateStream = (sources, opt) => {
@@ -31,19 +31,6 @@ const getQuery = (opt, page) => {
   if (opt.limitParam && opt.limit) out[opt.limitParam] = opt.limit
   if (opt.offsetParam) out[opt.offsetParam] = page * opt.limit
   return out
-}
-
-const fetchURL = (url) => {
-  const out = through2()
-  const req = request.get(url)
-    .buffer(false)
-    .redirects(10)
-    .retry(5)
-    .once('response', (res) => {
-      if (res.error) out.emit('error', res.error)
-    })
-    .once('error', (err) => out.emit('error', err))
-  return req.pipe(out)
 }
 
 const fetchStream = (source, opt={}) => {
