@@ -15,7 +15,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 exports.default = (transformer, opt = {}) => {
   if (typeof transformer === 'string') transformer = (0, _sandbox2.default)(transformer, opt);
   const transformFn = transformer.default || transformer;
-  if (typeof transformFn !== 'function') throw 'Invalid transform function!';
+  if (typeof transformFn !== 'function') throw new Error('Invalid transform function!');
 
   const transform = async (record, meta) => {
     if (opt.onBegin) opt.onBegin(record, meta);

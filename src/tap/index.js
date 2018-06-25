@@ -1,7 +1,7 @@
 import { transform } from 'bluestream'
 
 export default (fn, opt={}) => {
-  if (typeof fn !== 'function') throw 'Invalid function!'
+  if (typeof fn !== 'function') throw new Error('Invalid function!')
 
   const tap = async (record) => {
     // pluck the _meta attr we attached in fetch
