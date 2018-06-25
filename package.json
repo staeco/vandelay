@@ -1,6 +1,6 @@
 {
   "name": "vandelay",
-  "version": "0.9.6",
+  "version": "0.9.7",
   "description": "Imports, exports, and ETL",
   "main": "dist/index.js",
   "keywords": [],
@@ -23,6 +23,9 @@
     "clean": "rimraf dist",
     "lint": "eslint src",
     "test": "npm run-script lint && mocha --require babel-register --recursive --reporter spec"
+  },
+  "resolutions": {
+    "gdal": "github:contra/node-gdal"
   },
   "devDependencies": {
     "babel-cli": "^6.4.0",
@@ -179,6 +182,7 @@
     "date-fns": "^1.29.0",
     "duplexify": "^3.6.0",
     "exceljs-transform-stream": "^0.4.0",
+    "gdal2": "github:contra/node-gdal",
     "parse-decimal-number": "^1.0.0",
     "pump": "^3.0.0",
     "pumpify": "^1.5.0",
