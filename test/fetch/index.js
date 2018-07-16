@@ -112,6 +112,18 @@ describe('fetch', () => {
     stream.once('error', (err) => {
       should.exist(err)
       err.status.should.equal(404)
+      err.message.should.equal('HTTP Error 404 received!')
+      done()
+    })
+  })
+  it('should emit not found errors', (done) => {
+    const stream = fetch({
+      url: 'http://lkddflskdjf.io/404.json',
+      parser: parse('json', { selector: 'data.*' })
+    })
+    stream.once('error', (err) => {
+      should.exist(err)
+      err.message.should.equal('Failed to resolve host!')
       done()
     })
   })
@@ -123,6 +135,7 @@ describe('fetch', () => {
     stream.once('error', (err) => {
       should.exist(err)
       err.status.should.equal(500)
+      err.message.should.equal('HTTP Error 500 received!')
       done()
     })
   })
