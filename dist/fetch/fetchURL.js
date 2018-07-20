@@ -10,8 +10,13 @@ var _through = require('through2');
 
 var _through2 = _interopRequireDefault(_through);
 
+var _getStream = require('get-stream');
+
+var _getStream2 = _interopRequireDefault(_getStream);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+const sizeLimit = 512000; // 512kb
 const rewriteError = err => {
   if (err.status) return new Error(`HTTP Error ${err.status} received!`);
   if (err.code === 'ENOTFOUND') return new Error('Failed to resolve host!');
@@ -21,22 +26,36 @@ const rewriteError = err => {
 const httpError = (err, res) => {
   const nerror = rewriteError(err);
   nerror.requestError = true;
-  nerror.body = res.text;
   nerror.code = res.code;
   nerror.status = res.status;
+  nerror.headers = res.headers;
+  nerror.body = res.text;
   return nerror;
 };
 
 exports.default = url => {
+  let haltEnd = false;
   const out = (0, _through2.default)();
-  const req = _superagent2.default.get(url).buffer(false).redirects(10).retry(10).once('response', res => {
-    if (res.error) {
-      out.emit('error', httpError(res.error, res));
-    }
-  }).once('error', err => {
-    out.emit('error', httpError(err, err.res || err));
+  const errCollector = (0, _through2.default)();
+  const req = _superagent2.default.get(url).buffer(false).redirects(10).retry(10)
+  // http errors
+  .once('response', async res => {
+    if (!res.error) return;
+    haltEnd = true;
+    res.text = await (0, _getStream2.default)(errCollector, { maxBuffer: sizeLimit });
+    out.emit('error', httpError(res.error, res));
+    out.end();
+  })
+  // network errors
+  .once('error', err => {
+    out.emit('error', httpError(err, err));
   });
-  return req.pipe(out);
+
+  errCollector.once('end', () => {
+    if (!haltEnd) out.end();
+  });
+
+  return req.pipe(errCollector).pipe(out, { end: false });
 };
 
 module.exports = exports['default'];

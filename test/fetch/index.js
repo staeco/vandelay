@@ -22,10 +22,10 @@ describe('fetch', () => {
       res.json({ data: sample })
     })
     app.get('/404.json', (req, res) => {
-      res.status(404).end()
+      res.status(404).send('404').end()
     })
     app.get('/500.json', (req, res) => {
-      res.status(500).end()
+      res.status(500).send('500').end()
     })
     app.get('/data', (req, res) => {
       const { offset, limit } = req.query
@@ -113,6 +113,8 @@ describe('fetch', () => {
       should.exist(err)
       err.status.should.equal(404)
       err.message.should.equal('HTTP Error 404 received!')
+      err.body.should.equal('404')
+      should.not.exist(err.code)
       done()
     })
   })
@@ -124,6 +126,9 @@ describe('fetch', () => {
     stream.once('error', (err) => {
       should.exist(err)
       err.message.should.equal('Failed to resolve host!')
+      err.code.should.equal('ENOTFOUND')
+      should.not.exist(err.status)
+      should.not.exist(err.body)
       done()
     })
   })
@@ -136,6 +141,8 @@ describe('fetch', () => {
       should.exist(err)
       err.status.should.equal(500)
       err.message.should.equal('HTTP Error 500 received!')
+      err.body.should.equal('500')
+      should.not.exist(err.code)
       done()
     })
   })

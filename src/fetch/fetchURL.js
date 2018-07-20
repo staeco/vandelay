@@ -1,6 +1,8 @@
 import request from 'superagent'
 import through2 from 'through2'
+import collect from 'get-stream'
 
+const sizeLimit = 512000 // 512kb
 const rewriteError = (err) => {
   if (err.status) return new Error(`HTTP Error ${err.status} received!`)
   if (err.code === 'ENOTFOUND') return new Error('Failed to resolve host!')
@@ -10,24 +12,38 @@ const rewriteError = (err) => {
 const httpError = (err, res) => {
   const nerror = rewriteError(err)
   nerror.requestError = true
-  nerror.body = res.text
   nerror.code = res.code
   nerror.status = res.status
+  nerror.headers = res.headers
+  nerror.body = res.text
   return nerror
 }
 export default (url) => {
+  let haltEnd = false
   const out = through2()
+  const errCollector = through2()
   const req = request.get(url)
     .buffer(false)
     .redirects(10)
     .retry(10)
-    .once('response', (res) => {
-      if (res.error) {
-        out.emit('error', httpError(res.error, res))
-      }
+    // http errors
+    .once('response', async (res) => {
+      if (!res.error) return
+      haltEnd = true
+      res.text = await collect(errCollector, { maxBuffer: sizeLimit })
+      out.emit('error', httpError(res.error, res))
+      out.end()
     })
+    // network errors
     .once('error', (err) => {
-      out.emit('error', httpError(err, err.res || err))
+      out.emit('error', httpError(err, err))
     })
-  return req.pipe(out)
+
+  errCollector.once('end', () => {
+    if (!haltEnd) out.end()
+  })
+
+  return req
+    .pipe(errCollector)
+    .pipe(out, { end: false })
 }
