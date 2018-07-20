@@ -14,14 +14,16 @@ var _getStream = require('get-stream');
 
 var _getStream2 = _interopRequireDefault(_getStream);
 
+var _httpStatusCodes = require('http-status-codes');
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const sizeLimit = 512000; // 512kb
 const rewriteError = err => {
-  if (err.status) return new Error(`HTTP Error ${err.status} received!`);
-  if (err.code === 'ENOTFOUND') return new Error('Failed to resolve host!');
-  if (err.code === 'ECONNRESET') return new Error('Connection to host was lost!');
-  return new Error('Failed to connect to host!');
+  if (err.status) return new Error(`Server responded with "${(0, _httpStatusCodes.getStatusText)(err.status)}"`);
+  if (err.code === 'ENOTFOUND') return new Error('Failed to resolve host');
+  if (err.code === 'ECONNRESET') return new Error('Connection to host was lost');
+  return new Error('Failed to connect to host');
 };
 const httpError = (err, res) => {
   const nerror = rewriteError(err);
