@@ -10,7 +10,7 @@ const rewriteError = (err) => {
 const httpError = (err, res) => {
   const nerror = rewriteError(err)
   nerror.requestError = true
-  nerror.body = res.body
+  nerror.body = res.text
   nerror.code = res.code
   nerror.status = res.status
   return nerror
