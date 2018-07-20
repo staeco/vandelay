@@ -1,13 +1,14 @@
 import request from 'superagent'
 import through2 from 'through2'
 import collect from 'get-stream'
+import { getStatusText } from 'http-status-codes'
 
 const sizeLimit = 512000 // 512kb
 const rewriteError = (err) => {
-  if (err.status) return new Error(`HTTP Error ${err.status} received!`)
-  if (err.code === 'ENOTFOUND') return new Error('Failed to resolve host!')
-  if (err.code === 'ECONNRESET') return new Error('Connection to host was lost!')
-  return new Error('Failed to connect to host!')
+  if (err.status) return new Error(`Server responded with "${getStatusText(err.status)}"`)
+  if (err.code === 'ENOTFOUND') return new Error('Failed to resolve host')
+  if (err.code === 'ECONNRESET') return new Error('Connection to host was lost')
+  return new Error('Failed to connect to host')
 }
 const httpError = (err, res) => {
   const nerror = rewriteError(err)

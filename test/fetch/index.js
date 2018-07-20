@@ -112,7 +112,7 @@ describe('fetch', () => {
     stream.once('error', (err) => {
       should.exist(err)
       err.status.should.equal(404)
-      err.message.should.equal('HTTP Error 404 received!')
+      err.message.should.equal('Server responded with "Not Found"')
       err.body.should.equal('404')
       should.not.exist(err.code)
       done()
@@ -125,7 +125,7 @@ describe('fetch', () => {
     })
     stream.once('error', (err) => {
       should.exist(err)
-      err.message.should.equal('Failed to resolve host!')
+      err.message.should.equal('Failed to resolve host')
       err.code.should.equal('ENOTFOUND')
       should.not.exist(err.status)
       should.not.exist(err.body)
@@ -140,7 +140,7 @@ describe('fetch', () => {
     stream.once('error', (err) => {
       should.exist(err)
       err.status.should.equal(500)
-      err.message.should.equal('HTTP Error 500 received!')
+      err.message.should.equal('Server responded with "Server Error"')
       err.body.should.equal('500')
       should.not.exist(err.code)
       done()
