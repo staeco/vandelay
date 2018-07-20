@@ -7,6 +7,14 @@ const rewriteError = (err) => {
   if (err.code === 'ECONNRESET') return new Error('Connection to host was lost!')
   return new Error('Failed to connect to host!')
 }
+const httpError = (err, res) => {
+  const nerror = rewriteError(err)
+  nerror.requestError = true
+  nerror.body = res.body
+  nerror.code = res.code
+  nerror.status = res.status
+  return nerror
+}
 export default (url) => {
   const out = through2()
   const req = request.get(url)
@@ -15,17 +23,11 @@ export default (url) => {
     .retry(10)
     .once('response', (res) => {
       if (res.error) {
-        const nerror = rewriteError(res.error)
-        nerror.code = res.code
-        nerror.status = res.status
-        out.emit('error', nerror)
+        out.emit('error', httpError(res.error, res))
       }
     })
     .once('error', (err) => {
-      const nerror = rewriteError(err)
-      nerror.code = err.code
-      nerror.status = err.status
-      out.emit('error', nerror)
+      out.emit('error', httpError(err, err.res || err))
     })
   return req.pipe(out)
 }
