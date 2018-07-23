@@ -107,6 +107,16 @@ describe('fetch', () => {
       { a: 7, b: 8, c: 9, ___meta: { row: 0, url: `${source.url}?limit=1&offset=2`, source } }
     ])
   })
+  it('should work with non-object selector', async () => {
+    const source = {
+      url: `http://localhost:${port}/file.json`,
+      parser: 'json',
+      parserOptions: { selector: 'data.*.a' }
+    }
+    const stream = fetch(source)
+    const res = await collect.array(stream)
+    res.should.eql([ 1, 4, 7 ])
+  })
   it('should emit 404 http errors', (done) => {
     const stream = fetch({
       url: `http://localhost:${port}/404.json`,

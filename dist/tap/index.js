@@ -7,14 +7,17 @@ var _bluestream = require('bluestream');
 exports.default = (fn, opt = {}) => {
   if (typeof fn !== 'function') throw new Error('Invalid function!');
 
-  const tap = async record => {
+  const tap = async row => {
+    let meta;
     // pluck the _meta attr we attached in fetch
-    const meta = record.___meta;
-    delete record.___meta;
-    record = await fn(record, meta);
-    if (!record) return;
-    if (meta) record.___meta = meta; // tack meta back on
-    return record;
+    if (typeof row === 'object') {
+      meta = row.___meta;
+      delete row.___meta;
+    }
+    row = await fn(row, meta);
+    if (row == null) return;
+    if (meta) row.___meta = meta; // tack meta back on
+    return row;
   };
   return (0, _bluestream.transform)({
     concurrent: opt.concurrency != null ? opt.concurrency : 50

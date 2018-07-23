@@ -52,17 +52,19 @@ const fetchStream = (source, opt={}) => {
     // attaches some meta to the object for the transform fn to use
     let rows = -1
     const map = function (row, _, cb) {
-      if (!row || typeof row !== 'object') throw new Error(`Invalid row - ${row}`)
-      row.___meta = {
-        row: ++rows,
-        url,
-        source
-      }
+      // create the meta and put it on objects passing through
+      if (typeof row === 'object') {
+        row.___meta = {
+          row: ++rows,
+          url,
+          source
+        }
 
-      // internal attr, json header info from the parser
-      if (row.___header) {
-        row.___meta.header = row.___header
-        delete row.___header
+        // json header info from the parser
+        if (row.___header) {
+          row.___meta.header = row.___header
+          delete row.___header
+        }
       }
       cb(null, row)
     }
