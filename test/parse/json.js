@@ -35,4 +35,17 @@ describe('parse json', () => {
     const res = await collect.array(stream)
     res.should.eql([ 1, 2, 3 ])
   })
+  it('should error on invalid object', async () => {
+    const sample = '{ "a": [ { "b": 1 }, { zzzzz'
+    const parser = parse('json', { selector: 'a.*.b' })
+    const stream = streamify(sample).pipe(parser())
+    let theError
+    try {
+      await collect.array(stream)
+    } catch (err) {
+      theError = err
+    }
+    should.exist(theError)
+    theError.bufferedData.should.eql([ 1 ])
+  })
 })

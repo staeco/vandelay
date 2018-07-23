@@ -27,6 +27,9 @@ describe('fetch', () => {
     app.get('/500.json', (req, res) => {
       res.status(500).send('500').end()
     })
+    app.get('/bad.json', (req, res) => {
+      res.status(200).send('{ "a": [ { "b": 1 }, { zzzzz').end()
+    })
     app.get('/data', (req, res) => {
       const { offset, limit } = req.query
       const end = parseInt(offset) + parseInt(limit)
@@ -143,6 +146,19 @@ describe('fetch', () => {
       err.message.should.equal('Server responded with "Server Error"')
       err.body.should.equal('500')
       should.not.exist(err.code)
+      done()
+    })
+  })
+  it('should error on invalid object', (done) => {
+    const stream = fetch({
+      url: `http://localhost:${port}/bad.json`,
+      parser: parse('json', { selector: 'a.*' })
+    })
+    stream.once('data', (c) => {
+      c.b.should.equal(1)
+    })
+    stream.once('error', (err) => {
+      should.exist(err)
       done()
     })
   })
