@@ -74,7 +74,6 @@ const excel = exports.excel = opt => {
 };
 const json = exports.json = opt => {
   if (typeof opt.selector !== 'string') throw new Error('Missing selector for JSON parser!');
-  if (!opt.selector.includes('*')) throw new Error('Selector must contain a * somewhere!');
 
   const head = _JSONStream2.default.parse(opt.selector);
   let header;

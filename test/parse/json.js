@@ -9,7 +9,6 @@ describe('parse json', () => {
   it('should throw on bad selector', async () => {
     should.throws(() => parse('json'))
     should.throws(() => parse('json', { selector: null }))
-    should.throws(() => parse('json', { selector: 'a' }))
   })
   it('should parse an array', async () => {
     const data = [ 1, 2, 3, 4, 5 ]

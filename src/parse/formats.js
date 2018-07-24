@@ -37,7 +37,6 @@ export const excel = (opt) => {
 }
 export const json = (opt) => {
   if (typeof opt.selector !== 'string') throw new Error('Missing selector for JSON parser!')
-  if (!opt.selector.includes('*')) throw new Error('Selector must contain a * somewhere!')
 
   const head = JSONStream.parse(opt.selector)
   let header

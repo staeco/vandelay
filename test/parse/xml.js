@@ -27,7 +27,6 @@ describe('parse xml', () => {
   it('should throw on bad selector', async () => {
     should.throws(() => parse('xml'))
     should.throws(() => parse('xml', { selector: null }))
-    should.throws(() => parse('xml', { selector: 'a' }))
   })
   it('should throw on bad options', async () => {
     should.throws(() => parse('csv', { autoParse: 'yes' }))
