@@ -62,6 +62,8 @@ fetch({
 
 ### fetch(source[, options])
 
+Returns a stream that fetches the given source and emits the parsed and selected objects.
+
 #### source
 
 - url - Required `String`
@@ -130,6 +132,14 @@ Built in parsers are:
 
 - Asynchronous function, receives the current row and the meta information object.
 - Returning an object will pass it on, and null or undefined will remove the item from the stream.
+
+#### options
+
+- concurrency - Optional `Number`, defaults to 50
+
+### normalize([options])
+
+Returns the plain objects without any meta fields attached, useful for the end of a stream.
 
 #### options
 
