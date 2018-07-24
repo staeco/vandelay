@@ -1,7 +1,7 @@
 'use strict';
 
 exports.__esModule = true;
-exports.transform = exports.tap = exports.parse = exports.fetch = undefined;
+exports.normalize = exports.transform = exports.tap = exports.parse = exports.fetch = undefined;
 
 var _fetch = require('./fetch');
 
@@ -19,9 +19,14 @@ var _transform = require('./transform');
 
 var _transform2 = _interopRequireDefault(_transform);
 
+var _normalize = require('./normalize');
+
+var _normalize2 = _interopRequireDefault(_normalize);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.fetch = _fetch2.default;
 exports.parse = _parse2.default;
 exports.tap = _tap2.default;
 exports.transform = _transform2.default;
+exports.normalize = _normalize2.default;
