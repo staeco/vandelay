@@ -32,6 +32,16 @@ describe('transform', () => {
     const res = await collect.array(stream)
     res.should.eql(data)
   })
+  it('should work with an empty transform stack', async () => {
+    const stream = streamify.obj(data).pipe(transform([]))
+    const res = await collect.array(stream)
+    res.should.eql(data.map(() => ({})))
+  })
+  it('should work with a working transform stack', async () => {
+    const stream = streamify.obj(data).pipe(transform([ { to: 'data', from: 'a' } ]))
+    const res = await collect.array(stream)
+    res.should.eql(data.map(({ a }) => ({ data: a })))
+  })
   it('should pass on changes', async () => {
     const map = (row) => ({ ...row, a: null })
     const stream = streamify.obj(data).pipe(transform(map, {
@@ -48,6 +58,25 @@ describe('transform', () => {
   it('should skip when null returned', async () => {
     const filter = (row) => row.a > 1 ? null : row
     const stream = streamify.obj(data).pipe(transform(filter, {
+      onSuccess: (record, old) => {
+        should.exist(record)
+        should.exist(old)
+        should.equal(record, old)
+        should.equal(record.a <= 1, true)
+      },
+      onSkip: (record) => {
+        should.exist(record)
+        should.equal(record.a > 1, true)
+      }
+    }))
+    const res = await collect.array(stream)
+    res.should.eql(data.filter(filter))
+  })
+  it('should skip when false returned from filter fn', async () => {
+    const map = (row) => row
+    const filter = (row) => row.a <= 1
+    const stream = streamify.obj(data).pipe(transform(map, {
+      filter,
       onSuccess: (record, old) => {
         should.exist(record)
         should.exist(old)

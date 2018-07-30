@@ -1,6 +1,6 @@
 {
   "name": "vandelay",
-  "version": "0.10.5",
+  "version": "0.10.6",
   "description": "Imports, exports, and ETL",
   "main": "dist/index.js",
   "keywords": [],
@@ -180,6 +180,7 @@
     "exceljs-transform-stream": "^1.0.0",
     "get-stream": "^3.0.0",
     "http-status-codes": "^1.3.0",
+    "object-transform-stack": "^0.1.0",
     "parse-decimal-number": "^1.0.0",
     "pump": "^3.0.0",
     "pumpify": "^1.5.1",
