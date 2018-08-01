@@ -2,7 +2,7 @@
 
 exports.__esModule = true;
 
-var _xml2jsParser = require('xml2js-parser');
+var _xml2js = require('xml2js');
 
 var _through = require('through2');
 
@@ -21,15 +21,15 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 exports.default = opt => {
   const valueProcessors = opt.autoParse ? [_autoParse2.default] : null;
   const nameProcessors = opt.camelcase ? [_camelcase2.default] : null;
-  const xmlParser = new _xml2jsParser.Parser({
+  const xmlOpt = {
     explicitArray: false,
     valueProcessors,
     attrValueProcessors: valueProcessors,
     tagNameProcessors: nameProcessors,
     attrNameProcessors: nameProcessors
-  });
+  };
   const xml2JsonStream = _through2.default.obj((row, _, cb) => {
-    xmlParser.parseString(row.toString(), (err, js) => {
+    (0, _xml2js.parseString)(row.toString(), xmlOpt, (err, js) => {
       cb(err, JSON.stringify(js));
     });
   });
