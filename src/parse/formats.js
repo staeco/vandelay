@@ -1,4 +1,3 @@
-import { Parser } from 'xml2js-parser'
 import csvStream from 'csv-parser'
 import excelStream from 'exceljs-transform-stream'
 import through2 from 'through2'
@@ -8,6 +7,7 @@ import pumpify from 'pumpify'
 import pump from 'pump'
 import JSONStream from 'JSONStream'
 import camelcase from 'camelcase'
+import xml2json from './xml2json'
 import autoParse from './autoParse'
 
 // these formatters receive one argument, "data source" object
@@ -51,21 +51,7 @@ export const json = (opt) => {
 export const xml = (opt) => {
   if (opt.camelcase && typeof opt.camelcase !== 'boolean') throw new Error('Invalid camelcase option')
   if (opt.autoParse && typeof opt.autoParse !== 'boolean') throw new Error('Invalid autoParse option')
-  const valueProcessors = opt.autoParse ? [ autoParse ] : null
-  const nameProcessors = opt.camelcase ? [ camelcase ] : null
-  const xmlParser = new Parser({
-    explicitArray: false,
-    valueProcessors,
-    attrValueProcessors: valueProcessors,
-    tagNameProcessors: nameProcessors,
-    attrNameProcessors: nameProcessors
-  })
-  const xml2JsonStream = through2.obj((row, _, cb) => {
-    xmlParser.parseString(row.toString(), (err, js) => {
-      cb(err, JSON.stringify(js))
-    })
-  })
-  return pumpify.obj(xml2JsonStream, json(opt))
+  return pumpify.obj(xml2json(opt), json(opt))
 }
 
 export const shp = () => {

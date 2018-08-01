@@ -3,8 +3,6 @@
 exports.__esModule = true;
 exports.shp = exports.xml = exports.json = exports.excel = exports.csv = undefined;
 
-var _xml2jsParser = require('xml2js-parser');
-
 var _csvParser = require('csv-parser');
 
 var _csvParser2 = _interopRequireDefault(_csvParser);
@@ -40,6 +38,10 @@ var _JSONStream2 = _interopRequireDefault(_JSONStream);
 var _camelcase = require('camelcase');
 
 var _camelcase2 = _interopRequireDefault(_camelcase);
+
+var _xml2json = require('./xml2json');
+
+var _xml2json2 = _interopRequireDefault(_xml2json);
 
 var _autoParse = require('./autoParse');
 
@@ -88,21 +90,7 @@ const json = exports.json = opt => {
 const xml = exports.xml = opt => {
   if (opt.camelcase && typeof opt.camelcase !== 'boolean') throw new Error('Invalid camelcase option');
   if (opt.autoParse && typeof opt.autoParse !== 'boolean') throw new Error('Invalid autoParse option');
-  const valueProcessors = opt.autoParse ? [_autoParse2.default] : null;
-  const nameProcessors = opt.camelcase ? [_camelcase2.default] : null;
-  const xmlParser = new _xml2jsParser.Parser({
-    explicitArray: false,
-    valueProcessors,
-    attrValueProcessors: valueProcessors,
-    tagNameProcessors: nameProcessors,
-    attrNameProcessors: nameProcessors
-  });
-  const xml2JsonStream = _through2.default.obj((row, _, cb) => {
-    xmlParser.parseString(row.toString(), (err, js) => {
-      cb(err, JSON.stringify(js));
-    });
-  });
-  return _pumpify2.default.obj(xml2JsonStream, json(opt));
+  return _pumpify2.default.obj((0, _xml2json2.default)(opt), json(opt));
 };
 
 const shp = exports.shp = () => {
