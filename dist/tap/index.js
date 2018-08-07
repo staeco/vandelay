@@ -16,8 +16,8 @@ exports.default = (fn, opt = {}) => {
     }
     row = await fn(row, meta);
     if (row == null) return;
-    if (meta) row.___meta = meta; // tack meta back on
-    return row;
+    if (meta) row = Object.assign({}, row, { ___meta: meta // tack meta back on
+    });return row;
   };
   return (0, _bluestream.transform)({
     concurrent: opt.concurrency != null ? opt.concurrency : 50

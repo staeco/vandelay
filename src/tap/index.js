@@ -12,7 +12,7 @@ export default (fn, opt={}) => {
     }
     row = await fn(row, meta)
     if (row == null) return
-    if (meta) row.___meta = meta // tack meta back on
+    if (meta) row = { ...row, ___meta: meta } // tack meta back on
     return row
   }
   return transform({
