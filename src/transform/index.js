@@ -12,7 +12,7 @@ export default (transformer, opt={}) => {
   if (typeof transformFn !== 'function') throw new Error('Invalid transform function!')
 
   const transform = async (record, meta) => {
-    if (opt.onBegin) opt.onBegin(record, meta)
+    if (opt.onBegin) await opt.onBegin(record, meta)
 
     // filter
     if (typeof opt.filter === 'function') {
@@ -20,11 +20,11 @@ export default (transformer, opt={}) => {
       try {
         filter = await opt.filter(record, meta)
       } catch (err) {
-        if (opt.onError) opt.onError(err, record, meta)
+        if (opt.onError) await opt.onError(err, record, meta)
         return
       }
       if (filter != true) {
-        if (opt.onSkip) opt.onSkip(record, meta)
+        if (opt.onSkip) await opt.onSkip(record, meta)
         return
       }
     }
@@ -34,14 +34,14 @@ export default (transformer, opt={}) => {
     try {
       transformed = await transformFn(record, meta)
     } catch (err) {
-      if (opt.onError) opt.onError(err, record, meta)
+      if (opt.onError) await opt.onError(err, record, meta)
       return
     }
     if (!transformed) {
-      if (opt.onSkip) opt.onSkip(record, meta)
+      if (opt.onSkip) await opt.onSkip(record, meta)
       return
     }
-    if (opt.onSuccess) opt.onSuccess(transformed, record, meta)
+    if (opt.onSuccess) await opt.onSuccess(transformed, record, meta)
     return transformed
   }
   return tap(transform, opt)
