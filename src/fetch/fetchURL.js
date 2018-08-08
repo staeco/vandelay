@@ -1,6 +1,7 @@
 import request from 'superagent'
 import through2 from 'through2'
 import collect from 'get-stream'
+import pump from 'pump'
 import { getStatusText } from 'http-status-codes'
 
 const sizeLimit = 512000 // 512kb
@@ -40,11 +41,9 @@ export default (url) => {
       out.emit('error', httpError(err, err))
     })
 
-  errCollector.once('end', () => {
+  const inp = pump(req, errCollector, () => {
     if (!haltEnd) out.end()
   })
-
-  return req
-    .pipe(errCollector)
-    .pipe(out, { end: false })
+  out.req = req
+  return inp.pipe(out, { end: false })
 }

@@ -36,6 +36,15 @@ describe('fetch', () => {
       const data = sample.slice(offset, Math.min(sample.length, end))
       res.json({ data })
     })
+    app.get('/infinite', (req, res) => {
+      res.write('[')
+      for (let i = 0; i < 1024; ++i) {
+        res.write(`${JSON.stringify({ a: Math.random() })},`)
+      }
+      res.write(JSON.stringify({ a: Math.random() }))
+      res.write(']')
+      res.end()
+    })
     server = app.listen(port)
   })
   after((cb) => server.close(cb))
@@ -116,6 +125,22 @@ describe('fetch', () => {
     const stream = fetch(source)
     const res = await collect.array(stream)
     res.should.eql([ 1, 4, 7 ])
+  })
+  it('should end stream as needed', async () => {
+    const max = 10
+    let curr = 0
+    const source = {
+      url: `http://localhost:${port}/infinite`,
+      parser: 'json',
+      parserOptions: { selector: '*.a' }
+    }
+    const stream = fetch(source)
+    stream.on('data', () => {
+      ++curr
+      if (curr >= max) stream.req.abort()
+    })
+    const res = await collect.array(stream)
+    res.length.should.equal(max)
   })
   it('should emit 404 http errors', (done) => {
     const stream = fetch({

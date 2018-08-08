@@ -14,6 +14,10 @@ var _getStream = require('get-stream');
 
 var _getStream2 = _interopRequireDefault(_getStream);
 
+var _pump = require('pump');
+
+var _pump2 = _interopRequireDefault(_pump);
+
 var _httpStatusCodes = require('http-status-codes');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -53,11 +57,11 @@ exports.default = url => {
     out.emit('error', httpError(err, err));
   });
 
-  errCollector.once('end', () => {
+  const inp = (0, _pump2.default)(req, errCollector, () => {
     if (!haltEnd) out.end();
   });
-
-  return req.pipe(errCollector).pipe(out, { end: false });
+  out.req = req;
+  return inp.pipe(out, { end: false });
 };
 
 module.exports = exports['default'];

@@ -93,7 +93,9 @@ const fetchStream = (source, opt = {}) => {
 
     let req = (0, _fetchURL2.default)(url);
     if (opt.modifyRequest) req = opt.modifyRequest(src, req);
-    return _pumpify2.default.obj(req, src.parser(), _through2.default.obj(map));
+    const out = _pumpify2.default.obj(req, src.parser(), _through2.default.obj(map));
+    out.req = req.req;
+    return out;
   };
 
   if (src.pagination) {
