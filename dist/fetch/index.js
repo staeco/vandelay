@@ -111,7 +111,10 @@ const fetchStream = (source, opt = {}) => {
       page++;
       cb(null, lastFetch);
     }).on('data', () => ++pageDatums);
-    outStream.abort = () => lastFetch && lastFetch.abort();
+    outStream.abort = () => {
+      outStream.destroy();
+      lastFetch && lastFetch.abort();
+    };
     return outStream;
   }
 

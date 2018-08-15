@@ -142,6 +142,27 @@ describe('fetch', () => {
     const res = await collect.array(stream)
     res.length.should.equal(max)
   })
+  it('should end stream as needed with pagination', async () => {
+    const max = 10
+    let curr = 0
+    const source = {
+      url: `http://localhost:${port}/infinite`,
+      pagination: {
+        limitParam: 'limit',
+        offsetParam: 'offset',
+        limit: 1
+      },
+      parser: 'json',
+      parserOptions: { selector: '*.a' }
+    }
+    const stream = fetch(source)
+    stream.on('data', () => {
+      ++curr
+      if (curr >= max) stream.abort()
+    })
+    const res = await collect.array(stream)
+    res.length.should.equal(max)
+  })
   it('should emit 404 http errors', (done) => {
     const stream = fetch({
       url: `http://localhost:${port}/404.json`,
