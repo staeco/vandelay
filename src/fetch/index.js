@@ -81,8 +81,9 @@ const fetchStream = (source, opt={}) => {
     let page = src.pagination.startPage || 0
     let pageDatums // gets reset on each page to 0
     let lastFetch
+    let destroyed = false
     const outStream = continueStream.obj((cb) => {
-      if (pageDatums === 0) return cb()
+      if (destroyed || pageDatums === 0) return cb()
       pageDatums = 0
       const newURL = mergeURL(src.url, getQuery(src.pagination, page))
       lastFetch = fetch(newURL)
@@ -90,6 +91,7 @@ const fetchStream = (source, opt={}) => {
       cb(null, lastFetch)
     }).on('data', () => ++pageDatums)
     outStream.abort = () => {
+      destroyed = true
       outStream.destroy()
       lastFetch && lastFetch.abort()
     }
