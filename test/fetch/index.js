@@ -184,7 +184,7 @@ describe('fetch', () => {
     })
     stream.once('error', (err) => {
       should.exist(err)
-      err.message.should.equal('Failed to resolve host')
+      err.message.should.equal('Failed to resolve server host')
       err.code.should.equal('ENOTFOUND')
       should.not.exist(err.status)
       should.not.exist(err.body)

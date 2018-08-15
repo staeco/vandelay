@@ -25,9 +25,10 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 const sizeLimit = 512000; // 512kb
 const rewriteError = err => {
   if (err.status) return new Error(`Server responded with "${(0, _httpStatusCodes.getStatusText)(err.status)}"`);
-  if (err.code === 'ENOTFOUND') return new Error('Failed to resolve host');
-  if (err.code === 'ECONNRESET') return new Error('Connection to host was lost');
-  return new Error('Failed to connect to host');
+  if (err.code === 'ENOTFOUND') return new Error('Failed to resolve server host');
+  if (err.code === 'ECONNRESET') return new Error('Connection to server was lost');
+  if (err.timeout) return new Error('Server took too long to respond');
+  return new Error('Failed to connect to server');
 };
 const httpError = (err, res) => {
   const nerror = rewriteError(err);
