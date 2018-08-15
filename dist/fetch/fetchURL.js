@@ -39,7 +39,7 @@ const httpError = (err, res) => {
   return nerror;
 };
 
-exports.default = url => {
+exports.default = (url, { timeout } = {}) => {
   let haltEnd = false;
   const out = (0, _through2.default)();
   const errCollector = (0, _through2.default)();
@@ -57,6 +57,7 @@ exports.default = url => {
     out.emit('error', httpError(err, err));
   });
 
+  if (timeout) req.timeout(timeout);
   const inp = (0, _pump2.default)(req, errCollector, () => {
     if (!haltEnd) out.end();
   });

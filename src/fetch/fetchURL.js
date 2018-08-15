@@ -20,7 +20,7 @@ const httpError = (err, res) => {
   nerror.body = res.text
   return nerror
 }
-export default (url) => {
+export default (url, { timeout }={}) => {
   let haltEnd = false
   const out = through2()
   const errCollector = through2()
@@ -41,6 +41,7 @@ export default (url) => {
       out.emit('error', httpError(err, err))
     })
 
+  if (timeout) req.timeout(timeout)
   const inp = pump(req, errCollector, () => {
     if (!haltEnd) out.end()
   })
