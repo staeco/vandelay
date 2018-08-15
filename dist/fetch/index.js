@@ -58,6 +58,7 @@ const getQuery = (opt, page) => {
 
 const fetchStream = (source, opt = {}) => {
   if (Array.isArray(source)) return iterateStream(source, opt);
+  const fetchURL = opt.fetchURL || _fetchURL2.default;
 
   // validate params
   if (!source) throw new Error('Missing source argument');
@@ -91,23 +92,27 @@ const fetchStream = (source, opt = {}) => {
       cb(null, row);
     };
 
-    let req = (0, _fetchURL2.default)(url);
+    let req = fetchURL(url);
     if (opt.modifyRequest) req = opt.modifyRequest(src, req);
     const out = _pumpify2.default.obj(req, src.parser(), _through2.default.obj(map));
-    out.req = req.req;
+    out.abort = req.abort;
     return out;
   };
 
   if (src.pagination) {
     let page = src.pagination.startPage || 0;
     let pageDatums; // gets reset on each page to 0
-    return _continueStream2.default.obj(cb => {
+    let lastFetch;
+    const outStream = _continueStream2.default.obj(cb => {
       if (pageDatums === 0) return cb();
       pageDatums = 0;
       const newURL = mergeURL(src.url, getQuery(src.pagination, page));
+      lastFetch = fetch(newURL);
       page++;
-      cb(null, fetch(newURL));
+      cb(null, lastFetch);
     }).on('data', () => ++pageDatums);
+    outStream.abort = () => lastFetch && lastFetch.abort();
+    return outStream;
   }
 
   return fetch(src.url);

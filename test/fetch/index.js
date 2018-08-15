@@ -137,7 +137,7 @@ describe('fetch', () => {
     const stream = fetch(source)
     stream.on('data', () => {
       ++curr
-      if (curr >= max) stream.req.abort()
+      if (curr >= max) stream.abort()
     })
     const res = await collect.array(stream)
     res.length.should.equal(max)

@@ -3,7 +3,7 @@ import qs from 'qs'
 import continueStream from 'continue-stream'
 import through2 from 'through2'
 import pumpify from 'pumpify'
-import fetchURL from './fetchURL'
+import fetchURLPlain from './fetchURL'
 import parse from '../parse'
 
 const iterateStream = (sources, opt) => {
@@ -35,6 +35,7 @@ const getQuery = (opt, page) => {
 
 const fetchStream = (source, opt={}) => {
   if (Array.isArray(source)) return iterateStream(source, opt)
+  const fetchURL = opt.fetchURL || fetchURLPlain
 
   // validate params
   if (!source) throw new Error('Missing source argument')
@@ -72,20 +73,24 @@ const fetchStream = (source, opt={}) => {
     let req = fetchURL(url)
     if (opt.modifyRequest) req = opt.modifyRequest(src, req)
     const out = pumpify.obj(req, src.parser(), through2.obj(map))
-    out.req = req.req
+    out.abort = req.abort
     return out
   }
 
   if (src.pagination) {
     let page = src.pagination.startPage || 0
     let pageDatums // gets reset on each page to 0
-    return continueStream.obj((cb) => {
+    let lastFetch
+    const outStream = continueStream.obj((cb) => {
       if (pageDatums === 0) return cb()
       pageDatums = 0
       const newURL = mergeURL(src.url, getQuery(src.pagination, page))
+      lastFetch = fetch(newURL)
       page++
-      cb(null, fetch(newURL))
+      cb(null, lastFetch)
     }).on('data', () => ++pageDatums)
+    outStream.abort = () => lastFetch && lastFetch.abort()
+    return outStream
   }
 
   return fetch(src.url)

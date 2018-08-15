@@ -44,6 +44,6 @@ export default (url) => {
   const inp = pump(req, errCollector, () => {
     if (!haltEnd) out.end()
   })
-  out.req = req
+  out.abort = req.abort.bind(req)
   return inp.pipe(out, { end: false })
 }
