@@ -24,10 +24,13 @@ export default (url, { timeout }={}) => {
   let haltEnd = false
   const out = through2()
   const errCollector = through2()
-  const req = request.get(url)
+  let req = request.get(url)
     .buffer(false)
     .redirects(10)
     .retry(10)
+  if (timeout) req = req.timeout(timeout)
+
+  req
     // http errors
     .once('response', async (res) => {
       if (!res.error) return
@@ -41,7 +44,6 @@ export default (url, { timeout }={}) => {
       out.emit('error', httpError(err, err))
     })
 
-  if (timeout) req.timeout(timeout)
   const inp = pump(req, errCollector, () => {
     if (!haltEnd) out.end()
   })

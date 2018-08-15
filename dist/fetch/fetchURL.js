@@ -43,7 +43,10 @@ exports.default = (url, { timeout } = {}) => {
   let haltEnd = false;
   const out = (0, _through2.default)();
   const errCollector = (0, _through2.default)();
-  const req = _superagent2.default.get(url).buffer(false).redirects(10).retry(10)
+  let req = _superagent2.default.get(url).buffer(false).redirects(10).retry(10);
+  if (timeout) req = req.timeout(timeout);
+
+  req
   // http errors
   .once('response', async res => {
     if (!res.error) return;
@@ -57,7 +60,6 @@ exports.default = (url, { timeout } = {}) => {
     out.emit('error', httpError(err, err));
   });
 
-  if (timeout) req.timeout(timeout);
   const inp = (0, _pump2.default)(req, errCollector, () => {
     if (!haltEnd) out.end();
   });
