@@ -73,7 +73,10 @@ const fetchStream = (source, opt={}) => {
     let req = fetchURL(url)
     if (opt.modifyRequest) req = opt.modifyRequest(src, req)
     const out = pumpify.obj(req, src.parser(), through2.obj(map))
-    out.abort = req.abort
+    out.abort = () => {
+      req.abort()
+      out.end()
+    }
     return out
   }
 
