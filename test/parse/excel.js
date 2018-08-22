@@ -6,6 +6,10 @@ import collect from 'get-stream'
 import xlsx from 'xlsx'
 import { createReadStream } from 'fs'
 import tmp from 'tempfile'
+import { join } from 'path'
+import pump from 'pump'
+
+const xlsFixture = join(__dirname, 'xls-fixture.xls')
 
 const arrToExcel = (arr) => {
   const headers = Object.keys(arr[0])
@@ -88,5 +92,15 @@ describe('parse excel', () => {
       { receivedAt: 4, performedAt: 5, calledAt: 6 },
       { receivedAt: 7, performedAt: 8, calledAt: 9 }
     ])
+  })
+  it('should return a friendly error when unsupported XLS file is used', (done) => {
+    const parser = parse('excel', { autoParse: true })
+    const stream = createReadStream(xlsFixture).pipe(parser())
+    collect.array(stream)
+      .catch((err) => {
+        should.exist(err)
+        err.message.should.equal('Legacy XLS files are not supported, use an XLSX file instead!')
+        done()
+      })
   })
 })
