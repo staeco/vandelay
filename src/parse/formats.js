@@ -6,7 +6,7 @@ import duplex from 'duplexify'
 import pumpify from 'pumpify'
 import pump from 'pump'
 import JSONStream from 'JSONStream'
-import { FeedMessage } from 'gtfs-realtime-bindings'
+import parseGTFS from 'gtfs-stream'
 import camelcase from 'camelcase'
 import xml2json from './xml2json'
 import autoParse from './autoParse'
@@ -62,19 +62,5 @@ export const shp = () => {
   return duplex.obj(head, pump(mid, tail))
 }
 
-export const gtfsrt = () => {
-  let len = 0, chunks = []
-  return through2.obj((chunk, enc, cb) => {
-    chunks.push(chunk)
-    len += chunk.length
-    cb()
-  }, function (cb) {
-    const fullValue = Buffer.concat(chunks, len)
-    try {
-      FeedMessage.decode(fullValue).entity.forEach((v) => this.push(v))
-      return cb()
-    } catch (err) {
-      return cb(err)
-    }
-  })
-}
+export const gtfsrt = () => parseGTFS.rt()
+export const gtfs = () => parseGTFS()

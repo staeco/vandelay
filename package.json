@@ -1,6 +1,6 @@
 {
   "name": "vandelay",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Imports, exports, and ETL",
   "main": "dist/index.js",
   "keywords": [],
@@ -179,7 +179,7 @@
     "duplexify": "^3.6.0",
     "exceljs-transform-stream": "^1.0.0",
     "get-stream": "^3.0.0",
-    "gtfs-realtime-bindings": "^0.0.4",
+    "gtfs-stream": "^1.0.0",
     "http-status-codes": "^1.3.0",
     "object-transform-stack": "^0.1.0",
     "parse-decimal-number": "^1.0.0",

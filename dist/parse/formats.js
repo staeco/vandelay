@@ -1,7 +1,7 @@
 'use strict';
 
 exports.__esModule = true;
-exports.gtfsrt = exports.shp = exports.xml = exports.json = exports.excel = exports.csv = undefined;
+exports.gtfs = exports.gtfsrt = exports.shp = exports.xml = exports.json = exports.excel = exports.csv = undefined;
 
 var _csvParser = require('csv-parser');
 
@@ -35,7 +35,9 @@ var _JSONStream = require('JSONStream');
 
 var _JSONStream2 = _interopRequireDefault(_JSONStream);
 
-var _gtfsRealtimeBindings = require('gtfs-realtime-bindings');
+var _gtfsStream = require('gtfs-stream');
+
+var _gtfsStream2 = _interopRequireDefault(_gtfsStream);
 
 var _camelcase = require('camelcase');
 
@@ -102,20 +104,5 @@ const shp = exports.shp = () => {
   return _duplexify2.default.obj(head, (0, _pump2.default)(mid, tail));
 };
 
-const gtfsrt = exports.gtfsrt = () => {
-  let len = 0,
-      chunks = [];
-  return _through2.default.obj((chunk, enc, cb) => {
-    chunks.push(chunk);
-    len += chunk.length;
-    cb();
-  }, function (cb) {
-    const fullValue = Buffer.concat(chunks, len);
-    try {
-      _gtfsRealtimeBindings.FeedMessage.decode(fullValue).entity.forEach(v => this.push(v));
-      return cb();
-    } catch (err) {
-      return cb(err);
-    }
-  });
-};
+const gtfsrt = exports.gtfsrt = () => _gtfsStream2.default.rt();
+const gtfs = exports.gtfs = () => (0, _gtfsStream2.default)();
