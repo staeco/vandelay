@@ -99,6 +99,10 @@ const fetchStream = (source, opt = {}) => {
       req.abort();
       out.end();
     };
+    out.on('error', err => {
+      err.source = source;
+      err.url = url;
+    });
     return out;
   };
 
