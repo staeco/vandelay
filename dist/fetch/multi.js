@@ -19,6 +19,7 @@ exports.default = ({ concurrent = 10, onError, inputs = [] } = {}) => {
   let remaining = inputs.slice(); // clone
   let running = [];
   const out = _through2.default.obj();
+  out.setMaxListeners(0);
   const done = (src, err) => {
     running = running.filter(i => i !== src);
     schedule();
