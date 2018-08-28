@@ -205,6 +205,71 @@ describe('fetch', () => {
       done()
     })
   })
+  it('should allow handling via onError', (done) => {
+    fetch({
+      url: `http://localhost:${port}/500.json`,
+      parser: parse('json', { selector: 'data.*' })
+    }, {
+      onError: ({ error, canContinue }) => {
+        should.exist(error)
+        error.status.should.equal(500)
+        error.message.should.equal('Server responded with "Server Error"')
+        error.body.should.equal('500')
+        should.not.exist(error.code)
+        should.equal(canContinue, false)
+        done()
+      }
+    })
+  })
+  it('should allow continuing via onError', (done) => {
+    const stream = fetch([
+      {
+        url: `http://localhost:${port}/500.json`,
+        parser: parse('json', { selector: 'data.*' })
+      },
+      {
+        url: `http://localhost:${port}/file.json`,
+        parser: 'json',
+        parserOptions: { selector: 'data.*' }
+      }
+    ], {
+      onError: ({ error, canContinue }) => {
+        should.exist(error)
+        error.status.should.equal(500)
+        error.message.should.equal('Server responded with "Server Error"')
+        error.body.should.equal('500')
+        should.not.exist(error.code)
+        should.equal(canContinue, true)
+        stream.abort()
+        done()
+      }
+    })
+  })
+  it('should allow continuing via onError with single concurrency', (done) => {
+    const stream = fetch([
+      {
+        url: `http://localhost:${port}/500.json`,
+        parser: parse('json', { selector: 'data.*' })
+      },
+      {
+        url: `http://localhost:${port}/file.json`,
+        parser: 'json',
+        parserOptions: { selector: 'data.*' }
+      }
+    ], {
+      concurrency: 1,
+      onError: ({ error, canContinue }) => {
+        should.exist(error)
+        error.status.should.equal(500)
+        error.message.should.equal('Server responded with "Server Error"')
+        error.body.should.equal('500')
+        should.not.exist(error.code)
+        should.equal(canContinue, true)
+        stream.abort()
+        done()
+      }
+    })
+  })
   it('should error on invalid object', (done) => {
     const stream = fetch({
       url: `http://localhost:${port}/bad.json`,

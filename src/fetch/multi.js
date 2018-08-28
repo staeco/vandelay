@@ -5,14 +5,18 @@ import eos from 'end-of-stream'
 // so one wont fail the whole bunch
 export default ({ concurrent=10, onError, inputs=[] }={}) => {
   if (inputs.length === 0) throw new Error('No inputs specified!')
-  const remaining = inputs.slice() // clone
+  const remaining = inputs.slice(0)
   let running = []
   const out = through2.obj()
   out.setMaxListeners(0)
+
   const done = (src, err) => {
-    running = running.filter((i) => i !== src)
-    schedule()
-    const finished = !running.length
+    const idx = running.indexOf(src)
+    if (idx === -1) return // already finished
+    running.splice(idx, 1) // remove it from the run list
+    schedule() // schedule any additional work
+    const finished = running.length === 0 && remaining.length === 0
+
     // let the consumer figure out how thye want to handle errors
     if (err && onError) {
       onError({
@@ -26,8 +30,9 @@ export default ({ concurrent=10, onError, inputs=[] }={}) => {
   }
   const schedule = () => {
     const toRun = concurrent - running.length
+    if (toRun === 0) return
     for (let i = 0; i <= toRun; i++) {
-      if (remaining.length === 0) return
+      if (remaining.length === 0) break
       run(remaining.shift())
     }
   }
@@ -46,7 +51,6 @@ export default ({ concurrent=10, onError, inputs=[] }={}) => {
     })
   }
   out.on('unpipe', (src) => done(src))
-
 
   schedule() // kick it all off
   return out

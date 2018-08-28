@@ -29,12 +29,12 @@ const getQuery = (opt, page) => {
   return out
 }
 
-const fetchStream = (source, opt={}) => {
+const fetchStream = (source, opt={}, raw=false) => {
   const concurrent = opt.concurrency != null ? opt.concurrency : 50
   if (Array.isArray(source)) {
     return multi({
       concurrent,
-      inputs: source.map((i) => fetchStream.bind(null, i, opt)),
+      inputs: source.map((i) => fetchStream.bind(null, i, opt, true)),
       onError: opt.onError || defaultErrorHandler
     })
   }
@@ -112,6 +112,7 @@ const fetchStream = (source, opt={}) => {
     outStream = fetch(src.url)
   }
 
+  if (raw) return outStream // child of an array of sources, error mgmt handled already
   return multi({
     concurrent,
     inputs: [ outStream ],
