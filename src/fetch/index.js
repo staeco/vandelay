@@ -3,17 +3,13 @@ import qs from 'qs'
 import continueStream from 'continue-stream'
 import through2 from 'through2'
 import pumpify from 'pumpify'
+import multi from './multi'
 import fetchURLPlain from './fetchURL'
 import parse from '../parse'
 
-const iterateStream = (sources, opt) => {
-  if (sources.length === 1) return fetchStream(sources[0], opt)
-  let currStream = 0
-  return continueStream.obj((cb) => {
-    const nextSource = sources[currStream++]
-    if (!nextSource) return cb()
-    cb(null, fetchStream(nextSource, opt))
-  })
+// default behavior is to fail on first error
+const defaultErrorHandler = ({ error, output }) => {
+  output.emit('error', error)
 }
 
 const mergeURL = (origUrl, newQuery) => {
@@ -34,7 +30,13 @@ const getQuery = (opt, page) => {
 }
 
 const fetchStream = (source, opt={}) => {
-  if (Array.isArray(source)) return iterateStream(source, opt)
+  if (Array.isArray(source)) {
+    return multi({
+      inputs: source.map((i) => fetchStream(i, opt)),
+      onError: opt.onError || defaultErrorHandler
+    })
+  }
+
   const fetchURL = opt.fetchURL || fetchURLPlain
 
   // validate params
@@ -84,12 +86,13 @@ const fetchStream = (source, opt={}) => {
     return out
   }
 
+  let outStream
   if (src.pagination) {
     let page = src.pagination.startPage || 0
     let pageDatums // gets reset on each page to 0
     let lastFetch
     let destroyed = false
-    const outStream = continueStream.obj((cb) => {
+    outStream = continueStream.obj((cb) => {
       if (destroyed || pageDatums === 0) return cb()
       pageDatums = 0
       const newURL = mergeURL(src.url, getQuery(src.pagination, page))
@@ -102,10 +105,14 @@ const fetchStream = (source, opt={}) => {
       outStream.destroy()
       lastFetch && lastFetch.abort()
     }
-    return outStream
+  } else {
+    outStream = fetch(src.url)
   }
 
-  return fetch(src.url)
+  return multi({
+    inputs: [ outStream ],
+    onError: opt.onError || defaultErrorHandler
+  })
 }
 
 export default fetchStream

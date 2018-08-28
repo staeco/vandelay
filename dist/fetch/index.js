@@ -22,6 +22,10 @@ var _pumpify = require('pumpify');
 
 var _pumpify2 = _interopRequireDefault(_pumpify);
 
+var _multi = require('./multi');
+
+var _multi2 = _interopRequireDefault(_multi);
+
 var _fetchURL = require('./fetchURL');
 
 var _fetchURL2 = _interopRequireDefault(_fetchURL);
@@ -32,14 +36,9 @@ var _parse2 = _interopRequireDefault(_parse);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-const iterateStream = (sources, opt) => {
-  if (sources.length === 1) return fetchStream(sources[0], opt);
-  let currStream = 0;
-  return _continueStream2.default.obj(cb => {
-    const nextSource = sources[currStream++];
-    if (!nextSource) return cb();
-    cb(null, fetchStream(nextSource, opt));
-  });
+// default behavior is to fail on first error
+const defaultErrorHandler = ({ error, output }) => {
+  output.emit('error', error);
 };
 
 const mergeURL = (origUrl, newQuery) => {
@@ -57,7 +56,13 @@ const getQuery = (opt, page) => {
 };
 
 const fetchStream = (source, opt = {}) => {
-  if (Array.isArray(source)) return iterateStream(source, opt);
+  if (Array.isArray(source)) {
+    return (0, _multi2.default)({
+      inputs: source.map(i => fetchStream(i, opt)),
+      onError: opt.onError || defaultErrorHandler
+    });
+  }
+
   const fetchURL = opt.fetchURL || _fetchURL2.default;
 
   // validate params
@@ -106,12 +111,13 @@ const fetchStream = (source, opt = {}) => {
     return out;
   };
 
+  let outStream;
   if (src.pagination) {
     let page = src.pagination.startPage || 0;
     let pageDatums; // gets reset on each page to 0
     let lastFetch;
     let destroyed = false;
-    const outStream = _continueStream2.default.obj(cb => {
+    outStream = _continueStream2.default.obj(cb => {
       if (destroyed || pageDatums === 0) return cb();
       pageDatums = 0;
       const newURL = mergeURL(src.url, getQuery(src.pagination, page));
@@ -124,10 +130,14 @@ const fetchStream = (source, opt = {}) => {
       outStream.destroy();
       lastFetch && lastFetch.abort();
     };
-    return outStream;
+  } else {
+    outStream = fetch(src.url);
   }
 
-  return fetch(src.url);
+  return (0, _multi2.default)({
+    inputs: [outStream],
+    onError: opt.onError || defaultErrorHandler
+  });
 };
 
 exports.default = fetchStream;
