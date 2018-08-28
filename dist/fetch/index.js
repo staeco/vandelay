@@ -98,6 +98,7 @@ const fetchStream = (source, opt = {}) => {
     };
 
     let req = fetchURL(url);
+    if (opt.onFetch) opt.onFetch(url);
     if (opt.modifyRequest) req = opt.modifyRequest(src, req);
     const out = _pumpify2.default.obj(req, src.parser(), _through2.default.obj(map));
     out.abort = () => {
