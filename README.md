@@ -77,8 +77,15 @@ Returns a stream that fetches the given source and emits the parsed and selected
 
 #### options
 
+- concurrency - Optional `Number`, defaults to 50
 - modifyRequest - Optional `Function`
   - Receives a superagent request object prior to execution, so you can add on any additional headers/querystring parameters.
+- onError - Optional `Function`
+  - Receives a context object when an error occurs, so you can decide how to handle the error and opt out of the default behavior.
+  - The default handler will emit an error on the stream.
+- onFetch - Optional `Function`
+  - Receives the URL as the only argument, for debugging or logging purposes.
+  - Called every time an HTTP request is created.
 
 ### parse(format[, options])
 

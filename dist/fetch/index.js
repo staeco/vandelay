@@ -56,8 +56,10 @@ const getQuery = (opt, page) => {
 };
 
 const fetchStream = (source, opt = {}) => {
+  const concurrent = opt.concurrency != null ? opt.concurrency : 50;
   if (Array.isArray(source)) {
     return (0, _multi2.default)({
+      concurrent,
       inputs: source.map(i => fetchStream(i, opt)),
       onError: opt.onError || defaultErrorHandler
     });
@@ -136,6 +138,7 @@ const fetchStream = (source, opt = {}) => {
   }
 
   return (0, _multi2.default)({
+    concurrent,
     inputs: [outStream],
     onError: opt.onError || defaultErrorHandler
   });
