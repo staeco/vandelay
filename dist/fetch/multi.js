@@ -16,23 +16,24 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 // so one wont fail the whole bunch
 exports.default = ({ concurrent = 10, onError, inputs = [] } = {}) => {
   if (inputs.length === 0) throw new Error('No inputs specified!');
-  let remaining = inputs.slice(); // clone
+  const remaining = inputs.slice(); // clone
   let running = [];
   const out = _through2.default.obj();
   out.setMaxListeners(0);
   const done = (src, err) => {
     running = running.filter(i => i !== src);
     schedule();
+    const finished = !running.length;
     // let the consumer figure out how thye want to handle errors
     if (err && onError) {
       onError({
-        canContinue: remaining.length > 0,
+        canContinue: !finished,
         error: err,
         output: out,
         input: src
       });
     }
-    if (!running.length && out.readable) out.end();
+    if (finished && out.readable) out.end();
   };
   const schedule = () => {
     const toRun = concurrent - running.length;
