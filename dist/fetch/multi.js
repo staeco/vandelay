@@ -40,7 +40,8 @@ exports.default = ({ concurrent = 10, onError, inputs = [] } = {}) => {
       run(remaining.shift());
     }
   };
-  const run = src => {
+  const run = i => {
+    const src = typeof i === 'function' ? i() : i;
     running.push(src);
     (0, _endOfStream2.default)(src, err => done(src, err));
     src.pipe(out, { end: false });

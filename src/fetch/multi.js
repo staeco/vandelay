@@ -29,7 +29,8 @@ export default ({ concurrent=10, onError, inputs=[] }={}) => {
       run(remaining.shift())
     }
   }
-  const run = (src) => {
+  const run = (i) => {
+    const src = typeof i === 'function' ? i() : i
     running.push(src)
     eos(src, (err) => done(src, err))
     src.pipe(out, { end: false })

@@ -60,7 +60,7 @@ const fetchStream = (source, opt = {}) => {
   if (Array.isArray(source)) {
     return (0, _multi2.default)({
       concurrent,
-      inputs: source.map(i => fetchStream(i, opt)),
+      inputs: source.map(i => fetchStream.bind(null, i, opt)),
       onError: opt.onError || defaultErrorHandler
     });
   }
