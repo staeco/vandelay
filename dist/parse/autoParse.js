@@ -15,12 +15,14 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 exports.default = v => {
   if (typeof v !== 'string') return v; // already parsed upstream!
   v = v.trim();
-  if (v === '') return undefined;
-  if (v.toLowerCase() === 'null') return null;
+  if (!v) return;
   if (v === '-') return null;
-  if (v.toLowerCase() === 'true') return true;
-  if (v.toLowerCase() === 'false') return false;
   if (v === 'NaN') return NaN;
+  const lower = v.toLowerCase();
+  if (lower === 'null') return null;
+  if (lower === 'undefined') return;
+  if (lower === 'true' || lower === 'yes' || lower === 'y') return true;
+  if (lower === 'false' || lower === 'no' || lower === 'n') return false;
 
   const n = (0, _parseDecimalNumber2.default)(v);
   if (!isNaN(n)) return n;
