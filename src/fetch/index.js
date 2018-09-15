@@ -58,7 +58,7 @@ const fetchStream = (source, opt={}, raw=false) => {
     let rows = -1
     const map = function (row, _, cb) {
       // create the meta and put it on objects passing through
-      if (typeof row === 'object') {
+      if (row && typeof row === 'object') {
         row.___meta = {
           row: ++rows,
           url,

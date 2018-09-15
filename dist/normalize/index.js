@@ -7,7 +7,7 @@ var _bluestream = require('bluestream');
 exports.default = (opt = {}) => {
   const normalize = async row => {
     // strip internal crap back off
-    if (typeof row === 'object') delete row.___meta;
+    if (row && typeof row === 'object') delete row.___meta;
     return row;
   };
   return (0, _bluestream.transform)({

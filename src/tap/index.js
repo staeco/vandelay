@@ -6,13 +6,15 @@ export default (fn, opt={}) => {
   const tap = async (row) => {
     let meta
     // pluck the _meta attr we attached in fetch
-    if (typeof row === 'object') {
+    if (row && typeof row === 'object') {
       meta = row.___meta
       delete row.___meta
     }
     row = await fn(row, meta)
     if (row == null) return
-    if (meta) row = { ...row, ___meta: meta } // tack meta back on
+    if (meta) {
+      row.___meta = meta
+    }
     return row
   }
   return transform({

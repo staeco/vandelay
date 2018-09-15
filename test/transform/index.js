@@ -55,6 +55,18 @@ describe('transform', () => {
     const res = await collect.array(stream)
     res.should.eql(data.map(map))
   })
+  it('should work with arrays', async () => {
+    const map = (row) => [ row, row ]
+    const stream = streamify.obj(data).pipe(transform(map, {
+      onSuccess: (record, old) => {
+        should.exist(record)
+        should.exist(old)
+      }
+    }))
+    const res = await collect.array(stream)
+    res.should.eql(data.map(map))
+    Array.isArray(res).should.equal(true)
+  })
   it('should skip when null returned', async () => {
     const filter = (row) => row.a > 1 ? null : row
     const stream = streamify.obj(data).pipe(transform(filter, {
