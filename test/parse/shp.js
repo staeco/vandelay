@@ -2,7 +2,7 @@
 
 import parse from '../../src/parse'
 import collect from 'get-stream'
-import { createReadStream } from 'fs'
+import { createReadStream } from 'graceful-fs'
 import { join } from 'path'
 
 const shpFixture = join(__dirname, 'shp-fixture.zip')

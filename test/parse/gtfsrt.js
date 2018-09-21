@@ -4,7 +4,7 @@ import should from 'should'
 import parse from '../../src/parse'
 import streamify from 'into-stream'
 import collect from 'get-stream'
-import { createReadStream } from 'fs'
+import { createReadStream } from 'graceful-fs'
 import { join } from 'path'
 
 const rtFixture = join(__dirname, 'gtfsrt.feed')
