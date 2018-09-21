@@ -36,4 +36,4 @@ exports.default = opt => {
   return xml2JsonStream;
 };
 
-module.exports = exports['default'];
+module.exports = exports.default;

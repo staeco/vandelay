@@ -1,6 +1,6 @@
 {
   "name": "vandelay",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "Imports, exports, and ETL",
   "main": "dist/index.js",
   "keywords": [],
@@ -27,8 +27,8 @@
   "devDependencies": {
     "babel-cli": "^6.4.0",
     "babel-core": "^6.4.0",
-    "babel-eslint": "^8.0.0",
-    "babel-plugin-add-module-exports": "^0.2.1",
+    "babel-eslint": "^9.0.0",
+    "babel-plugin-add-module-exports": "^1.0.0",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-plugin-transform-runtime": "^6.4.3",
     "babel-preset-env": "^1.7.0",
@@ -44,7 +44,7 @@
     "rimraf": "^2.5.0",
     "should": "^13.0.0",
     "tempfile": "^2.0.0",
-    "xlsx": "^0.13.1"
+    "xlsx": "^0.14.0"
   },
   "babel": {
     "plugins": [

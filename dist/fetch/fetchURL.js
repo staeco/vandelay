@@ -68,4 +68,4 @@ exports.default = (url, { timeout } = {}) => {
   return inp.pipe(out, { end: false });
 };
 
-module.exports = exports['default'];
+module.exports = exports.default;

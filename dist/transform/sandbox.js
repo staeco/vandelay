@@ -20,4 +20,4 @@ exports.default = (code, opt = {}) => {
   return fn;
 };
 
-module.exports = exports['default'];
+module.exports = exports.default;

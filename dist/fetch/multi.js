@@ -67,4 +67,4 @@ exports.default = ({ concurrent = 10, onError, inputs = [] } = {}) => {
   return out;
 };
 
-module.exports = exports['default'];
+module.exports = exports.default;

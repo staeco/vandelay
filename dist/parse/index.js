@@ -17,4 +17,4 @@ exports.default = (format, opt = {}) => {
   return out;
 };
 
-module.exports = exports['default'];
+module.exports = exports.default;

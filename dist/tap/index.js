@@ -16,9 +16,7 @@ exports.default = (fn, opt = {}) => {
     }
     row = await fn(row, meta);
     if (row == null) return;
-    if (meta) {
-      row.___meta = meta;
-    }
+    if (meta) row = Object.assign({}, row, { ___meta: meta });
     return row;
   };
   return (0, _bluestream.transform)({
@@ -26,4 +24,4 @@ exports.default = (fn, opt = {}) => {
   }, tap);
 };
 
-module.exports = exports['default'];
+module.exports = exports.default;

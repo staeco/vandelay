@@ -33,4 +33,4 @@ exports.default = v => {
   return v;
 };
 
-module.exports = exports['default'];
+module.exports = exports.default;

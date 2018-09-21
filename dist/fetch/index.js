@@ -146,4 +146,4 @@ const fetchStream = (source, opt = {}, raw = false) => {
 };
 
 exports.default = fetchStream;
-module.exports = exports['default'];
+module.exports = exports.default;
