@@ -44,6 +44,11 @@ exports.default = (url, { timeout } = {}) => {
   let haltEnd = false;
   const out = (0, _through2.default)();
   const errCollector = (0, _through2.default)();
+  const close = () => {
+    const fn = out.end.bind(out);
+    if (out._writableState.length === 0) return process.nextTick(fn);
+    out.once('drain', fn);
+  };
   let req = _superagent2.default.get(url).buffer(false).redirects(10).retry(10);
   if (timeout) req = req.timeout(timeout);
 
@@ -54,7 +59,7 @@ exports.default = (url, { timeout } = {}) => {
     haltEnd = true;
     res.text = await (0, _getStream2.default)(errCollector, { maxBuffer: sizeLimit });
     out.emit('error', httpError(res.error, res));
-    out.end();
+    close();
   })
   // network errors
   .once('error', err => {
@@ -62,7 +67,7 @@ exports.default = (url, { timeout } = {}) => {
   });
 
   const inp = (0, _pump2.default)(req, errCollector, () => {
-    if (!haltEnd) out.end();
+    if (!haltEnd) close();
   });
   out.abort = req.abort.bind(req);
   return inp.pipe(out, { end: false });

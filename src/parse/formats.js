@@ -18,8 +18,8 @@ export const csv = (opt) => {
   if (opt.autoParse && typeof opt.autoParse !== 'boolean') throw new Error('Invalid autoParse option')
 
   const head = csvStream({
-    mapHeaders: (v) => opt.camelcase ? camelcase(v) : v.trim(),
-    mapValues: (v) => opt.autoParse ? autoParse(v) : v
+    mapHeaders: ({ header }) => opt.camelcase ? camelcase(header) : header.trim(),
+    mapValues: ({ value }) => opt.autoParse ? autoParse(value) : value
   })
   // convert into normal objects
   const tail = through2.obj((row, _, cb) => {

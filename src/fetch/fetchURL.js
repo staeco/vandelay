@@ -25,6 +25,11 @@ export default (url, { timeout }={}) => {
   let haltEnd = false
   const out = through2()
   const errCollector = through2()
+  const close = () => {
+    const fn = out.end.bind(out)
+    if (out._writableState.length === 0) return process.nextTick(fn)
+    out.once('drain', fn)
+  }
   let req = request.get(url)
     .buffer(false)
     .redirects(10)
@@ -38,7 +43,7 @@ export default (url, { timeout }={}) => {
       haltEnd = true
       res.text = await collect(errCollector, { maxBuffer: sizeLimit })
       out.emit('error', httpError(res.error, res))
-      out.end()
+      close()
     })
     // network errors
     .once('error', (err) => {
@@ -46,7 +51,7 @@ export default (url, { timeout }={}) => {
     })
 
   const inp = pump(req, errCollector, () => {
-    if (!haltEnd) out.end()
+    if (!haltEnd) close()
   })
   out.abort = req.abort.bind(req)
   return inp.pipe(out, { end: false })

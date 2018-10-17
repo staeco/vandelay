@@ -37,9 +37,13 @@ describe('fetch', () => {
       res.json({ data })
     })
     app.get('/infinite', (req, res) => {
-      res.write('[')
+      const close = req.query.close && parseInt(req.query.close)
+      if (close && req.query.continue) res.set('Accept-Ranges', 'bytes')
+      if (!res.get('Range')) res.write('[')
+
       for (let i = 0; i < 1024; ++i) {
         res.write(`${JSON.stringify({ a: Math.random() })},`)
+        if (close && i >= close) return res.end()
       }
       res.write(JSON.stringify({ a: Math.random() }))
       res.write(']')
@@ -162,6 +166,40 @@ describe('fetch', () => {
     })
     const res = await collect.array(stream)
     res.length.should.equal(max)
+  })
+  it.skip('should handle stream closes properly, and continue when supported', async () => {
+    const max = 1000
+    let curr = 0
+    const source = {
+      // will close the stream every 100 items, and support ranges
+      url: `http://localhost:${port}/infinite?close=100&continue=true`,
+      parser: 'json',
+      parserOptions: { selector: '*.a' }
+    }
+    const stream = fetch(source)
+    stream.on('data', () => {
+      ++curr
+      if (curr >= max) stream.abort()
+    })
+    const res = await collect.array(stream)
+    res.length.should.equal(max)
+  })
+  it.skip('should handle stream closes properly, and not continue when not supported', async () => {
+    const max = 1000
+    let curr = 0
+    const source = {
+      // will close the stream every 100 items
+      url: `http://localhost:${port}/infinite?close=100`,
+      parser: 'json',
+      parserOptions: { selector: '*.a' }
+    }
+    const stream = fetch(source)
+    stream.on('data', () => {
+      ++curr
+      if (curr >= max) stream.abort()
+    })
+    const res = await collect.array(stream)
+    res.length.should.equal(100)
   })
   it('should emit 404 http errors', (done) => {
     const stream = fetch({
