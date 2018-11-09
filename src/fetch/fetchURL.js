@@ -25,11 +25,9 @@ export default (url, { timeout }={}) => {
   let haltEnd = false
   const out = through2()
   const errCollector = through2()
-  const close = () => {
-    const fn = out.end.bind(out)
-    if (out._writableState.length === 0) return process.nextTick(fn)
-    out.once('drain', fn)
-  }
+
+  const close = () => out.end()
+
   let req = request.get(url)
     .buffer(false)
     .redirects(10)
