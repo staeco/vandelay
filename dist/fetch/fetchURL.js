@@ -45,9 +45,7 @@ exports.default = (url, { timeout } = {}) => {
   const out = (0, _through2.default)();
   const errCollector = (0, _through2.default)();
   const close = () => {
-    const fn = out.end.bind(out);
-    if (out._writableState.length === 0) return process.nextTick(fn);
-    out.once('drain', fn);
+    out.write('', () => out.end());
   };
   let req = _superagent2.default.get(url).buffer(false).redirects(10).retry(10);
   if (timeout) req = req.timeout(timeout);

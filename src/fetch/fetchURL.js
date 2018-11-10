@@ -26,9 +26,7 @@ export default (url, { timeout }={}) => {
   const out = through2()
   const errCollector = through2()
   const close = () => {
-    const fn = out.end.bind(out)
-    if (out._writableState.length === 0) return process.nextTick(fn)
-    out.once('drain', fn)
+    out.write('', () => out.end())
   }
   let req = request.get(url)
     .buffer(false)
