@@ -1,7 +1,6 @@
 import parseNumber from 'parse-decimal-number'
-import parseDate from 'date-fns/parse'
 
-export default (v) => {
+const auto = (v) => {
   if (typeof v !== 'string') return v // already parsed upstream!
   v = v.trim()
   if (!v) return
@@ -16,8 +15,16 @@ export default (v) => {
   const n = parseNumber(v)
   if (!isNaN(n)) return n
 
-  const d = parseDate(v)
+  const d = new Date(v)
   if (!isNaN(d)) return d
+
+  try {
+    return JSON.parse(v)
+  } catch (e) {
+    // not json
+  }
 
   return v
 }
+
+export default auto

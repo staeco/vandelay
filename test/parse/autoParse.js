@@ -37,12 +37,20 @@ describe('parse/autoParse', () => {
     parse('-129,000.9451234567').should.equal(-129000.9451234567)
     parse('NaN').should.eql(NaN)
   })
+  it('should parse JSON arrays', async () => {
+    parse('["1","2"]').should.eql([ '1', '2' ])
+  })
+  it('should parse JSON objects', async () => {
+    parse('{"a": "2"}').should.eql({ a: '2' })
+  })
   it('should parse dates', async () => {
     const sampleDate = new Date('Tue May 15 2018 12:07:52 GMT-0400 (EDT)')
+    const basicSampleDate = new Date('2018-05-15T04:00:00.000Z')
     parse('Tue May 15 2018 12:07:52 GMT-0400 (EDT)').should.eql(sampleDate)
     parse('2018-05-15T16:07:52.000Z').should.eql(sampleDate)
     parse('May 15, 2018 12:07:52 EDT').should.eql(sampleDate)
     parse('Tue, 15 May 2018 16:07:52 GMT').should.eql(sampleDate)
+    parse('5/15/2018').should.eql(basicSampleDate)
     // awaiting https://github.com/date-fns/date-fns/issues/450
     // parse('/Date(1526400472000)/').should.eql(sampleDate)
     // parse('/Date(1526400472000+0400)/').should.eql(sampleDate)
