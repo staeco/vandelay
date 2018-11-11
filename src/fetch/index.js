@@ -6,6 +6,7 @@ import pumpify from 'pumpify'
 import multi from './multi'
 import fetchURLPlain from './fetchURL'
 import parse from '../parse'
+import hardClose from '../hardClose'
 
 // default behavior is to fail on first error
 const defaultErrorHandler = ({ error, output }) => {
@@ -80,7 +81,7 @@ const fetchStream = (source, opt={}, raw=false) => {
     const out = pumpify.obj(req, src.parser(), through2.obj(map))
     out.abort = () => {
       req.abort()
-      out.end()
+      hardClose(out)
     }
     out.on('error', (err) => {
       err.source = source
@@ -105,8 +106,8 @@ const fetchStream = (source, opt={}, raw=false) => {
     }).on('data', () => ++pageDatums)
     outStream.abort = () => {
       destroyed = true
-      outStream.destroy()
       lastFetch && lastFetch.abort()
+      hardClose(outStream)
     }
   } else {
     outStream = fetch(src.url)

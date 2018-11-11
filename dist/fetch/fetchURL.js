@@ -20,6 +20,10 @@ var _pump2 = _interopRequireDefault(_pump);
 
 var _httpStatusCodes = require('http-status-codes');
 
+var _hardClose = require('../hardClose');
+
+var _hardClose2 = _interopRequireDefault(_hardClose);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const sizeLimit = 512000; // 512kb
@@ -44,9 +48,7 @@ exports.default = (url, { timeout } = {}) => {
   let haltEnd = false;
   const out = (0, _through2.default)();
   const errCollector = (0, _through2.default)();
-  const close = () => {
-    out.write('', () => out.end());
-  };
+
   let req = _superagent2.default.get(url).buffer(false).redirects(10).retry(10);
   if (timeout) req = req.timeout(timeout);
 
@@ -57,17 +59,21 @@ exports.default = (url, { timeout } = {}) => {
     haltEnd = true;
     res.text = await (0, _getStream2.default)(errCollector, { maxBuffer: sizeLimit });
     out.emit('error', httpError(res.error, res));
-    close();
+    (0, _hardClose2.default)(out);
   })
   // network errors
   .once('error', err => {
     out.emit('error', httpError(err, err));
+    (0, _hardClose2.default)(out);
   });
 
   const inp = (0, _pump2.default)(req, errCollector, () => {
-    if (!haltEnd) close();
+    if (!haltEnd) (0, _hardClose2.default)(out);
   });
-  out.abort = req.abort.bind(req);
+  out.abort = () => {
+    (0, _hardClose2.default)(out);
+    req.abort();
+  };
   return inp.pipe(out, { end: false });
 };
 

@@ -34,6 +34,10 @@ var _parse = require('../parse');
 
 var _parse2 = _interopRequireDefault(_parse);
 
+var _hardClose = require('../hardClose');
+
+var _hardClose2 = _interopRequireDefault(_hardClose);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // default behavior is to fail on first error
@@ -105,7 +109,7 @@ const fetchStream = (source, opt = {}, raw = false) => {
     const out = _pumpify2.default.obj(req, src.parser(), _through2.default.obj(map));
     out.abort = () => {
       req.abort();
-      out.end();
+      (0, _hardClose2.default)(out);
     };
     out.on('error', err => {
       err.source = source;
@@ -130,8 +134,8 @@ const fetchStream = (source, opt = {}, raw = false) => {
     }).on('data', () => ++pageDatums);
     outStream.abort = () => {
       destroyed = true;
-      outStream.destroy();
       lastFetch && lastFetch.abort();
+      (0, _hardClose2.default)(outStream);
     };
   } else {
     outStream = fetch(src.url);

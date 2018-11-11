@@ -10,6 +10,10 @@ var _endOfStream = require('end-of-stream');
 
 var _endOfStream2 = _interopRequireDefault(_endOfStream);
 
+var _hardClose = require('../hardClose');
+
+var _hardClose2 = _interopRequireDefault(_hardClose);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // merges a bunch of streams, unordered - and has some special error management
@@ -29,15 +33,16 @@ exports.default = ({ concurrent = 10, onError, inputs = [] } = {}) => {
     const finished = running.length === 0 && remaining.length === 0;
 
     // let the consumer figure out how thye want to handle errors
+    const canContinue = !finished && out.readable;
     if (err && onError) {
       onError({
-        canContinue: !finished,
+        canContinue,
         error: err,
         output: out,
         input: src
       });
     }
-    if (finished && out.readable) out.end();
+    if (!canContinue) (0, _hardClose2.default)(out);
   };
   const schedule = () => {
     const toRun = concurrent - running.length;
@@ -55,10 +60,11 @@ exports.default = ({ concurrent = 10, onError, inputs = [] } = {}) => {
   };
 
   out.abort = () => {
+    (0, _hardClose2.default)(out);
     inputs.forEach(i => {
       if (!i.readable) return;
       if (i.abort) return i.abort();
-      i.end();
+      (0, _hardClose2.default)(i);
     });
   };
   out.on('unpipe', src => done(src));

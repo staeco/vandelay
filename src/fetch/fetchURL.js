@@ -3,6 +3,7 @@ import through2 from 'through2'
 import collect from 'get-stream'
 import pump from 'pump'
 import { getStatusText } from 'http-status-codes'
+import hardClose from '../hardClose'
 
 const sizeLimit = 512000 // 512kb
 const rewriteError = (err) => {
@@ -25,9 +26,7 @@ export default (url, { timeout }={}) => {
   let haltEnd = false
   const out = through2()
   const errCollector = through2()
-  const close = () => {
-    out.write('', () => out.end())
-  }
+
   let req = request.get(url)
     .buffer(false)
     .redirects(10)
@@ -41,16 +40,20 @@ export default (url, { timeout }={}) => {
       haltEnd = true
       res.text = await collect(errCollector, { maxBuffer: sizeLimit })
       out.emit('error', httpError(res.error, res))
-      close()
+      hardClose(out)
     })
     // network errors
     .once('error', (err) => {
       out.emit('error', httpError(err, err))
+      hardClose(out)
     })
 
   const inp = pump(req, errCollector, () => {
-    if (!haltEnd) close()
+    if (!haltEnd) hardClose(out)
   })
-  out.abort = req.abort.bind(req)
+  out.abort = () => {
+    hardClose(out)
+    req.abort()
+  }
   return inp.pipe(out, { end: false })
 }

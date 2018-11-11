@@ -1,5 +1,6 @@
 import through2 from 'through2'
 import eos from 'end-of-stream'
+import hardClose from '../hardClose'
 
 // merges a bunch of streams, unordered - and has some special error management
 // so one wont fail the whole bunch
@@ -18,15 +19,16 @@ export default ({ concurrent=10, onError, inputs=[] }={}) => {
     const finished = running.length === 0 && remaining.length === 0
 
     // let the consumer figure out how thye want to handle errors
+    const canContinue = !finished && out.readable
     if (err && onError) {
       onError({
-        canContinue: !finished,
+        canContinue,
         error: err,
         output: out,
         input: src
       })
     }
-    if (finished && out.readable) out.end()
+    if (!canContinue) hardClose(out)
   }
   const schedule = () => {
     const toRun = concurrent - running.length
@@ -44,10 +46,11 @@ export default ({ concurrent=10, onError, inputs=[] }={}) => {
   }
 
   out.abort = () => {
+    hardClose(out)
     inputs.forEach((i) => {
       if (!i.readable) return
       if (i.abort) return i.abort()
-      i.end()
+      hardClose(i)
     })
   }
   out.on('unpipe', (src) => done(src))

@@ -41,9 +41,9 @@ describe('fetch', () => {
       if (close && req.query.continue) res.set('Accept-Ranges', 'bytes')
       if (!res.get('Range')) res.write('[')
 
-      for (let i = 0; i < 1024; ++i) {
-        res.write(`${JSON.stringify({ a: Math.random() })},`)
+      for (let i = 0; i < 20000; ++i) {
         if (close && i >= close) return res.end()
+        res.write(`${JSON.stringify({ a: Math.random() })},`)
       }
       res.write(JSON.stringify({ a: Math.random() }))
       res.write(']')
@@ -169,7 +169,6 @@ describe('fetch', () => {
   })
   it.skip('should handle stream closes properly, and continue when supported', async () => {
     const max = 1000
-    let curr = 0
     const source = {
       // will close the stream every 100 items, and support ranges
       url: `http://localhost:${port}/infinite?close=100&continue=true`,
@@ -177,29 +176,19 @@ describe('fetch', () => {
       parserOptions: { selector: '*.a' }
     }
     const stream = fetch(source)
-    stream.on('data', () => {
-      ++curr
-      if (curr >= max) stream.abort()
-    })
     const res = await collect.array(stream)
     res.length.should.equal(max)
   })
-  it.skip('should handle stream closes properly, and not continue when not supported', async () => {
-    const max = 1000
-    let curr = 0
+  it('should handle stream closes properly, and not continue when not supported', async () => {
     const source = {
       // will close the stream every 100 items
-      url: `http://localhost:${port}/infinite?close=100`,
+      url: `http://localhost:${port}/infinite?close=10000`,
       parser: 'json',
       parserOptions: { selector: '*.a' }
     }
     const stream = fetch(source)
-    stream.on('data', () => {
-      ++curr
-      if (curr >= max) stream.abort()
-    })
     const res = await collect.array(stream)
-    res.length.should.equal(100)
+    res.length.should.equal(10000)
   })
   it('should emit 404 http errors', (done) => {
     const stream = fetch({
@@ -260,15 +249,15 @@ describe('fetch', () => {
     })
   })
   it('should allow continuing via onError', (done) => {
-    const stream = fetch([
+    fetch([
       {
         url: `http://localhost:${port}/500.json`,
         parser: parse('json', { selector: 'data.*' })
       },
       {
-        url: `http://localhost:${port}/file.json`,
+        url: `http://localhost:${port}/infinite?close=10000`,
         parser: 'json',
-        parserOptions: { selector: 'data.*' }
+        parserOptions: { selector: '*.a' }
       }
     ], {
       onError: ({ error, canContinue }) => {
@@ -278,21 +267,20 @@ describe('fetch', () => {
         error.body.should.equal('500')
         should.not.exist(error.code)
         should.equal(canContinue, true)
-        stream.abort()
         done()
       }
     })
   })
   it('should allow continuing via onError with single concurrency', (done) => {
-    const stream = fetch([
+    fetch([
       {
         url: `http://localhost:${port}/500.json`,
         parser: parse('json', { selector: 'data.*' })
       },
       {
-        url: `http://localhost:${port}/file.json`,
+        url: `http://localhost:${port}/infinite?close=10000`,
         parser: 'json',
-        parserOptions: { selector: 'data.*' }
+        parserOptions: { selector: '*.a' }
       }
     ], {
       concurrency: 1,
@@ -303,7 +291,6 @@ describe('fetch', () => {
         error.body.should.equal('500')
         should.not.exist(error.code)
         should.equal(canContinue, true)
-        stream.abort()
         done()
       }
     })
