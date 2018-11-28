@@ -74,6 +74,7 @@ Returns a stream that fetches the given source and emits the parsed and selected
   - limitParam - Required `String`
   - startPage - Optional `Number`, defaults to 0
   - limit - Required `Number`
+- headers - Optional `Object`
 
 #### options
 
