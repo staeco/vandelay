@@ -1,4 +1,4 @@
-import request from 'superagent'
+import got from 'got'
 import through2 from 'through2'
 import collect from 'get-stream'
 import pump from 'pump'
@@ -27,15 +27,20 @@ export default (url, { headers, timeout }={}) => {
   const out = through2()
   const errCollector = through2()
 
-  let req = request.get(url)
-    .buffer(false)
-    .redirects(10)
-    .retry(10)
-  if (timeout) req = req.timeout(timeout)
-  if (headers) req = req.set(headers)
+  let gotOptions = {
+    stream: true,
+    buffer: false,
+    followRedirects: true,
+    retry: 10
+  }
+  if (timeout) gotOptions.timeout = timeout
+  if (headers) gotOptions.headers = headers
+
+  let req = got(url, gotOptions)
   req
     // http errors
     .once('response', async (res) => {
+      console.log('response: ', Object.keys(res))
       if (!res.error) return
       haltEnd = true
       res.text = await collect(errCollector, { maxBuffer: sizeLimit })
