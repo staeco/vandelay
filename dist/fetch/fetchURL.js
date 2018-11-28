@@ -44,14 +44,14 @@ const httpError = (err, res) => {
   return nerror;
 };
 
-exports.default = (url, { timeout } = {}) => {
+exports.default = (url, { headers, timeout } = {}) => {
   let haltEnd = false;
   const out = (0, _through2.default)();
   const errCollector = (0, _through2.default)();
 
   let req = _superagent2.default.get(url).buffer(false).redirects(10).retry(10);
   if (timeout) req = req.timeout(timeout);
-
+  if (headers) req = req.set(headers);
   req
   // http errors
   .once('response', async res => {

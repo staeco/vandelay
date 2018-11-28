@@ -22,7 +22,7 @@ const httpError = (err, res) => {
   nerror.body = res.text
   return nerror
 }
-export default (url, { timeout }={}) => {
+export default (url, { headers, timeout }={}) => {
   let haltEnd = false
   const out = through2()
   const errCollector = through2()
@@ -32,7 +32,7 @@ export default (url, { timeout }={}) => {
     .redirects(10)
     .retry(10)
   if (timeout) req = req.timeout(timeout)
-
+  if (headers) req = req.set(headers)
   req
     // http errors
     .once('response', async (res) => {

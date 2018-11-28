@@ -18,6 +18,10 @@ describe('fetch', () => {
   before(async () => {
     port = await getPort()
     app = express()
+    app.get('/check-headers', (req, res) => {
+      if (req.headers.a !== 'abc') return res.status(500).send('500').end()
+      res.json({ data: sample })
+    })
     app.get('/file.json', (req, res) => {
       res.json({ data: sample })
     })
@@ -62,6 +66,22 @@ describe('fetch', () => {
   it('should request a flat json file', async () => {
     const source = {
       url: `http://localhost:${port}/file.json`,
+      parser: parse('json', { selector: 'data.*' })
+    }
+    const stream = fetch(source)
+    const res = await collect.array(stream)
+    res.should.eql([
+      { a: 1, b: 2, c: 3, ___meta: { row: 0, url: source.url, source } },
+      { a: 4, b: 5, c: 6, ___meta: { row: 1, url: source.url, source } },
+      { a: 7, b: 8, c: 9, ___meta: { row: 2, url: source.url, source } }
+    ])
+  })
+  it('should request a flat json file with headers', async () => {
+    const source = {
+      url: `http://localhost:${port}/file.json`,
+      headers: {
+        a: 'abc'
+      },
       parser: parse('json', { selector: 'data.*' })
     }
     const stream = fetch(source)

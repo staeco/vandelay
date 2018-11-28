@@ -51,10 +51,10 @@ const fetchStream = (source, opt={}, raw=false) => {
     src.parser = parse(src.parser, src.parserOptions) // JSON shorthand
   }
   if (typeof src.parser !== 'function') throw new Error('Invalid parser function')
-  if (opt.modifyRequest && typeof opt.modifyRequest !== 'function') throw new Error('Invalid modifyRequest function')
+  if (src.headers && typeof src.headers !== 'object') throw new Error('Invalid headers object')
 
   // URL + Parser
-  const fetch = (url) => {
+  const fetch = (url, opt) => {
     // attaches some meta to the object for the transform fn to use
     let rows = -1
     const map = function (row, _, cb) {
@@ -75,9 +75,8 @@ const fetchStream = (source, opt={}, raw=false) => {
       cb(null, row)
     }
 
-    let req = fetchURL(url)
+    let req = fetchURL(url, opt)
     if (opt.onFetch) opt.onFetch(url)
-    if (opt.modifyRequest) req = opt.modifyRequest(src, req)
     const out = pumpify.obj(req, src.parser(), through2.obj(map))
     out.abort = () => {
       req.abort()
@@ -100,7 +99,7 @@ const fetchStream = (source, opt={}, raw=false) => {
       if (destroyed || pageDatums === 0) return cb()
       pageDatums = 0
       const newURL = mergeURL(src.url, getQuery(src.pagination, page))
-      lastFetch = fetch(newURL)
+      lastFetch = fetch(newURL, { headers: src.headers })
       page++
       cb(null, lastFetch)
     }).on('data', () => ++pageDatums)
@@ -110,7 +109,7 @@ const fetchStream = (source, opt={}, raw=false) => {
       hardClose(outStream)
     }
   } else {
-    outStream = fetch(src.url)
+    outStream = fetch(src.url, { headers: src.headers })
   }
 
   if (raw) return outStream // child of an array of sources, error mgmt handled already
