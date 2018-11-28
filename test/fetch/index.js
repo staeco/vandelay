@@ -217,8 +217,11 @@ describe('fetch', () => {
     })
     stream.once('error', (err) => {
       should.exist(err)
+      should.exist(err.status)
       err.status.should.equal(404)
+      should.exist(err.message)
       err.message.should.equal('Server responded with "Not Found"')
+      should.exist(err.body)
       err.body.should.equal('404')
       should.not.exist(err.code)
       done()
