@@ -18,7 +18,7 @@ const httpError = (err, res) => {
   nerror.code = res.code
   nerror.status = res.statusCode
   nerror.headers = res.headers
-  nerror.body = res.text
+  if(res.statusCode) nerror.body = `${res.statusCode}`
   return nerror
 }
 export default (url, { headers, timeout }={}) => {

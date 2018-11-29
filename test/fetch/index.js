@@ -221,6 +221,8 @@ describe('fetch', () => {
       err.status.should.equal(404)
       should.exist(err.message)
       err.message.should.equal('Server responded with "Not Found"')
+      should.exist(err.body)
+      err.body.should.equal('404')
       should.not.exist(err.code)
       done()
     })
@@ -246,8 +248,9 @@ describe('fetch', () => {
     })
     stream.once('error', (err) => {
       should.exist(err)
+      should.exist(err.status)
       err.status.should.equal(500)
-      err.message.should.equal('Server responded with "Server Error"')
+      err.message.should.equal('Server responded with "Internal Server Error"')
       err.body.should.equal('500')
       should.not.exist(err.code)
       done()
@@ -261,7 +264,7 @@ describe('fetch', () => {
       onError: ({ error, canContinue }) => {
         should.exist(error)
         error.status.should.equal(500)
-        error.message.should.equal('Server responded with "Server Error"')
+        error.message.should.equal('Server responded with "Internal Server Error"')
         error.body.should.equal('500')
         should.not.exist(error.code)
         should.equal(canContinue, false)
@@ -284,7 +287,7 @@ describe('fetch', () => {
       onError: ({ error, canContinue }) => {
         should.exist(error)
         error.status.should.equal(500)
-        error.message.should.equal('Server responded with "Server Error"')
+        error.message.should.equal('Server responded with "Internal Server Error"')
         error.body.should.equal('500')
         should.not.exist(error.code)
         should.equal(canContinue, true)
@@ -308,7 +311,7 @@ describe('fetch', () => {
       onError: ({ error, canContinue }) => {
         should.exist(error)
         error.status.should.equal(500)
-        error.message.should.equal('Server responded with "Server Error"')
+        error.message.should.equal('Server responded with "Internal Server Error"')
         error.body.should.equal('500')
         should.not.exist(error.code)
         should.equal(canContinue, true)
