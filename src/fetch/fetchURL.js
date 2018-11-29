@@ -56,7 +56,7 @@ export default (url, { headers, timeout }={}) => {
   })
   out.abort = () => {
     hardClose(out)
-    req.abort()
+    req.end()
   }
   return inp.pipe(out, { end: false })
 }
