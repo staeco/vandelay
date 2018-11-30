@@ -15,48 +15,40 @@ const rewriteError = (err) => {
 const httpError = (err, res) => {
   const nerror = rewriteError(err)
   nerror.requestError = true
-  nerror.code = res.code
-  nerror.status = res.statusCode
-  nerror.headers = res.headers
-  if(res.statusCode) nerror.body = `${res.statusCode}`
+  nerror.code = err.code
+  nerror.status = res && res.statusCode
+  nerror.headers = res && res.headers
+  nerror.body = res && res.text
   return nerror
 }
 export default (url, { headers, timeout }={}) => {
-  let haltEnd = false
   const out = through2()
-  const errCollector = through2()
+  let isCollectingError = false
 
-  let gotOptions = {
-    stream: true,
+  const gotOptions = {
     buffer: false,
     followRedirects: true,
-    retry: 10
+    attempts: 10,
+    ...timeout && { timeout: timeout },
+    ...headers && { headers: headers }
   }
-  if (timeout) gotOptions.timeout = timeout
-  if (headers) gotOptions.headers = headers
 
-  let req = got(url, gotOptions)
-  req
-    // http errors
-    .once('response', async (res) => {
-      if (!res.error) return
-      haltEnd = true
-      res.text = await collect(errCollector, { maxBuffer: sizeLimit })
-      out.emit('error', httpError(res.error, res))
+  const req = got.stream(url, gotOptions)
+    // handle errors
+    .once('error', async (err, _, res) => {
+      isCollectingError = true
+      if (res) res.text = await collect(res, { maxBuffer: sizeLimit })
+      out.emit('error', httpError(err, res))
       hardClose(out)
     })
-    // network errors
-    .once('error', (err) => {
-      out.emit('error', httpError(err, err))
-      hardClose(out)
+    .once('response', (res) => {
+      if (isCollectingError) return
+      pump(res, out)
     })
 
-  const inp = pump(req, errCollector, () => {
-    if (!haltEnd) hardClose(out)
-  })
   out.abort = () => {
     hardClose(out)
-    req.end()
+    req._destroy() // calls abort on the inner emitter in `got`
   }
-  return inp.pipe(out, { end: false })
+  return out
 }
