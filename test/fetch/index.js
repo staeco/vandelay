@@ -202,13 +202,13 @@ describe('fetch', () => {
   it('should handle stream closes properly, and not continue when not supported', async () => {
     const source = {
       // will close the stream every 100 items
-      url: `http://localhost:${port}/infinite?close=10000`,
+      url: `http://localhost:${port}/infinite?close=1000`,
       parser: 'json',
       parserOptions: { selector: '*.a' }
     }
     const stream = fetch(source)
     const res = await collect.array(stream)
-    res.length.should.equal(10000)
+    res.length.should.equal(1000)
   })
   it('should emit 404 http errors', (done) => {
     const stream = fetch({
