@@ -201,7 +201,7 @@ describe('fetch', () => {
   })
   it('should handle stream closes properly, and not continue when not supported', async () => {
     const source = {
-      // will close the stream every 100 items
+      // will close the stream after 1000 items
       url: `http://localhost:${port}/infinite?close=1000`,
       parser: 'json',
       parserOptions: { selector: '*.a' }
