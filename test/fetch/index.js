@@ -4,6 +4,7 @@ import should from 'should'
 import collect from 'get-stream'
 import express from 'express'
 import getPort from 'get-port'
+import parseRange from 'range-parser'
 import fetch from '../../src/fetch'
 import parse from '../../src/parse'
 
@@ -42,15 +43,41 @@ describe('fetch', () => {
     })
     app.get('/infinite', (req, res) => {
       const close = req.query.close && parseInt(req.query.close)
-      if (close && req.query.continue) res.set('Accept-Ranges', 'bytes')
-      if (!res.get('Range')) res.write('[')
-
+      res.write('[')
       for (let i = 0; i < Infinity; ++i) {
         if (close && i >= close) return res.end()
         res.write(`${JSON.stringify({ a: Math.random() })},`)
       }
       res.write(JSON.stringify({ a: Math.random() }))
       res.write(']')
+      res.end()
+    })
+    app.get('/ranges', (req, res) => {
+      // prep
+      const close = req.query.close && parseInt(req.query.close)
+      const max = req.query.max && parseInt(req.query.max)
+      const arr = []
+      for (let i = 0; i < max; ++i) {
+        arr.push({ a: 1 })
+      }
+      const text = Buffer.from(JSON.stringify(arr))
+      const range = req.headers.range && parseRange(text.length, req.headers.range)[0]
+
+      // do the work
+      res.set('Accept-Ranges', 'bytes')
+
+      if (range) {
+        //console.log('using ranges', `bytes ${range.start}-${range.end}/${text.length}`)
+        const toSend = text.slice(range.start, range.end + 1)
+        res.status(206)
+        res.set('Content-Length', toSend.length)
+        res.set('Content-Range', `bytes ${range.start}-${range.end}/${text.length}`)
+        res.write(toSend.slice(0, close))
+      } else {
+        res.status(200)
+        res.set('Content-Length', text.length)
+        res.write(text.slice(0, close))
+      }
       res.end()
     })
     server = app.listen(port)
@@ -238,11 +265,11 @@ describe('fetch', () => {
     const res = await collect.array(stream)
     res.length.should.equal(max)
   })
-  it.skip('should handle stream closes properly, and continue when supported', async () => {
+  it('should handle stream closes properly, and continue when supported', async () => {
     const max = 1000
     const source = {
-      // will close the stream every 100 items, and support ranges
-      url: `http://localhost:${port}/infinite?close=100&continue=true`,
+      // will close the stream every 4kb, and support ranges
+      url: `http://localhost:${port}/ranges?close=4096&max=${max}`,
       parser: 'json',
       parserOptions: { selector: '*.a' }
     }

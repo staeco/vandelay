@@ -1,6 +1,6 @@
 {
   "name": "vandelay",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Imports, exports, and ETL",
   "main": "dist/index.js",
   "keywords": [],
@@ -45,6 +45,7 @@
     "graceful-fs": "^4.1.11",
     "into-stream": "^4.0.0",
     "mocha": "^5.0.0",
+    "range-parser": "^1.2.0",
     "rimraf": "^2.5.0",
     "should": "^13.0.0",
     "tempfile": "^2.0.0",

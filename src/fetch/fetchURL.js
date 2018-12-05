@@ -54,5 +54,6 @@ export default (url, { attempts=10, headers, timeout }={}) => {
     hardClose(out)
     req.cancel()
   }
+  out.req = req
   return out
 }

@@ -41,7 +41,7 @@ export const json = (opt) => {
 
   const head = JSONStream.parse(opt.selector)
   let header
-  head.on('header', (data) => header = data)
+  head.once('header', (data) => header = data)
   const tail = through2.obj((row, _, cb) => {
     if (header && typeof row === 'object') row.___header = header // internal attr, json header info for fetch stream
     cb(null, row)
