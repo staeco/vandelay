@@ -12,6 +12,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 exports.default = (fn, opt = {}) => {
   if (typeof fn !== 'function') throw new Error('Invalid function!');
+  const concurrent = opt.concurrency != null ? opt.concurrency : 50;
 
   const tap = async row => {
     let meta;
@@ -29,7 +30,8 @@ exports.default = (fn, opt = {}) => {
     return row;
   };
   return (0, _bluestream.transform)({
-    concurrent: opt.concurrency != null ? opt.concurrency : 50
+    concurrent,
+    highWaterMark: concurrent
   }, tap);
 };
 

@@ -83,7 +83,16 @@ const fetchStream = (source, opt={}, raw=false) => {
 
     let req = fetchURL(url, opt)
     if (opt.onFetch) opt.onFetch(url)
-    const out = pumpify.obj(req, src.parser(), through2.obj(map))
+    const out = pumpify.ctor({
+      autoDestroy: false,
+      destroy: false,
+      objectMode: true,
+      highWaterMark: concurrent
+    })(
+      req,
+      src.parser(),
+      through2({ objectMode: true, highWaterMark: concurrent }, map)
+    )
     out.raw = req.req
     out.abort = () => {
       req.abort()
@@ -102,14 +111,15 @@ const fetchStream = (source, opt={}, raw=false) => {
     let pageDatums // gets reset on each page to 0
     let lastFetch
     let destroyed = false
-    outStream = continueStream.obj((cb) => {
+    outStream = continueStream((cb) => {
       if (destroyed || pageDatums === 0) return cb()
       pageDatums = 0
       const newURL = mergeURL(src.url, getQuery(src.pagination, page))
       lastFetch = fetch(newURL, getOptions(src))
       page++
       cb(null, lastFetch)
-    }).on('data', () => ++pageDatums)
+    }, { objectMode: true, highWaterMark: concurrent })
+      .on('data', () => ++pageDatums)
     outStream.abort = () => {
       destroyed = true
       lastFetch && lastFetch.abort()
