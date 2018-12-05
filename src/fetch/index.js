@@ -120,6 +120,7 @@ const fetchStream = (source, opt={}, raw=false) => {
       cb(null, lastFetch)
     }, { objectMode: true, highWaterMark: concurrent })
       .on('data', () => ++pageDatums)
+      .pause()
     outStream.abort = () => {
       destroyed = true
       lastFetch && lastFetch.abort()

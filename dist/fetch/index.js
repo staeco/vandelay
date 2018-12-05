@@ -142,7 +142,7 @@ const fetchStream = (source, opt = {}, raw = false) => {
       lastFetch = fetch(newURL, getOptions(src));
       page++;
       cb(null, lastFetch);
-    }, { objectMode: true, highWaterMark: concurrent }).on('data', () => ++pageDatums);
+    }, { objectMode: true, highWaterMark: concurrent }).on('data', () => ++pageDatums).pause();
     outStream.abort = () => {
       destroyed = true;
       lastFetch && lastFetch.abort();
