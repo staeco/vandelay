@@ -73,6 +73,7 @@ exports.default = (url, { attempts = 10, headers, timeout } = {}) => {
     (0, _hardClose2.default)(out);
     req.cancel();
   };
+  out.req = req;
   return out;
 };
 

@@ -83,7 +83,7 @@ const json = exports.json = opt => {
 
   const head = _JSONStream2.default.parse(opt.selector);
   let header;
-  head.on('header', data => header = data);
+  head.once('header', data => header = data);
   const tail = _through2.default.obj((row, _, cb) => {
     if (header && typeof row === 'object') row.___header = header; // internal attr, json header info for fetch stream
     cb(null, row);

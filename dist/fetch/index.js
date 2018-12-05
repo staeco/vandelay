@@ -112,6 +112,7 @@ const fetchStream = (source, opt = {}, raw = false) => {
     let req = fetchURL(url, opt);
     if (opt.onFetch) opt.onFetch(url);
     const out = _pumpify2.default.obj(req, src.parser(), _through2.default.obj(map));
+    out.raw = req.req;
     out.abort = () => {
       req.abort();
       (0, _hardClose2.default)(out);

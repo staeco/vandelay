@@ -20,19 +20,20 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 // so one wont fail the whole bunch
 exports.default = ({ concurrent = 10, onError, inputs = [] } = {}) => {
   if (inputs.length === 0) throw new Error('No inputs specified!');
-  const remaining = inputs.slice(0);
-  let running = [];
+
   const out = _through2.default.obj();
+  out.remaining = inputs.slice(0);
+  out.running = [];
   out.setMaxListeners(0);
 
   const done = (src, err) => {
-    const idx = running.indexOf(src);
+    const idx = out.running.indexOf(src);
     if (idx === -1) return; // already finished
-    running.splice(idx, 1); // remove it from the run list
+    out.running.splice(idx, 1); // remove it from the run list
     schedule(); // schedule any additional work
-    const finished = running.length === 0 && remaining.length === 0;
+    const finished = out.running.length === 0 && out.remaining.length === 0;
 
-    // let the consumer figure out how thye want to handle errors
+    // let the consumer figure out how they want to handle errors
     const canContinue = !finished && out.readable;
     if (err && onError) {
       onError({
@@ -45,16 +46,16 @@ exports.default = ({ concurrent = 10, onError, inputs = [] } = {}) => {
     if (!canContinue) (0, _hardClose2.default)(out);
   };
   const schedule = () => {
-    const toRun = concurrent - running.length;
+    const toRun = concurrent - out.running.length;
     if (toRun === 0) return;
     for (let i = 0; i <= toRun; i++) {
-      if (remaining.length === 0) break;
-      run(remaining.shift());
+      if (out.remaining.length === 0) break;
+      run(out.remaining.shift());
     }
   };
   const run = i => {
     const src = typeof i === 'function' ? i() : i;
-    running.push(src);
+    out.running.push(src);
     (0, _endOfStream2.default)(src, err => done(src, err));
     src.pipe(out, { end: false });
   };
