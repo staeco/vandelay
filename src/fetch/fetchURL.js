@@ -1,4 +1,4 @@
-import got from 'got'
+import got from 'got-resume'
 import through2 from 'through2'
 import collect from 'get-stream'
 import pump from 'pump'
@@ -21,34 +21,38 @@ const httpError = (err, res) => {
   nerror.body = res && res.text
   return nerror
 }
-export default (url, { headers, timeout }={}) => {
+
+export default (url, { attempts=10, headers, timeout }={}) => {
   const out = through2()
   let isCollectingError = false
 
-  const gotOptions = {
-    buffer: false,
-    followRedirects: true,
-    attempts: 10,
-    ...timeout && { timeout: timeout },
-    ...headers && { headers: headers }
+  const options = {
+    attempts,
+    got: {
+      followRedirects: true,
+      timeout,
+      headers
+    }
   }
 
-  const req = got.stream(url, gotOptions)
+  const req = got(url, options)
     // handle errors
-    .once('error', async (err, _, res) => {
+    .once('error', async (err) => {
       isCollectingError = true
+      const original = err.original || err
+      const { res } = original
       if (res) res.text = await collect(res, { maxBuffer: sizeLimit })
-      out.emit('error', httpError(err, res))
-      hardClose(out)
+      out.emit('error', httpError(original, res))
+      out.abort()
     })
-    .once('response', (res) => {
+    .once('response', () => {
       if (isCollectingError) return
-      pump(res, out)
+      pump(req, out)
     })
 
   out.abort = () => {
     hardClose(out)
-    req._destroy() // calls abort on the inner emitter in `got`
+    req.cancel()
   }
   return out
 }

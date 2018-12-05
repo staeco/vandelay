@@ -45,7 +45,7 @@ describe('fetch', () => {
       if (close && req.query.continue) res.set('Accept-Ranges', 'bytes')
       if (!res.get('Range')) res.write('[')
 
-      for (let i = 0; i < 20000; ++i) {
+      for (let i = 0; i < Infinity; ++i) {
         if (close && i >= close) return res.end()
         res.write(`${JSON.stringify({ a: Math.random() })},`)
       }
@@ -154,7 +154,7 @@ describe('fetch', () => {
     const max = 10
     let curr = 0
     const source = {
-      url: `http://localhost:${port}/infinite`,
+      url: `http://localhost:${port}/infinite?close=10000`,
       parser: 'json',
       parserOptions: { selector: '*.a' }
     }
@@ -170,7 +170,7 @@ describe('fetch', () => {
     const max = 10
     let curr = 0
     const source = {
-      url: `http://localhost:${port}/infinite`,
+      url: `http://localhost:${port}/infinite?close=10000`,
       pagination: {
         limitParam: 'limit',
         offsetParam: 'offset',
@@ -202,18 +202,19 @@ describe('fetch', () => {
   it('should handle stream closes properly, and not continue when not supported', async () => {
     const source = {
       // will close the stream after 1000 items
-      url: `http://localhost:${port}/infinite?close=1000`,
+      url: `http://localhost:${port}/infinite?close=10000`,
       parser: 'json',
       parserOptions: { selector: '*.a' }
     }
     const stream = fetch(source)
     const res = await collect.array(stream)
-    res.length.should.equal(1000)
+    res.length.should.equal(10000)
   })
   it('should emit 404 http errors', (done) => {
     const stream = fetch({
       url: `http://localhost:${port}/404.json`,
-      parser: parse('json', { selector: 'data.*' })
+      parser: parse('json', { selector: 'data.*' }),
+      attempts: 1
     })
     stream.once('error', (err) => {
       should.exist(err)
@@ -230,7 +231,8 @@ describe('fetch', () => {
   it('should emit not found errors', (done) => {
     const stream = fetch({
       url: 'http://lkddflskdjf.io/404.json',
-      parser: parse('json', { selector: 'data.*' })
+      parser: parse('json', { selector: 'data.*' }),
+      attempts: 1
     })
     stream.once('error', (err) => {
       should.exist(err)
@@ -244,7 +246,8 @@ describe('fetch', () => {
   it('should emit 500 http errors', (done) => {
     const stream = fetch({
       url: `http://localhost:${port}/500.json`,
-      parser: parse('json', { selector: 'data.*' })
+      parser: parse('json', { selector: 'data.*' }),
+      attempts: 1
     })
     stream.once('error', (err) => {
       should.exist(err)
@@ -259,7 +262,8 @@ describe('fetch', () => {
   it('should allow handling via onError', (done) => {
     fetch({
       url: `http://localhost:${port}/500.json`,
-      parser: parse('json', { selector: 'data.*' })
+      parser: parse('json', { selector: 'data.*' }),
+      attempts: 1
     }, {
       onError: ({ error, canContinue }) => {
         should.exist(error)
@@ -276,7 +280,8 @@ describe('fetch', () => {
     fetch([
       {
         url: `http://localhost:${port}/500.json`,
-        parser: parse('json', { selector: 'data.*' })
+        parser: parse('json', { selector: 'data.*' }),
+        attempts: 1
       },
       {
         url: `http://localhost:${port}/infinite?close=10000`,
@@ -299,7 +304,8 @@ describe('fetch', () => {
     fetch([
       {
         url: `http://localhost:${port}/500.json`,
-        parser: parse('json', { selector: 'data.*' })
+        parser: parse('json', { selector: 'data.*' }),
+        attempts: 1
       },
       {
         url: `http://localhost:${port}/infinite?close=10000`,
