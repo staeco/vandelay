@@ -22,11 +22,12 @@ const httpError = (err, res) => {
   return nerror
 }
 
-export default (url, { attempts=10, headers, timeout }={}) => {
+export default (url, { attempts=10, headers, timeout, log }={}) => {
   const out = through2()
   let isCollectingError = false
 
   const options = {
+    log,
     attempts,
     got: {
       followRedirects: true,

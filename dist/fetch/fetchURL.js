@@ -42,11 +42,12 @@ const httpError = (err, res) => {
   return nerror;
 };
 
-exports.default = (url, { attempts = 10, headers, timeout } = {}) => {
+exports.default = (url, { attempts = 10, headers, timeout, log } = {}) => {
   const out = (0, _through2.default)();
   let isCollectingError = false;
 
   const options = {
+    log,
     attempts,
     got: {
       followRedirects: true,

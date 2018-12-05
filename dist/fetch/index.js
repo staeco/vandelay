@@ -41,6 +41,7 @@ var _hardClose2 = _interopRequireDefault(_hardClose);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const getOptions = src => ({
+  log: src.log,
   timeout: src.timeout,
   headers: src.headers,
   attempts: src.attempts

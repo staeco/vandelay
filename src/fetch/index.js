@@ -9,6 +9,7 @@ import parse from '../parse'
 import hardClose from '../hardClose'
 
 const getOptions = (src) => ({
+  log: src.log,
   timeout: src.timeout,
   headers: src.headers,
   attempts: src.attempts
