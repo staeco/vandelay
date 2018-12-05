@@ -166,6 +166,21 @@ describe('fetch', () => {
     const res = await collect.array(stream)
     res.length.should.equal(max)
   })
+  it.skip('should end stream as needed with real data', async () => {
+    const max = 100000
+    let curr = 0
+    const source = {
+      url: 'https://storage.googleapis.com/staeco-data-files/citibike/2018-01-through-10.csv',
+      parser: 'csv'
+    }
+    const stream = fetch(source)
+    stream.on('data', () => {
+      ++curr
+      if (curr >= max) stream.abort()
+    })
+    const res = await collect.array(stream)
+    res.length.should.equal(max)
+  })
   it('should end stream as needed with pagination', async () => {
     const max = 10
     let curr = 0

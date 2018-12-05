@@ -32,6 +32,19 @@ describe('transform', () => {
     const res = await collect.array(stream)
     res.should.eql(data)
   })
+  it('should work fast with an async string identity function', async () => {
+    const max = 10000
+    const write = () => {
+      for (let i = 0; i < max; ++i) {
+        stream.write({ test: 'abc' })
+      }
+      stream.end()
+    }
+    process.nextTick(write)
+    const stream = transform('module.exports = async (row) => row')
+    const res = await collect.array(stream)
+    res.length.should.equal(max)
+  })
   it('should work with an empty transform stack', async () => {
     const stream = streamify.obj(data).pipe(transform([]))
     const res = await collect.array(stream)
@@ -41,6 +54,19 @@ describe('transform', () => {
     const stream = streamify.obj(data).pipe(transform([ { to: 'data', from: 'a' } ]))
     const res = await collect.array(stream)
     res.should.eql(data.map(({ a }) => ({ data: a })))
+  })
+  it('should work fast with a working transform stack', async () => {
+    const max = 100000
+    const write = () => {
+      for (let i = 0; i < max; ++i) {
+        stream.write({ a: 'abc' })
+      }
+      stream.end()
+    }
+    process.nextTick(write)
+    const stream = transform([ { to: 'data', from: 'a' } ])
+    const res = await collect.array(stream)
+    res.length.should.equal(max)
   })
   it('should pass on changes', async () => {
     const map = (row) => ({ ...row, a: null })
