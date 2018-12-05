@@ -40,11 +40,11 @@ var _hardClose2 = _interopRequireDefault(_hardClose);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-const getOptions = src => ({
-  log: src.log,
-  timeout: src.timeout,
-  headers: src.headers,
-  attempts: src.attempts
+const getOptions = (src, opt) => ({
+  log: opt.log,
+  timeout: opt.timeout,
+  attempts: opt.attempts,
+  headers: src.headers
 });
 
 // default behavior is to fail on first error
@@ -140,7 +140,7 @@ const fetchStream = (source, opt = {}, raw = false) => {
       if (destroyed || pageDatums === 0) return cb();
       pageDatums = 0;
       const newURL = mergeURL(src.url, getQuery(src.pagination, page));
-      lastFetch = fetch(newURL, getOptions(src));
+      lastFetch = fetch(newURL, getOptions(src, opt));
       page++;
       cb(null, lastFetch);
     }, { objectMode: true, highWaterMark: concurrent }).on('data', () => ++pageDatums).pause();
@@ -150,7 +150,7 @@ const fetchStream = (source, opt = {}, raw = false) => {
       (0, _hardClose2.default)(outStream);
     };
   } else {
-    outStream = fetch(src.url, getOptions(src));
+    outStream = fetch(src.url, getOptions(src, opt));
   }
 
   if (raw) return outStream; // child of an array of sources, error mgmt handled already

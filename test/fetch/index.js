@@ -291,9 +291,8 @@ describe('fetch', () => {
   it('should emit 404 http errors', (done) => {
     const stream = fetch({
       url: `http://localhost:${port}/404.json`,
-      parser: parse('json', { selector: 'data.*' }),
-      attempts: 1
-    })
+      parser: parse('json', { selector: 'data.*' })
+    }, { attempts: 1 })
     stream.once('error', (err) => {
       should.exist(err)
       should.exist(err.status)
@@ -309,9 +308,8 @@ describe('fetch', () => {
   it('should emit not found errors', (done) => {
     const stream = fetch({
       url: 'http://lkddflskdjf.io/404.json',
-      parser: parse('json', { selector: 'data.*' }),
-      attempts: 1
-    })
+      parser: parse('json', { selector: 'data.*' })
+    }, { attempts: 1 })
     stream.once('error', (err) => {
       should.exist(err)
       err.message.should.equal('Failed to resolve server host')
@@ -324,9 +322,8 @@ describe('fetch', () => {
   it('should emit 500 http errors', (done) => {
     const stream = fetch({
       url: `http://localhost:${port}/500.json`,
-      parser: parse('json', { selector: 'data.*' }),
-      attempts: 1
-    })
+      parser: parse('json', { selector: 'data.*' })
+    }, { attempts: 1 })
     stream.once('error', (err) => {
       should.exist(err)
       should.exist(err.status)
@@ -340,9 +337,9 @@ describe('fetch', () => {
   it('should allow handling via onError', (done) => {
     fetch({
       url: `http://localhost:${port}/500.json`,
-      parser: parse('json', { selector: 'data.*' }),
-      attempts: 1
+      parser: parse('json', { selector: 'data.*' })
     }, {
+      attempts: 1,
       onError: ({ error, canContinue }) => {
         should.exist(error)
         error.status.should.equal(500)
@@ -358,8 +355,7 @@ describe('fetch', () => {
     fetch([
       {
         url: `http://localhost:${port}/500.json`,
-        parser: parse('json', { selector: 'data.*' }),
-        attempts: 1
+        parser: parse('json', { selector: 'data.*' })
       },
       {
         url: `http://localhost:${port}/infinite?close=10000`,
@@ -367,6 +363,7 @@ describe('fetch', () => {
         parserOptions: { selector: '*.a' }
       }
     ], {
+      attempts: 1,
       onError: ({ error, canContinue }) => {
         should.exist(error)
         error.status.should.equal(500)
@@ -382,8 +379,7 @@ describe('fetch', () => {
     fetch([
       {
         url: `http://localhost:${port}/500.json`,
-        parser: parse('json', { selector: 'data.*' }),
-        attempts: 1
+        parser: parse('json', { selector: 'data.*' })
       },
       {
         url: `http://localhost:${port}/infinite?close=10000`,
@@ -391,6 +387,7 @@ describe('fetch', () => {
         parserOptions: { selector: '*.a' }
       }
     ], {
+      attempts: 1,
       concurrency: 1,
       onError: ({ error, canContinue }) => {
         should.exist(error)
