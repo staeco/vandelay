@@ -150,7 +150,7 @@ describe('fetch', () => {
     const res = await collect.array(stream)
     res.should.eql([ 1, 4, 7 ])
   })
-  it('should handle backpressure correctly', async () => {
+  it('should handle backpressure correctly with a single stream', async () => {
     const max = 100000
     const source = {
       url: `http://localhost:${port}/infinite?close=100000`,
@@ -158,7 +158,31 @@ describe('fetch', () => {
       parserOptions: { selector: '*.a' }
     }
     const stream = fetch(source)
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    await new Promise((resolve) => setTimeout(resolve, 1000)) // wait 1s before reading
+    const res = await collect.array(stream)
+    res.length.should.equal(max)
+  })
+  it('should handle backpressure correctly with a multi stream', async () => {
+    const max = 30000
+    const source = [
+      {
+        url: `http://localhost:${port}/infinite?close=10000`,
+        parser: 'json',
+        parserOptions: { selector: '*.a' }
+      },
+      {
+        url: `http://localhost:${port}/infinite?close=10000`,
+        parser: 'json',
+        parserOptions: { selector: '*.a' }
+      },
+      {
+        url: `http://localhost:${port}/infinite?close=10000`,
+        parser: 'json',
+        parserOptions: { selector: '*.a' }
+      }
+    ]
+    const stream = fetch(source)
+    await new Promise((resolve) => setTimeout(resolve, 1000)) // wait 1s before reading
     const res = await collect.array(stream)
     res.length.should.equal(max)
   })
