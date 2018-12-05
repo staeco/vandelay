@@ -2,9 +2,9 @@
 
 exports.__esModule = true;
 
-var _got = require('got');
+var _gotResume = require('got-resume');
 
-var _got2 = _interopRequireDefault(_got);
+var _gotResume2 = _interopRequireDefault(_gotResume);
 
 var _through = require('through2');
 
@@ -42,31 +42,36 @@ const httpError = (err, res) => {
   return nerror;
 };
 
-exports.default = (url, { headers, timeout } = {}) => {
+exports.default = (url, { attempts = 10, headers, timeout } = {}) => {
   const out = (0, _through2.default)();
   let isCollectingError = false;
 
-  const gotOptions = Object.assign({
-    buffer: false,
-    followRedirects: true,
-    attempts: 10
-  }, timeout && { timeout: timeout }, headers && { headers: headers });
+  const options = {
+    attempts,
+    got: {
+      followRedirects: true,
+      timeout,
+      headers
+    }
+  };
 
-  const req = _got2.default.stream(url, gotOptions)
+  const req = (0, _gotResume2.default)(url, options)
   // handle errors
-  .once('error', async (err, _, res) => {
+  .once('error', async err => {
     isCollectingError = true;
+    const original = err.original || err;
+    const { res } = original;
     if (res) res.text = await (0, _getStream2.default)(res, { maxBuffer: sizeLimit });
-    out.emit('error', httpError(err, res));
-    (0, _hardClose2.default)(out);
-  }).once('response', res => {
+    out.emit('error', httpError(original, res));
+    out.abort();
+  }).once('response', () => {
     if (isCollectingError) return;
-    (0, _pump2.default)(res, out);
+    (0, _pump2.default)(req, out);
   });
 
   out.abort = () => {
     (0, _hardClose2.default)(out);
-    req._destroy(); // calls abort on the inner emitter in `got`
+    req.cancel();
   };
   return out;
 };

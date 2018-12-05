@@ -40,6 +40,12 @@ var _hardClose2 = _interopRequireDefault(_hardClose);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+const getOptions = src => ({
+  timeout: src.timeout,
+  headers: src.headers,
+  attempts: src.attempts
+});
+
 // default behavior is to fail on first error
 const defaultErrorHandler = ({ error, output }) => {
   output.emit('error', error);
@@ -51,11 +57,11 @@ const mergeURL = (origUrl, newQuery) => {
   return _url2.default.format(Object.assign({}, sourceUrl, { search: query }));
 };
 
-const getQuery = (opt, page) => {
+const getQuery = (pageOpt, page) => {
   const out = {};
-  if (opt.pageParam) out[opt.pageParam] = page;
-  if (opt.limitParam && opt.limit) out[opt.limitParam] = opt.limit;
-  if (opt.offsetParam) out[opt.offsetParam] = page * opt.limit;
+  if (pageOpt.pageParam) out[pageOpt.pageParam] = page;
+  if (pageOpt.limitParam && pageOpt.limit) out[pageOpt.limitParam] = pageOpt.limit;
+  if (pageOpt.offsetParam) out[pageOpt.offsetParam] = page * pageOpt.limit;
   return out;
 };
 
@@ -127,7 +133,7 @@ const fetchStream = (source, opt = {}, raw = false) => {
       if (destroyed || pageDatums === 0) return cb();
       pageDatums = 0;
       const newURL = mergeURL(src.url, getQuery(src.pagination, page));
-      lastFetch = fetch(newURL, { headers: src.headers });
+      lastFetch = fetch(newURL, getOptions(src));
       page++;
       cb(null, lastFetch);
     }).on('data', () => ++pageDatums);
@@ -137,7 +143,7 @@ const fetchStream = (source, opt = {}, raw = false) => {
       (0, _hardClose2.default)(outStream);
     };
   } else {
-    outStream = fetch(src.url, { headers: src.headers });
+    outStream = fetch(src.url, getOptions(src));
   }
 
   if (raw) return outStream; // child of an array of sources, error mgmt handled already
