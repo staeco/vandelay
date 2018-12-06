@@ -9,7 +9,7 @@ const rewriteError = (err) => {
   if (err.statusCode) return new Error(`Server responded with "${err.statusMessage}"`)
   if (err.code === 'ENOTFOUND') return new Error('Failed to resolve server host')
   if (err.code === 'ECONNRESET') return new Error('Connection to server was lost')
-  if (err.timeout) return new Error('Server took too long to respond')
+  if (typeof err.code === 'string' && err.code.includes('TIMEDOUT')) return new Error('Server took too long to respond')
   return new Error('Failed to connect to server')
 }
 const httpError = (err, res) => {
@@ -21,6 +21,7 @@ const httpError = (err, res) => {
   nerror.body = res && res.text
   return nerror
 }
+const oneDay = 86400000
 
 export default (url, { attempts=10, headers, timeout, log }={}) => {
   const out = through2()
@@ -31,7 +32,11 @@ export default (url, { attempts=10, headers, timeout, log }={}) => {
     attempts,
     got: {
       followRedirects: true,
-      timeout,
+      timeout: {
+        request: timeout || oneDay,
+        connect: oneDay,
+        socket: oneDay
+      },
       headers
     }
   }
