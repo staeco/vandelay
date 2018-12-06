@@ -56,7 +56,7 @@ describe('transform', () => {
     res.should.eql(data.map(({ a }) => ({ data: a })))
   })
   it('should work fast with a working transform stack', async () => {
-    const max = 100000
+    const max = 10000
     const write = () => {
       for (let i = 0; i < max; ++i) {
         stream.write({ a: 'abc' })
@@ -151,5 +151,102 @@ describe('transform', () => {
     }))
     const res = await collect.array(stream)
     res.should.eql(data.filter(filter))
+  })
+  it('should handle errors with a plain function', async () => {
+    const filter = (row) => row.a > 1 ? null : row
+    const map = `module.exports = (row) => {
+      if (row.a > 1) throw new Error('wot')
+      return row
+    }`
+    const fail = () => {
+      throw new Error('Fail! Error escaped.')
+    }
+    process.on('uncaughtException', fail)
+    process.on('uncaughtRejection', fail)
+    const stream = streamify.obj(data).pipe(transform(map, {
+      onSuccess: (record, old) => {
+        should.exist(record)
+        should.exist(old)
+        should.equal(record, old)
+        should.equal(record.a <= 1, true)
+      },
+      onError: (err, record) => {
+        should.exist(err)
+        should.exist(record)
+        should.equal(record.a > 1, true)
+        err.message.should.equal('wot')
+      }
+    }))
+    const res = await collect.array(stream)
+    res.should.eql(data.filter(filter))
+
+    process.removeListener('uncaughtException', fail)
+    process.removeListener('uncaughtRejection', fail)
+  })
+  it('should handle errors with a async function', async () => {
+    const filter = (row) => row.a > 1 ? null : row
+    const map = `module.exports = async (row) => {
+      if (row.a > 1) {
+        process.nextTick(() => { throw new Error('wot') })
+        return null
+      }
+      return row
+    }`
+    const fail = () => {
+      throw new Error('Fail! Error escaped.')
+    }
+    process.on('uncaughtException', fail)
+    process.on('uncaughtRejection', fail)
+    const stream = streamify.obj(data).pipe(transform(map, {
+      onSuccess: (record, old) => {
+        should.exist(record)
+        should.exist(old)
+        should.equal(record, old)
+        should.equal(record.a <= 1, true)
+      },
+      onError: (err, record) => {
+        should.exist(err)
+        should.exist(record)
+        should.equal(record.a > 1, true)
+        err.message.should.equal('wot')
+      }
+    }))
+    const res = await collect.array(stream)
+    res.should.eql(data.filter(filter))
+
+    process.removeListener('uncaughtException', fail)
+    process.removeListener('uncaughtRejection', fail)
+  })
+  it('should handle stray async errors', async () => {
+    const filter = (row) => row.a > 1 ? null : row
+    const map = `process.nextTick(() => { throw new Error('wot') })
+    module.exports = (row) => {
+      if (row.a > 1) throw new Error('wot')
+      return row
+    }`
+    const fail = () => {
+      throw new Error('Fail! Error escaped.')
+    }
+    process.on('uncaughtException', fail)
+    process.on('uncaughtRejection', fail)
+    const stream = streamify.obj(data).pipe(transform(map, {
+      onSuccess: (record, old) => {
+        should.exist(record)
+        should.exist(old)
+        should.equal(record, old)
+        should.equal(record.a <= 1, true)
+      },
+      onError: (err, record) => {
+        should.exist(err)
+        should.exist(record)
+        should.equal(record.a > 1, true)
+        err.message.should.equal('wot')
+      }
+    }))
+    const res = await collect.array(stream)
+    res.should.eql(data.filter(filter))
+
+    process.removeListener('uncaughtException', fail)
+    process.removeListener('uncaughtRejection', fail)
   })
 })

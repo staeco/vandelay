@@ -1,6 +1,9 @@
 import { NodeVM, VMScript } from 'vm2'
+import domains from 'domain'
 
 export default (code, opt={}) => {
+  let fn
+  const domain = domains.create()
   const script = new VMScript(opt.compiler ? opt.compiler(code) : code)
   const vm = new NodeVM({
     console: opt.console,
@@ -11,7 +14,20 @@ export default (code, opt={}) => {
       vm.freeze(opt.sandbox[k], k)
     })
   }
-  const fn = vm.run(script, 'compiled-transform.js')
+  domain.on('error', () => {}) // swallow async errors
+  domain.run(() => {
+    fn = vm.run(script, 'compiled-transform.js')
+  })
   if (fn == null) throw new Error('Failed to export something!')
-  return fn
+  return (...args) => {
+    const internalDomain = domains.create()
+    return new Promise((resolve, reject) => {
+      internalDomain.on('error', reject) // report async errors
+      let out
+      internalDomain.run(() => {
+        out = fn(...args)
+      })
+      resolve(out)
+    })
+  }
 }

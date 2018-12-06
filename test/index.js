@@ -1,6 +1,4 @@
 /*eslint no-console: 0*/
-
-import should from 'should'
 import collect from 'get-stream'
 import express from 'express'
 import getPort from 'get-port'
@@ -45,20 +43,20 @@ describe('pipeline', () => {
     res.length.should.equal(max)
   })
   it('should handle backpressure correctly with a multi stream', async () => {
-    const max = 30000
+    const max = 9000
     const source = [
       {
-        url: `http://localhost:${port}/infinite?close=10000`,
+        url: `http://localhost:${port}/infinite?close=3000`,
         parser: 'json',
         parserOptions: { selector: '*.a' }
       },
       {
-        url: `http://localhost:${port}/infinite?close=10000`,
+        url: `http://localhost:${port}/infinite?close=3000`,
         parser: 'json',
         parserOptions: { selector: '*.a' }
       },
       {
-        url: `http://localhost:${port}/infinite?close=10000`,
+        url: `http://localhost:${port}/infinite?close=3000`,
         parser: 'json',
         parserOptions: { selector: '*.a' }
       }
