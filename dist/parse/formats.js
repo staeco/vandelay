@@ -43,6 +43,10 @@ var _camelcase = require('camelcase');
 
 var _camelcase2 = _interopRequireDefault(_camelcase);
 
+var _unzip = require('./unzip');
+
+var _unzip2 = _interopRequireDefault(_unzip);
+
 var _xml2json = require('./xml2json');
 
 var _xml2json2 = _interopRequireDefault(_xml2json);
@@ -68,15 +72,17 @@ const csv = exports.csv = opt => {
     delete row.headers;
     cb(null, Object.assign({}, row));
   });
-  return _pumpify2.default.obj(head, tail);
+  const out = _pumpify2.default.obj(head, tail);
+  return opt.zip ? (0, _unzip2.default)(out, /\.csv$/) : out;
 };
 const excel = exports.excel = opt => {
   if (opt.camelcase && typeof opt.camelcase !== 'boolean') throw new Error('Invalid camelcase option');
   if (opt.autoParse && typeof opt.autoParse !== 'boolean') throw new Error('Invalid autoParse option');
-  return (0, _exceljsTransformStream2.default)({
+  const out = (0, _exceljsTransformStream2.default)({
     mapHeaders: v => opt.camelcase ? (0, _camelcase2.default)(v) : v.trim(),
     mapValues: v => opt.autoParse ? (0, _autoParse2.default)(v) : v
   });
+  return opt.zip ? (0, _unzip2.default)(out, /\.xlsx$/) : out;
 };
 const json = exports.json = opt => {
   if (Array.isArray(opt.selector)) {
@@ -85,8 +91,8 @@ const json = exports.json = opt => {
     opt.selector.forEach(selector => (0, _pump2.default)(inStream, json(Object.assign({}, opt, { selector })), outStream));
     return _duplexify2.default.obj(inStream, outStream);
   }
-  if (typeof opt.selector !== 'string') throw new Error('Missing selector for JSON parser!');
 
+  if (typeof opt.selector !== 'string') throw new Error('Missing selector for JSON parser!');
   const head = _JSONStream2.default.parse(opt.selector);
   let header;
   head.once('header', data => header = data);
@@ -94,13 +100,15 @@ const json = exports.json = opt => {
     if (header && typeof row === 'object') row.___header = header; // internal attr, json header info for fetch stream
     cb(null, row);
   });
-  return _pumpify2.default.obj(head, tail);
+  const out = _pumpify2.default.obj(head, tail);
+  return opt.zip ? (0, _unzip2.default)(out, /\.json$/) : out;
 };
 
 const xml = exports.xml = opt => {
   if (opt.camelcase && typeof opt.camelcase !== 'boolean') throw new Error('Invalid camelcase option');
   if (opt.autoParse && typeof opt.autoParse !== 'boolean') throw new Error('Invalid autoParse option');
-  return _pumpify2.default.obj((0, _xml2json2.default)(opt), json(opt));
+  const out = _pumpify2.default.obj((0, _xml2json2.default)(opt), json(opt));
+  return opt.zip ? (0, _unzip2.default)(out, /\.xml$/) : out;
 };
 
 const shp = exports.shp = () => {

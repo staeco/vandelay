@@ -8,6 +8,7 @@ import pump from 'pump'
 import JSONStream from 'JSONStream'
 import parseGTFS from 'gtfs-stream'
 import camelcase from 'camelcase'
+import unzip from './unzip'
 import xml2json from './xml2json'
 import autoParse from './autoParse'
 
@@ -26,15 +27,17 @@ export const csv = (opt) => {
     delete row.headers
     cb(null, { ...row })
   })
-  return pumpify.obj(head, tail)
+  const out = pumpify.obj(head, tail)
+  return opt.zip ? unzip(out, /\.csv$/) : out
 }
 export const excel = (opt) => {
   if (opt.camelcase && typeof opt.camelcase !== 'boolean') throw new Error('Invalid camelcase option')
   if (opt.autoParse && typeof opt.autoParse !== 'boolean') throw new Error('Invalid autoParse option')
-  return excelStream({
+  const out = excelStream({
     mapHeaders: (v) => opt.camelcase ? camelcase(v) : v.trim(),
     mapValues: (v) => opt.autoParse ? autoParse(v) : v
   })
+  return opt.zip ? unzip(out, /\.xlsx$/) : out
 }
 export const json = (opt) => {
   if (Array.isArray(opt.selector)) {
@@ -45,8 +48,8 @@ export const json = (opt) => {
     )
     return duplex.obj(inStream, outStream)
   }
-  if (typeof opt.selector !== 'string') throw new Error('Missing selector for JSON parser!')
 
+  if (typeof opt.selector !== 'string') throw new Error('Missing selector for JSON parser!')
   const head = JSONStream.parse(opt.selector)
   let header
   head.once('header', (data) => header = data)
@@ -54,13 +57,15 @@ export const json = (opt) => {
     if (header && typeof row === 'object') row.___header = header // internal attr, json header info for fetch stream
     cb(null, row)
   })
-  return pumpify.obj(head, tail)
+  const out = pumpify.obj(head, tail)
+  return opt.zip ? unzip(out, /\.json$/) : out
 }
 
 export const xml = (opt) => {
   if (opt.camelcase && typeof opt.camelcase !== 'boolean') throw new Error('Invalid camelcase option')
   if (opt.autoParse && typeof opt.autoParse !== 'boolean') throw new Error('Invalid autoParse option')
-  return pumpify.obj(xml2json(opt), json(opt))
+  const out = pumpify.obj(xml2json(opt), json(opt))
+  return opt.zip ? unzip(out, /\.xml$/) : out
 }
 
 export const shp = () => {

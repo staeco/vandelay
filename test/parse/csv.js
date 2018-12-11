@@ -2,8 +2,12 @@
 
 import should from 'should'
 import parse from '../../src/parse'
+import { createReadStream } from 'graceful-fs'
+import { join } from 'path'
 import streamify from 'into-stream'
 import collect from 'get-stream'
+
+const zipFixture = join(__dirname, 'csv-test.zip')
 
 describe('parse csv', () => {
   it('should throw on bad options', async () => {
@@ -45,6 +49,16 @@ describe('parse csv', () => {
 7,8,9`
     const parser = parse('csv')
     const stream = streamify(data).pipe(parser())
+    const res = await collect.array(stream)
+    res.should.eql([
+      { a: '1', b: '2', c: '3' },
+      { a: '4', b: '5', c: '6' },
+      { a: '7', b: '8', c: '9' }
+    ])
+  })
+  it('should parse from a zip file', async () => {
+    const parser = parse('csv', { zip: true })
+    const stream = createReadStream(zipFixture).pipe(parser())
     const res = await collect.array(stream)
     res.should.eql([
       { a: '1', b: '2', c: '3' },

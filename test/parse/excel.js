@@ -7,7 +7,6 @@ import xlsx from 'xlsx'
 import { createReadStream } from 'graceful-fs'
 import tmp from 'tempfile'
 import { join } from 'path'
-import pump from 'pump'
 
 const xlsFixture = join(__dirname, 'xls-fixture.xls')
 
