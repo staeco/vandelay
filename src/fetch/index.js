@@ -25,7 +25,7 @@ const mergeURL = (origUrl, newQuery) => {
   const query = qs.stringify({
     ...qs.parse(sourceUrl.query),
     ...newQuery
-  })
+  }, { strictNullHandling: true })
   return url.format({ ...sourceUrl, search: query })
 }
 

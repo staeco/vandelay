@@ -37,6 +37,14 @@ export const excel = (opt) => {
   })
 }
 export const json = (opt) => {
+  if (Array.isArray(opt.selector)) {
+    const inStream = through2()
+    const outStream = through2.obj()
+    opt.selector.forEach((selector) =>
+      pump(inStream, json({ ...opt, selector }), outStream)
+    )
+    return duplex.obj(inStream, outStream)
+  }
   if (typeof opt.selector !== 'string') throw new Error('Missing selector for JSON parser!')
 
   const head = JSONStream.parse(opt.selector)

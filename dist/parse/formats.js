@@ -79,6 +79,12 @@ const excel = exports.excel = opt => {
   });
 };
 const json = exports.json = opt => {
+  if (Array.isArray(opt.selector)) {
+    const inStream = (0, _through2.default)();
+    const outStream = _through2.default.obj();
+    opt.selector.forEach(selector => (0, _pump2.default)(inStream, json(Object.assign({}, opt, { selector })), outStream));
+    return _duplexify2.default.obj(inStream, outStream);
+  }
   if (typeof opt.selector !== 'string') throw new Error('Missing selector for JSON parser!');
 
   const head = _JSONStream2.default.parse(opt.selector);

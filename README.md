@@ -105,6 +105,7 @@ Built in parsers are:
 - shp
 - json
   - Requires a `selector` option that specifies where to grab rows in the data.
+    - If needed, you may provide multiple selectors as an array (`selector: [ 'a.*', 'b.*' ]`)
 - xml
   - Requires a `selector` option that specifies where to grab rows in the data.
     - Note that the selector applies to the [xml2js](https://github.com/Leonidas-from-XIV/node-xml2js) output.

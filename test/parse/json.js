@@ -34,6 +34,14 @@ describe('parse json', () => {
     const res = await collect.array(stream)
     res.should.eql([ 1, 2, 3 ])
   })
+  it('should parse an object with multiple selectors', async () => {
+    const data = { a: [ { b: 1 }, { a: 2 }, { b: 3 } ] }
+    const sample = JSON.stringify(data)
+    const parser = parse('json', { selector: [ 'a.*.a', 'a.*.b' ] })
+    const stream = streamify(sample).pipe(parser())
+    const res = await collect.array(stream)
+    res.should.eql([ 2, 1, 3 ])
+  })
   it('should error on invalid object', async () => {
     const sample = '{ "a": [ { "b": 1 }, { zzzzz: 123 } ] } }'
     const parser = parse('json', { selector: 'a.*.b' })

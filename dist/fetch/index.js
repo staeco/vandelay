@@ -54,7 +54,7 @@ const defaultErrorHandler = ({ error, output }) => {
 
 const mergeURL = (origUrl, newQuery) => {
   const sourceUrl = _url2.default.parse(origUrl);
-  const query = _qs2.default.stringify(Object.assign({}, _qs2.default.parse(sourceUrl.query), newQuery));
+  const query = _qs2.default.stringify(Object.assign({}, _qs2.default.parse(sourceUrl.query), newQuery), { strictNullHandling: true });
   return _url2.default.format(Object.assign({}, sourceUrl, { search: query }));
 };
 
