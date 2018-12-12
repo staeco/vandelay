@@ -2,7 +2,7 @@ import csvStream from 'csv-parser'
 import excelStream from 'exceljs-transform-stream'
 import through2 from 'through2'
 import shpToJSON from 'shp2json'
-import duplex from 'duplexify'
+import duplex from 'duplexer2'
 import pumpify from 'pumpify'
 import pump from 'pump'
 import JSONStream from 'JSONStream'
@@ -17,6 +17,7 @@ import autoParse from './autoParse'
 export const csv = (opt) => {
   if (opt.camelcase && typeof opt.camelcase !== 'boolean') throw new Error('Invalid camelcase option')
   if (opt.autoParse && typeof opt.autoParse !== 'boolean') throw new Error('Invalid autoParse option')
+  if (opt.zip) return unzip(csv.bind(this, { ...opt, zip: undefined }), /\.csv$/)
 
   const head = csvStream({
     mapHeaders: ({ header }) => opt.camelcase ? camelcase(header) : header.trim(),
@@ -27,17 +28,16 @@ export const csv = (opt) => {
     delete row.headers
     cb(null, { ...row })
   })
-  const out = pumpify.obj(head, tail)
-  return opt.zip ? unzip(out, /\.csv$/) : out
+  return pumpify.obj(head, tail)
 }
 export const excel = (opt) => {
   if (opt.camelcase && typeof opt.camelcase !== 'boolean') throw new Error('Invalid camelcase option')
   if (opt.autoParse && typeof opt.autoParse !== 'boolean') throw new Error('Invalid autoParse option')
-  const out = excelStream({
+  if (opt.zip) return unzip(excel.bind(this, { ...opt, zip: undefined }), /\.xlsx$/)
+  return excelStream({
     mapHeaders: (v) => opt.camelcase ? camelcase(v) : v.trim(),
     mapValues: (v) => opt.autoParse ? autoParse(v) : v
   })
-  return opt.zip ? unzip(out, /\.xlsx$/) : out
 }
 export const json = (opt) => {
   if (Array.isArray(opt.selector)) {
@@ -46,10 +46,11 @@ export const json = (opt) => {
     opt.selector.forEach((selector) =>
       pump(inStream, json({ ...opt, selector }), outStream)
     )
-    return duplex.obj(inStream, outStream)
+    return duplex({ objectMode: true }, inStream, outStream)
   }
 
   if (typeof opt.selector !== 'string') throw new Error('Missing selector for JSON parser!')
+  if (opt.zip) return unzip(json.bind(this, { ...opt, zip: undefined }), /\.json$/)
   const head = JSONStream.parse(opt.selector)
   let header
   head.once('header', (data) => header = data)
@@ -57,22 +58,21 @@ export const json = (opt) => {
     if (header && typeof row === 'object') row.___header = header // internal attr, json header info for fetch stream
     cb(null, row)
   })
-  const out = pumpify.obj(head, tail)
-  return opt.zip ? unzip(out, /\.json$/) : out
+  return pumpify.obj(head, tail)
 }
 
 export const xml = (opt) => {
   if (opt.camelcase && typeof opt.camelcase !== 'boolean') throw new Error('Invalid camelcase option')
   if (opt.autoParse && typeof opt.autoParse !== 'boolean') throw new Error('Invalid autoParse option')
-  const out = pumpify.obj(xml2json(opt), json(opt))
-  return opt.zip ? unzip(out, /\.xml$/) : out
+  if (opt.xml) return unzip(xml.bind(this, { ...opt, zip: undefined }), /\.xml$/)
+  return pumpify.obj(xml2json(opt), json(opt))
 }
 
 export const shp = () => {
   const head = through2()
   const mid = shpToJSON(head)
   const tail = JSONStream.parse('features.*')
-  return duplex.obj(head, pump(mid, tail))
+  return duplex({ objectMode: true }, head, pump(mid, tail))
 }
 
 export const gtfsrt = () => parseGTFS.rt()

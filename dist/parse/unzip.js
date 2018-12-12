@@ -10,9 +10,9 @@ var _merge = require('merge2');
 
 var _merge2 = _interopRequireDefault(_merge);
 
-var _duplexify = require('duplexify');
+var _duplexer = require('duplexer2');
 
-var _duplexify2 = _interopRequireDefault(_duplexify);
+var _duplexer2 = _interopRequireDefault(_duplexer);
 
 var _through = require('through2');
 
@@ -36,13 +36,13 @@ exports.default = (parser, regex) => {
       entry.autodrain();
       return cb();
     }
-    const file = _pumpify2.default.obj(entry, parser);
+    const file = _pumpify2.default.obj(entry, parser());
     out.add(file);
     (0, _endOfStream2.default)(file, cb);
   }));
 
   (0, _endOfStream2.default)(dataStream, () => out.push(null));
-  return _duplexify2.default.obj(dataStream, out, { end: false });
+  return (0, _duplexer2.default)({ objectMode: true }, dataStream, out);
 };
 
 module.exports = exports.default;

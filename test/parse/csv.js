@@ -8,6 +8,7 @@ import streamify from 'into-stream'
 import collect from 'get-stream'
 
 const zipFixture = join(__dirname, 'csv-test.zip')
+const zipFixtureMulti = join(__dirname, 'csv-test-multi.zip')
 
 describe('parse csv', () => {
   it('should throw on bad options', async () => {
@@ -61,6 +62,20 @@ describe('parse csv', () => {
     const stream = createReadStream(zipFixture).pipe(parser())
     const res = await collect.array(stream)
     res.should.eql([
+      { a: '1', b: '2', c: '3' },
+      { a: '4', b: '5', c: '6' },
+      { a: '7', b: '8', c: '9' }
+    ])
+  })
+  it('should parse from a zip file with multiple files', async () => {
+    const parser = parse('csv', { zip: true })
+    const stream = createReadStream(zipFixtureMulti).pipe(parser())
+    const res = await collect.array(stream)
+    res.should.eql([
+      { a: '1', b: '2', c: '3' },
+      { a: '4', b: '5', c: '6' },
+      { a: '7', b: '8', c: '9' },
+
       { a: '1', b: '2', c: '3' },
       { a: '4', b: '5', c: '6' },
       { a: '7', b: '8', c: '9' }

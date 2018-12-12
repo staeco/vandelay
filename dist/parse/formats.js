@@ -19,9 +19,9 @@ var _shp2json = require('shp2json');
 
 var _shp2json2 = _interopRequireDefault(_shp2json);
 
-var _duplexify = require('duplexify');
+var _duplexer = require('duplexer2');
 
-var _duplexify2 = _interopRequireDefault(_duplexify);
+var _duplexer2 = _interopRequireDefault(_duplexer);
 
 var _pumpify = require('pumpify');
 
@@ -62,6 +62,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 const csv = exports.csv = opt => {
   if (opt.camelcase && typeof opt.camelcase !== 'boolean') throw new Error('Invalid camelcase option');
   if (opt.autoParse && typeof opt.autoParse !== 'boolean') throw new Error('Invalid autoParse option');
+  if (opt.zip) return (0, _unzip2.default)(csv.bind(undefined, Object.assign({}, opt, { zip: undefined })), /\.csv$/);
 
   const head = (0, _csvParser2.default)({
     mapHeaders: ({ header }) => opt.camelcase ? (0, _camelcase2.default)(header) : header.trim(),
@@ -72,27 +73,27 @@ const csv = exports.csv = opt => {
     delete row.headers;
     cb(null, Object.assign({}, row));
   });
-  const out = _pumpify2.default.obj(head, tail);
-  return opt.zip ? (0, _unzip2.default)(out, /\.csv$/) : out;
+  return _pumpify2.default.obj(head, tail);
 };
 const excel = exports.excel = opt => {
   if (opt.camelcase && typeof opt.camelcase !== 'boolean') throw new Error('Invalid camelcase option');
   if (opt.autoParse && typeof opt.autoParse !== 'boolean') throw new Error('Invalid autoParse option');
-  const out = (0, _exceljsTransformStream2.default)({
+  if (opt.zip) return (0, _unzip2.default)(excel.bind(undefined, Object.assign({}, opt, { zip: undefined })), /\.xlsx$/);
+  return (0, _exceljsTransformStream2.default)({
     mapHeaders: v => opt.camelcase ? (0, _camelcase2.default)(v) : v.trim(),
     mapValues: v => opt.autoParse ? (0, _autoParse2.default)(v) : v
   });
-  return opt.zip ? (0, _unzip2.default)(out, /\.xlsx$/) : out;
 };
 const json = exports.json = opt => {
   if (Array.isArray(opt.selector)) {
     const inStream = (0, _through2.default)();
     const outStream = _through2.default.obj();
     opt.selector.forEach(selector => (0, _pump2.default)(inStream, json(Object.assign({}, opt, { selector })), outStream));
-    return _duplexify2.default.obj(inStream, outStream);
+    return (0, _duplexer2.default)({ objectMode: true }, inStream, outStream);
   }
 
   if (typeof opt.selector !== 'string') throw new Error('Missing selector for JSON parser!');
+  if (opt.zip) return (0, _unzip2.default)(json.bind(undefined, Object.assign({}, opt, { zip: undefined })), /\.json$/);
   const head = _JSONStream2.default.parse(opt.selector);
   let header;
   head.once('header', data => header = data);
@@ -100,22 +101,21 @@ const json = exports.json = opt => {
     if (header && typeof row === 'object') row.___header = header; // internal attr, json header info for fetch stream
     cb(null, row);
   });
-  const out = _pumpify2.default.obj(head, tail);
-  return opt.zip ? (0, _unzip2.default)(out, /\.json$/) : out;
+  return _pumpify2.default.obj(head, tail);
 };
 
 const xml = exports.xml = opt => {
   if (opt.camelcase && typeof opt.camelcase !== 'boolean') throw new Error('Invalid camelcase option');
   if (opt.autoParse && typeof opt.autoParse !== 'boolean') throw new Error('Invalid autoParse option');
-  const out = _pumpify2.default.obj((0, _xml2json2.default)(opt), json(opt));
-  return opt.zip ? (0, _unzip2.default)(out, /\.xml$/) : out;
+  if (opt.xml) return (0, _unzip2.default)(xml.bind(undefined, Object.assign({}, opt, { zip: undefined })), /\.xml$/);
+  return _pumpify2.default.obj((0, _xml2json2.default)(opt), json(opt));
 };
 
 const shp = exports.shp = () => {
   const head = (0, _through2.default)();
   const mid = (0, _shp2json2.default)(head);
   const tail = _JSONStream2.default.parse('features.*');
-  return _duplexify2.default.obj(head, (0, _pump2.default)(mid, tail));
+  return (0, _duplexer2.default)({ objectMode: true }, head, (0, _pump2.default)(mid, tail));
 };
 
 const gtfsrt = exports.gtfsrt = () => _gtfsStream2.default.rt();

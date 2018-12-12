@@ -1,6 +1,6 @@
 {
   "name": "vandelay",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "description": "Imports, exports, and ETL",
   "main": "dist/index.js",
   "keywords": [],
@@ -180,7 +180,7 @@
     "camelcase": "^5.0.0",
     "continue-stream": "^3.0.0",
     "csv-parser": "^2.0.0",
-    "duplexify": "^3.6.1",
+    "duplexer2": "^0.1.4",
     "end-of-stream": "github:isaacs/end-of-stream#custom-stream-premature-close-fix",
     "exceljs-transform-stream": "^1.0.0",
     "get-stream": "^4.0.0",
