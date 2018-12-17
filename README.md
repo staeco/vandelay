@@ -162,5 +162,5 @@ Returns the plain objects without any meta fields attached, useful for the end o
 [npm-url]: https://npmjs.org/package/vandelay
 [npm-image]: http://img.shields.io/npm/v/vandelay.svg
 
-[travis-url]: https://travis-ci.org/contra/vandelay
-[travis-image]: https://travis-ci.org/contra/vandelay.png?branch=master
+[travis-url]: https://travis-ci.org/staeco/vandelay
+[travis-image]: https://travis-ci.org/staeco/vandelay.png?branch=master
