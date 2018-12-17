@@ -6,14 +6,14 @@
   "keywords": [],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/contra/vandelay.git"
+    "url": "git+https://github.com/staeco/vandelay.git"
   },
   "author": "Contra <yo@contra.io> (http://contra.io)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/contra/vandelay/issues"
+    "url": "https://github.com/staeco/vandelay/issues"
   },
-  "homepage": "https://github.com/contra/vandelay#readme",
+  "homepage": "https://github.com/staeco/vandelay#readme",
   "files": [
     "dist"
   ],
