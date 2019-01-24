@@ -10,10 +10,6 @@ var _qs = require('qs');
 
 var _qs2 = _interopRequireDefault(_qs);
 
-var _continueStream = require('continue-stream');
-
-var _continueStream2 = _interopRequireDefault(_continueStream);
-
 var _through = require('through2');
 
 var _through2 = _interopRequireDefault(_through);
@@ -25,6 +21,10 @@ var _pumpify2 = _interopRequireDefault(_pumpify);
 var _multi = require('./multi');
 
 var _multi2 = _interopRequireDefault(_multi);
+
+var _page = require('./page');
+
+var _page2 = _interopRequireDefault(_page);
 
 var _fetchURL = require('./fetchURL');
 
@@ -115,9 +115,8 @@ const fetchStream = (source, opt = {}, raw = false) => {
     const out = _pumpify2.default.ctor({
       autoDestroy: false,
       destroy: false,
-      objectMode: true,
-      highWaterMark: concurrent
-    })(req, src.parser(), (0, _through2.default)({ objectMode: true, highWaterMark: concurrent }, map));
+      objectMode: true
+    })(req, src.parser(), (0, _through2.default)({ objectMode: true }, map));
     out.raw = req.req;
     out.abort = () => {
       req.abort();
@@ -132,23 +131,11 @@ const fetchStream = (source, opt = {}, raw = false) => {
 
   let outStream;
   if (src.pagination) {
-    let page = src.pagination.startPage || 0;
-    let pageDatums; // gets reset on each page to 0
-    let lastFetch;
-    let destroyed = false;
-    outStream = (0, _continueStream2.default)(cb => {
-      if (destroyed || pageDatums === 0) return cb();
-      pageDatums = 0;
-      const newURL = mergeURL(src.url, getQuery(src.pagination, page));
-      lastFetch = fetch(newURL, getOptions(src, opt));
-      page++;
-      cb(null, lastFetch);
-    }, { objectMode: true, highWaterMark: concurrent }).on('data', () => ++pageDatums).pause();
-    outStream.abort = () => {
-      destroyed = true;
-      lastFetch && lastFetch.abort();
-      (0, _hardClose2.default)(outStream);
-    };
+    const startPage = src.pagination.startPage || 0;
+    outStream = (0, _page2.default)(startPage, currentPage => {
+      const newURL = mergeURL(src.url, getQuery(src.pagination, currentPage));
+      return fetch(newURL, getOptions(src, opt));
+    }, { concurrent }).pause();
   } else {
     outStream = fetch(src.url, getOptions(src, opt));
   }

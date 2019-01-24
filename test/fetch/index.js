@@ -161,7 +161,7 @@ describe('fetch', () => {
     }
     const stream = fetch(source)
     const res = await collect.array(stream)
-    res.should.eql([
+    res.should.containDeep([
       { a: 1, b: 2, c: 3, ___meta: { row: 0, url: `${source.url}?limit=1&offset=0`, source } },
       { a: 4, b: 5, c: 6, ___meta: { row: 0, url: `${source.url}?limit=1&offset=1`, source } },
       { a: 7, b: 8, c: 9, ___meta: { row: 0, url: `${source.url}?limit=1&offset=2`, source } }

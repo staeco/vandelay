@@ -4,16 +4,14 @@ import hardClose from '../hardClose'
 
 // merges a bunch of streams, unordered - and has some special error management
 // so one wont fail the whole bunch
-export default ({ concurrent=50, onError, inputs=[] }={}) => {
-  if (inputs.length === 0) throw new Error('No inputs specified!')
-
+export default (startPage, getNext, { concurrent=50, onError }={}) => {
   const out = through2({ objectMode: true })
-  out.remaining = inputs.slice(0)
+  out.currentPage = startPage
   out.running = []
   out.setMaxListeners(0)
   out.abort = () => {
     hardClose(out)
-    inputs.forEach((i) => {
+    out.running.forEach((i) => {
       if (!i.readable) return
       if (i.abort) return i.abort()
       hardClose(i)
@@ -25,8 +23,7 @@ export default ({ concurrent=50, onError, inputs=[] }={}) => {
     const idx = out.running.indexOf(src)
     if (idx === -1) return // already finished
     out.running.splice(idx, 1) // remove it from the run list
-    schedule() // schedule any additional work
-    const finished = out.running.length === 0 && out.remaining.length === 0
+    const finished = out.running.length === 0 && !src._gotData
 
     // let the consumer figure out how they want to handle errors
     const canContinue = !finished && out.readable
@@ -38,24 +35,31 @@ export default ({ concurrent=50, onError, inputs=[] }={}) => {
         input: src
       })
     }
-    if (!canContinue) hardClose(out)
+    if (!canContinue) return hardClose(out)
+    if (src._gotData) schedule() // schedule any additional work
   }
+
   const schedule = () => {
     if (out._closed) return
-    const toRun = concurrent - out.running.length
-    if (toRun === 0) return
-    for (let i = 0; i <= toRun; i++) {
-      if (out.remaining.length === 0) break
-      run(out.remaining.shift())
-    }
+    const remainingSlots = concurrent - out.running.length
+    if (remainingSlots === 0) return
+    const nextPage = out.currentPage
+    out.currentPage = nextPage + 1
+    run(getNext(nextPage))
   }
-  const run = (i) => {
-    const src = typeof i === 'function' ? i() : i
+
+  const run = (src) => {
     out.running.push(src)
     eos(src, (err) => done(src, err))
+    src.once('data', () => {
+      src._gotData = true
+      schedule()
+    })
+    src.pause() // since the data handler will put it in a flowing state
     src.pipe(out, { end: false })
   }
 
-  schedule() // kick it all off
+  // kick it all off
+  schedule()
   return out
 }

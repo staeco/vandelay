@@ -1,9 +1,9 @@
 import url from 'url'
 import qs from 'qs'
-import continueStream from 'continue-stream'
 import through2 from 'through2'
 import pumpify from 'pumpify'
 import multi from './multi'
+import pageStream from './page'
 import fetchURLPlain from './fetchURL'
 import parse from '../parse'
 import hardClose from '../hardClose'
@@ -107,26 +107,11 @@ const fetchStream = (source, opt={}, raw=false) => {
 
   let outStream
   if (src.pagination) {
-    let page = src.pagination.startPage || 0
-    let pageDatums // gets reset on each page to 0
-    let lastFetch
-    let destroyed = false
-    outStream = continueStream((cb) => {
-      if (destroyed || pageDatums === 0) return cb()
-      pageDatums = 0
-      const newURL = mergeURL(src.url, getQuery(src.pagination, page))
-      lastFetch = fetch(newURL, getOptions(src, opt))
-      //lastFetch.once('data', () => outStream.nextStream()) // start on the next page eagerly
-      page++
-      cb(null, lastFetch)
-    }, { objectMode: true })
-      .on('data', () => ++pageDatums)
-      .pause()
-    outStream.abort = () => {
-      destroyed = true
-      lastFetch && lastFetch.abort()
-      hardClose(outStream)
-    }
+    const startPage = src.pagination.startPage || 0
+    outStream = pageStream(startPage, (currentPage) => {
+      const newURL = mergeURL(src.url, getQuery(src.pagination, currentPage))
+      return fetch(newURL, getOptions(src, opt))
+    }, { concurrent }).pause()
   } else {
     outStream = fetch(src.url, getOptions(src, opt))
   }
