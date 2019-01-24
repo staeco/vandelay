@@ -87,12 +87,11 @@ const fetchStream = (source, opt={}, raw=false) => {
     const out = pumpify.ctor({
       autoDestroy: false,
       destroy: false,
-      objectMode: true,
-      highWaterMark: concurrent
+      objectMode: true
     })(
       req,
       src.parser(),
-      through2({ objectMode: true, highWaterMark: concurrent }, map)
+      through2({ objectMode: true }, map)
     )
     out.raw = req.req
     out.abort = () => {
@@ -117,9 +116,10 @@ const fetchStream = (source, opt={}, raw=false) => {
       pageDatums = 0
       const newURL = mergeURL(src.url, getQuery(src.pagination, page))
       lastFetch = fetch(newURL, getOptions(src, opt))
+      //lastFetch.once('data', () => outStream.nextStream()) // start on the next page eagerly
       page++
       cb(null, lastFetch)
-    }, { objectMode: true, highWaterMark: concurrent })
+    }, { objectMode: true })
       .on('data', () => ++pageDatums)
       .pause()
     outStream.abort = () => {
