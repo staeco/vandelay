@@ -15,7 +15,11 @@ export default (opt) => {
     attrNameProcessors: nameProcessors
   }
   const xml2JsonStream = through2.obj((row, _, cb) => {
-    parseString(row.toString(), xmlOpt, (err, js) => {
+    let str = row.toString()
+    if (!xmlOpt.strict) {
+      str = str.replace(/<!doctype (.*)>/i, '')
+    }
+    parseString(str, xmlOpt, (err, js) => {
       cb(err, JSON.stringify(js))
     })
   })

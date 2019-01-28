@@ -5,7 +5,9 @@ import parse from '../../src/parse'
 import streamify from 'into-stream'
 import collect from 'get-stream'
 
-const data = `<html>
+const data = `
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html>
 <item>
   <A>1</A>
   <B>2</B>

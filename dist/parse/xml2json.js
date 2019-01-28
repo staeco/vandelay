@@ -30,7 +30,11 @@ exports.default = opt => {
     attrNameProcessors: nameProcessors
   };
   const xml2JsonStream = _through2.default.obj((row, _, cb) => {
-    (0, _xml2js.parseString)(row.toString(), xmlOpt, (err, js) => {
+    let str = row.toString();
+    if (!xmlOpt.strict) {
+      str = str.replace(/<!doctype (.*)>/i, '');
+    }
+    (0, _xml2js.parseString)(str, xmlOpt, (err, js) => {
       cb(err, JSON.stringify(js));
     });
   });
