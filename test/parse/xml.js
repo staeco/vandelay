@@ -42,7 +42,7 @@ describe('parse xml', () => {
       { A: '7', B: '8', C: '9' }
     ])
   })
-  it.skip('should parse an array with autoParse', async () => {
+  it('should parse an array with autoParse', async () => {
     const parser = parse('xml', { selector: 'root.item.*', autoParse: true })
     const stream = streamify(data).pipe(parser())
     const res = await collect.array(stream)
@@ -52,7 +52,7 @@ describe('parse xml', () => {
       { A: 7, B: 8, C: 9 }
     ])
   })
-  it.skip('should parse an array with autoParse and camelcase', async () => {
+  it('should parse an array with autoParse and camelcase', async () => {
     const parser = parse('xml', { selector: 'root.item.*', autoParse: true, camelcase: true })
     const stream = streamify(data).pipe(parser())
     const res = await collect.array(stream)
@@ -62,7 +62,7 @@ describe('parse xml', () => {
       { a: 7, b: 8, c: 9 }
     ])
   })
-  it.skip('should parse a nested path', async () => {
+  it('should parse a nested path', async () => {
     const parser = parse('xml', { selector: 'root.item.*.A', autoParse: true })
     const stream = streamify(data).pipe(parser())
     const res = await collect.array(stream)

@@ -103,6 +103,20 @@ describe('fetch', () => {
       { a: 7, b: 8, c: 9, ___meta: { row: 2, url: source.url, source } }
     ])
   })
+  it('should request a flat json file with context', async () => {
+    const expectedURL = `http://localhost:${port}/file.json`
+    const source = {
+      url: `http://localhost:${port}/{fileName}.json`,
+      parser: parse('json', { selector: 'data.*' })
+    }
+    const stream = fetch(source, { context: { fileName: 'file' } })
+    const res = await collect.array(stream)
+    res.should.eql([
+      { a: 1, b: 2, c: 3, ___meta: { row: 0, url: expectedURL, source } },
+      { a: 4, b: 5, c: 6, ___meta: { row: 1, url: expectedURL, source } },
+      { a: 7, b: 8, c: 9, ___meta: { row: 2, url: expectedURL, source } }
+    ])
+  })
   it('should request a flat json file with headers', async () => {
     const source = {
       url: `http://localhost:${port}/file.json`,

@@ -79,6 +79,8 @@ Returns a stream that fetches the given source and emits the parsed and selected
 #### options
 
 - concurrency - Optional `Number`, defaults to 50
+- context - Optional `Object`
+  - If specified, will be templated into the URL via [RFC6570](https://tools.ietf.org/html/rfc6570)
 - modifyRequest - Optional `Function`
   - Receives a superagent request object prior to execution, so you can add on any additional headers/querystring parameters.
 - onError - Optional `Function`

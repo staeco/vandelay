@@ -16,9 +16,6 @@ export default (opt) => {
   }
   const xml2JsonStream = through2.obj((row, _, cb) => {
     let str = row.toString()
-    if (!xmlOpt.strict) {
-      str = str.replace(/<!doctype (.*)>/i, '')
-    }
     parseString(str, xmlOpt, (err, js) => {
       cb(err, JSON.stringify(js))
     })

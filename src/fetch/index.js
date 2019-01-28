@@ -2,6 +2,7 @@ import url from 'url'
 import qs from 'qs'
 import through2 from 'through2'
 import pumpify from 'pumpify'
+import template from 'url-template'
 import multi from './multi'
 import pageStream from './page'
 import fetchURLPlain from './fetchURL'
@@ -12,7 +13,8 @@ const getOptions = (src, opt) => ({
   log: opt.log,
   timeout: opt.timeout,
   attempts: opt.attempts,
-  headers: src.headers
+  headers: src.headers,
+  context: opt.context
 })
 
 // default behavior is to fail on first error
@@ -62,6 +64,8 @@ const fetchStream = (source, opt={}, raw=false) => {
 
   // URL + Parser
   const fetch = (url, opt) => {
+    const fullURL = opt.context && url.includes('{') ? template.parse(url).expand(opt.context) : url
+
     // attaches some meta to the object for the transform fn to use
     let rows = -1
     const map = function (row, _, cb) {
@@ -69,7 +73,7 @@ const fetchStream = (source, opt={}, raw=false) => {
       if (row && typeof row === 'object') {
         row.___meta = {
           row: ++rows,
-          url,
+          url: fullURL,
           source
         }
 
@@ -82,8 +86,8 @@ const fetchStream = (source, opt={}, raw=false) => {
       cb(null, row)
     }
 
-    let req = fetchURL(url, opt)
-    if (opt.onFetch) opt.onFetch(url)
+    let req = fetchURL(fullURL, opt)
+    if (opt.onFetch) opt.onFetch(fullURL)
     const out = pumpify.ctor({
       autoDestroy: false,
       destroy: false,
@@ -100,7 +104,7 @@ const fetchStream = (source, opt={}, raw=false) => {
     }
     out.on('error', (err) => {
       err.source = source
-      err.url = url
+      err.url = fullURL
     })
     return out
   }

@@ -1,6 +1,6 @@
 {
   "name": "vandelay",
-  "version": "2.4.1",
+  "version": "2.4.2",
   "description": "Imports, exports, and ETL",
   "main": "dist/index.js",
   "keywords": [],
@@ -195,6 +195,7 @@
     "shp2json": "^1.2.1",
     "through2": "^3.0.0",
     "unzipper": "^0.9.3",
+    "url-template": "^2.0.8",
     "vm2": "^3.6.0",
     "xml2js": "^0.4.19"
   }
