@@ -18,6 +18,10 @@ var _pumpify = require('pumpify');
 
 var _pumpify2 = _interopRequireDefault(_pumpify);
 
+var _urlTemplate = require('url-template');
+
+var _urlTemplate2 = _interopRequireDefault(_urlTemplate);
+
 var _multi = require('./multi');
 
 var _multi2 = _interopRequireDefault(_multi);
@@ -44,7 +48,8 @@ const getOptions = (src, opt) => ({
   log: opt.log,
   timeout: opt.timeout,
   attempts: opt.attempts,
-  headers: src.headers
+  headers: src.headers,
+  context: opt.context
 });
 
 // default behavior is to fail on first error
@@ -91,6 +96,8 @@ const fetchStream = (source, opt = {}, raw = false) => {
 
   // URL + Parser
   const fetch = (url, opt) => {
+    const fullURL = opt.context && url.includes('{') ? _urlTemplate2.default.parse(url).expand(opt.context) : url;
+
     // attaches some meta to the object for the transform fn to use
     let rows = -1;
     const map = function (row, _, cb) {
@@ -98,7 +105,7 @@ const fetchStream = (source, opt = {}, raw = false) => {
       if (row && typeof row === 'object') {
         row.___meta = {
           row: ++rows,
-          url,
+          url: fullURL,
           source
 
           // json header info from the parser
@@ -110,8 +117,8 @@ const fetchStream = (source, opt = {}, raw = false) => {
       cb(null, row);
     };
 
-    let req = fetchURL(url, opt);
-    if (opt.onFetch) opt.onFetch(url);
+    let req = fetchURL(fullURL, opt);
+    if (opt.onFetch) opt.onFetch(fullURL);
     const out = _pumpify2.default.ctor({
       autoDestroy: false,
       destroy: false,
@@ -124,7 +131,7 @@ const fetchStream = (source, opt = {}, raw = false) => {
     };
     out.on('error', err => {
       err.source = source;
-      err.url = url;
+      err.url = fullURL;
     });
     return out;
   };
