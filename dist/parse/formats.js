@@ -1,7 +1,7 @@
 'use strict';
 
 exports.__esModule = true;
-exports.gtfs = exports.gtfsrt = exports.shp = exports.xml = exports.json = exports.excel = exports.csv = undefined;
+exports.gtfs = exports.gtfsrt = exports.shp = exports.html = exports.xml = exports.json = exports.excel = exports.csv = undefined;
 
 var _csvParser = require('csv-parser');
 
@@ -107,8 +107,15 @@ const json = exports.json = opt => {
 const xml = exports.xml = opt => {
   if (opt.camelcase && typeof opt.camelcase !== 'boolean') throw new Error('Invalid camelcase option');
   if (opt.autoParse && typeof opt.autoParse !== 'boolean') throw new Error('Invalid autoParse option');
-  if (opt.xml) return (0, _unzip2.default)(xml.bind(undefined, Object.assign({}, opt, { zip: undefined })), /\.xml$/);
+  if (opt.zip) return (0, _unzip2.default)(xml.bind(undefined, Object.assign({}, opt, { zip: undefined })), /\.xml$/);
   return _pumpify2.default.obj((0, _xml2json2.default)(opt), json(opt));
+};
+
+const html = exports.html = opt => {
+  if (opt.camelcase && typeof opt.camelcase !== 'boolean') throw new Error('Invalid camelcase option');
+  if (opt.autoParse && typeof opt.autoParse !== 'boolean') throw new Error('Invalid autoParse option');
+  if (opt.zip) return (0, _unzip2.default)(html.bind(undefined, Object.assign({}, opt, { zip: undefined })), /\.xml$/);
+  return _pumpify2.default.obj((0, _xml2json2.default)(Object.assign({}, opt, { strict: false })), json(opt));
 };
 
 const shp = exports.shp = () => {

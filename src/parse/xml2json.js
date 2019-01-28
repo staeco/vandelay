@@ -7,6 +7,7 @@ export default (opt) => {
   const valueProcessors = opt.autoParse ? [ autoParse ] : null
   const nameProcessors = opt.camelcase ? [ camelcase ] : null
   const xmlOpt = {
+    strict: opt.strict || true,
     explicitArray: false,
     valueProcessors,
     attrValueProcessors: valueProcessors,

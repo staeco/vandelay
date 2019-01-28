@@ -64,8 +64,15 @@ export const json = (opt) => {
 export const xml = (opt) => {
   if (opt.camelcase && typeof opt.camelcase !== 'boolean') throw new Error('Invalid camelcase option')
   if (opt.autoParse && typeof opt.autoParse !== 'boolean') throw new Error('Invalid autoParse option')
-  if (opt.xml) return unzip(xml.bind(this, { ...opt, zip: undefined }), /\.xml$/)
+  if (opt.zip) return unzip(xml.bind(this, { ...opt, zip: undefined }), /\.xml$/)
   return pumpify.obj(xml2json(opt), json(opt))
+}
+
+export const html = (opt) => {
+  if (opt.camelcase && typeof opt.camelcase !== 'boolean') throw new Error('Invalid camelcase option')
+  if (opt.autoParse && typeof opt.autoParse !== 'boolean') throw new Error('Invalid autoParse option')
+  if (opt.zip) return unzip(html.bind(this, { ...opt, zip: undefined }), /\.xml$/)
+  return pumpify.obj(xml2json({ ...opt, strict: false }), json(opt))
 }
 
 export const shp = () => {
