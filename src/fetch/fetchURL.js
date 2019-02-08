@@ -2,6 +2,7 @@ import got from 'got-resume'
 import through2 from 'through2'
 import collect from 'get-stream'
 import pump from 'pump'
+import template from 'url-template'
 import hardClose from '../hardClose'
 
 const sizeLimit = 512000 // 512kb
@@ -23,7 +24,8 @@ const httpError = (err, res) => {
 }
 const oneDay = 86400000
 
-export default (url, { attempts=10, headers, timeout, log }={}) => {
+export default (url, { attempts=10, headers, timeout, log, context }={}) => {
+  const fullURL = context && url.includes('{') ? template.parse(url).expand(context) : url
   const out = through2()
   let isCollectingError = false
 
@@ -41,7 +43,7 @@ export default (url, { attempts=10, headers, timeout, log }={}) => {
     }
   }
 
-  const req = got(url, options)
+  const req = got(fullURL, options)
     // handle errors
     .once('error', async (err) => {
       isCollectingError = true
@@ -61,5 +63,6 @@ export default (url, { attempts=10, headers, timeout, log }={}) => {
     req.cancel()
   }
   out.req = req
+  out.url = fullURL
   return out
 }

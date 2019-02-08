@@ -2,7 +2,6 @@ import url from 'url'
 import qs from 'qs'
 import through2 from 'through2'
 import pumpify from 'pumpify'
-import template from 'url-template'
 import multi from './multi'
 import pageStream from './page'
 import fetchURLPlain from './fetchURL'
@@ -64,16 +63,16 @@ const fetchStream = (source, opt={}, raw=false) => {
 
   // URL + Parser
   const fetch = (url, opt) => {
-    const fullURL = opt.context && url.includes('{') ? template.parse(url).expand(opt.context) : url
-
     // attaches some meta to the object for the transform fn to use
     let rows = -1
+    const req = fetchURL(url, opt)
+    if (opt.onFetch) opt.onFetch(req.url)
     const map = function (row, _, cb) {
       // create the meta and put it on objects passing through
       if (row && typeof row === 'object') {
         row.___meta = {
           row: ++rows,
-          url: fullURL,
+          url: req.url,
           source
         }
 
@@ -86,8 +85,6 @@ const fetchStream = (source, opt={}, raw=false) => {
       cb(null, row)
     }
 
-    let req = fetchURL(fullURL, opt)
-    if (opt.onFetch) opt.onFetch(fullURL)
     const out = pumpify.ctor({
       autoDestroy: false,
       destroy: false,
@@ -98,13 +95,14 @@ const fetchStream = (source, opt={}, raw=false) => {
       through2({ objectMode: true }, map)
     )
     out.raw = req.req
+    out.url = req.url
     out.abort = () => {
       req.abort()
       hardClose(out)
     }
     out.on('error', (err) => {
       err.source = source
-      err.url = fullURL
+      err.url = req.url
     })
     return out
   }

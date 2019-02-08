@@ -18,10 +18,6 @@ var _pumpify = require('pumpify');
 
 var _pumpify2 = _interopRequireDefault(_pumpify);
 
-var _urlTemplate = require('url-template');
-
-var _urlTemplate2 = _interopRequireDefault(_urlTemplate);
-
 var _multi = require('./multi');
 
 var _multi2 = _interopRequireDefault(_multi);
@@ -96,16 +92,16 @@ const fetchStream = (source, opt = {}, raw = false) => {
 
   // URL + Parser
   const fetch = (url, opt) => {
-    const fullURL = opt.context && url.includes('{') ? _urlTemplate2.default.parse(url).expand(opt.context) : url;
-
     // attaches some meta to the object for the transform fn to use
     let rows = -1;
+    const req = fetchURL(url, opt);
+    if (opt.onFetch) opt.onFetch(req.url);
     const map = function (row, _, cb) {
       // create the meta and put it on objects passing through
       if (row && typeof row === 'object') {
         row.___meta = {
           row: ++rows,
-          url: fullURL,
+          url: req.url,
           source
 
           // json header info from the parser
@@ -117,21 +113,20 @@ const fetchStream = (source, opt = {}, raw = false) => {
       cb(null, row);
     };
 
-    let req = fetchURL(fullURL, opt);
-    if (opt.onFetch) opt.onFetch(fullURL);
     const out = _pumpify2.default.ctor({
       autoDestroy: false,
       destroy: false,
       objectMode: true
     })(req, src.parser(), (0, _through2.default)({ objectMode: true }, map));
     out.raw = req.req;
+    out.url = req.url;
     out.abort = () => {
       req.abort();
       (0, _hardClose2.default)(out);
     };
     out.on('error', err => {
       err.source = source;
-      err.url = fullURL;
+      err.url = req.url;
     });
     return out;
   };

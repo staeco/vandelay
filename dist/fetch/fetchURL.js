@@ -18,6 +18,10 @@ var _pump = require('pump');
 
 var _pump2 = _interopRequireDefault(_pump);
 
+var _urlTemplate = require('url-template');
+
+var _urlTemplate2 = _interopRequireDefault(_urlTemplate);
+
 var _hardClose = require('../hardClose');
 
 var _hardClose2 = _interopRequireDefault(_hardClose);
@@ -43,7 +47,8 @@ const httpError = (err, res) => {
 };
 const oneDay = 86400000;
 
-exports.default = (url, { attempts = 10, headers, timeout, log } = {}) => {
+exports.default = (url, { attempts = 10, headers, timeout, log, context } = {}) => {
+  const fullURL = context && url.includes('{') ? _urlTemplate2.default.parse(url).expand(context) : url;
   const out = (0, _through2.default)();
   let isCollectingError = false;
 
@@ -61,7 +66,7 @@ exports.default = (url, { attempts = 10, headers, timeout, log } = {}) => {
     }
   };
 
-  const req = (0, _gotResume2.default)(url, options)
+  const req = (0, _gotResume2.default)(fullURL, options)
   // handle errors
   .once('error', async err => {
     isCollectingError = true;
@@ -80,6 +85,7 @@ exports.default = (url, { attempts = 10, headers, timeout, log } = {}) => {
     req.cancel();
   };
   out.req = req;
+  out.url = fullURL;
   return out;
 };
 
