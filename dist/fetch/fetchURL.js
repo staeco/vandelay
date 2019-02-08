@@ -28,6 +28,8 @@ var _hardClose2 = _interopRequireDefault(_hardClose);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+const defaultUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36';
+
 const sizeLimit = 512000; // 512kb
 const rewriteError = err => {
   if (err.statusCode) return new Error(`Server responded with "${err.statusMessage}"`);
@@ -47,7 +49,7 @@ const httpError = (err, res) => {
 };
 const oneDay = 86400000;
 
-exports.default = (url, { attempts = 10, headers, timeout, log, context } = {}) => {
+exports.default = (url, { attempts = 10, headers = {}, timeout, log, context } = {}) => {
   const decoded = unescape(url);
   const fullURL = context && decoded.includes('{') ? _urlTemplate2.default.parse(decoded).expand(context) : url;
 
@@ -64,7 +66,9 @@ exports.default = (url, { attempts = 10, headers, timeout, log, context } = {}) 
         connect: oneDay,
         socket: oneDay
       },
-      headers
+      headers: Object.assign({
+        'user-agent': defaultUserAgent
+      }, headers)
     }
   };
 
