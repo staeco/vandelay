@@ -48,7 +48,8 @@ const httpError = (err, res) => {
 const oneDay = 86400000;
 
 exports.default = (url, { attempts = 10, headers, timeout, log, context } = {}) => {
-  const fullURL = context && url.includes('{') ? _urlTemplate2.default.parse(url).expand(context) : url;
+  const decoded = unescape(url);
+  const fullURL = context && decoded.includes('{') ? _urlTemplate2.default.parse(decoded).expand(context) : url;
   const out = (0, _through2.default)();
   let isCollectingError = false;
 

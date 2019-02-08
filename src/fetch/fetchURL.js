@@ -25,7 +25,10 @@ const httpError = (err, res) => {
 const oneDay = 86400000
 
 export default (url, { attempts=10, headers, timeout, log, context }={}) => {
-  const fullURL = context && url.includes('{') ? template.parse(url).expand(context) : url
+  const decoded = unescape(url)
+  const fullURL = context && decoded.includes('{')
+    ? template.parse(decoded).expand(context)
+    : url
   const out = through2()
   let isCollectingError = false
 
