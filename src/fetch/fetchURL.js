@@ -29,6 +29,7 @@ export default (url, { attempts=10, headers, timeout, log, context }={}) => {
   const fullURL = context && decoded.includes('{')
     ? template.parse(decoded).expand(context)
     : url
+
   const out = through2()
   let isCollectingError = false
 

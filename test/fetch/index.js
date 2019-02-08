@@ -181,6 +181,24 @@ describe('fetch', () => {
       { a: 7, b: 8, c: 9, ___meta: { row: 0, url: `${source.url}?limit=1&offset=2`, source } }
     ])
   })
+  it('should request with pagination and context', async () => {
+    const source = {
+      url: `http://localhost:${port}/{path}`,
+      parser: parse('json', { selector: 'data.*' }),
+      pagination: {
+        limitParam: 'limit',
+        offsetParam: 'offset',
+        limit: 1
+      }
+    }
+    const stream = fetch(source, { context: { path: 'data' } })
+    const res = await collect.array(stream)
+    res.should.containDeep([
+      { a: 1, b: 2, c: 3, ___meta: { row: 0, url: `http://localhost:${port}/data?limit=1&offset=0`, source } },
+      { a: 4, b: 5, c: 6, ___meta: { row: 0, url: `http://localhost:${port}/data?limit=1&offset=1`, source } },
+      { a: 7, b: 8, c: 9, ___meta: { row: 0, url: `http://localhost:${port}/data?limit=1&offset=2`, source } }
+    ])
+  })
   it('should work with non-object selector', async () => {
     const source = {
       url: `http://localhost:${port}/file.json`,

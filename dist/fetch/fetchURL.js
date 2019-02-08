@@ -50,6 +50,7 @@ const oneDay = 86400000;
 exports.default = (url, { attempts = 10, headers, timeout, log, context } = {}) => {
   const decoded = unescape(url);
   const fullURL = context && decoded.includes('{') ? _urlTemplate2.default.parse(decoded).expand(context) : url;
+
   const out = (0, _through2.default)();
   let isCollectingError = false;
 
