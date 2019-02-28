@@ -1,7 +1,7 @@
 'use strict';
 
 exports.__esModule = true;
-exports.gtfs = exports.gtfsrt = exports.shp = exports.html = exports.xml = exports.json = exports.excel = exports.csv = undefined;
+exports.gtfs = exports.gtfsrt = exports.shp = exports.html = exports.xml = exports.json = exports.ndjson = exports.excel = exports.csv = undefined;
 
 var _csvParser = require('csv-parser');
 
@@ -38,6 +38,8 @@ var _JSONStream2 = _interopRequireDefault(_JSONStream);
 var _gtfsStream = require('gtfs-stream');
 
 var _gtfsStream2 = _interopRequireDefault(_gtfsStream);
+
+var _ndjson = require('ndjson');
 
 var _camelcase = require('camelcase');
 
@@ -84,6 +86,12 @@ const excel = exports.excel = opt => {
     mapValues: v => opt.autoParse ? (0, _autoParse2.default)(v) : v
   });
 };
+
+const ndjson = exports.ndjson = opt => {
+  if (opt.zip) return (0, _unzip2.default)(ndjson.bind(undefined, Object.assign({}, opt, { zip: undefined })), /\.ndjson$/);
+  return (0, _ndjson.parse)();
+};
+
 const json = exports.json = opt => {
   if (Array.isArray(opt.selector)) {
     const inStream = (0, _through2.default)();

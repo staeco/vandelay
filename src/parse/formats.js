@@ -7,6 +7,7 @@ import pumpify from 'pumpify'
 import pump from 'pump'
 import JSONStream from 'JSONStream'
 import parseGTFS from 'gtfs-stream'
+import { parse as ndParse } from 'ndjson'
 import camelcase from 'camelcase'
 import unzip from './unzip'
 import xml2json from './xml2json'
@@ -39,6 +40,12 @@ export const excel = (opt) => {
     mapValues: (v) => opt.autoParse ? autoParse(v) : v
   })
 }
+
+export const ndjson = (opt) => {
+  if (opt.zip) return unzip(ndjson.bind(this, { ...opt, zip: undefined }), /\.ndjson$/)
+  return ndParse()
+}
+
 export const json = (opt) => {
   if (Array.isArray(opt.selector)) {
     const inStream = through2()
