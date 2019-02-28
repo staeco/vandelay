@@ -70,8 +70,10 @@ const getQuery = (pageOpt, page) => {
 const fetchStream = (source, opt = {}, raw = false) => {
   const concurrent = opt.concurrency != null ? opt.concurrency : 50;
   if (Array.isArray(source)) {
+    // zips eat memory, do not run more than one at a time
+    const containsZips = source.some(i => i.parserOptions && i.parserOptions.zip);
     return (0, _multi2.default)({
-      concurrent,
+      concurrent: containsZips ? 1 : concurrent,
       inputs: source.map(i => fetchStream.bind(null, i, opt, true)),
       onError: opt.onError || defaultErrorHandler
     });
