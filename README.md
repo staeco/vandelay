@@ -118,6 +118,14 @@ Built in parsers are:
   - Optional `camelcase` option, to camelcase and normalize header keys.
   - Optional `zip` option, if the content is a zip file it will parse each XML file in the zip.
 
+### options
+
+- Optional `autoFormat` option, to automatically infer types of values and convert them.
+  - If `simple` it will only infer types from values and trim keys
+  - If `aggressive` it will add camelcasing of keys on top of simple mode
+  - If `extreme` it will add more complex mapping on top of aggressive mode
+    - For example, converting `startLat` and `startLon` fields to a GeoJSON Point
+
 ### transform(transformer[, options])
 
 #### transformer(row, meta)

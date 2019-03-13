@@ -8,21 +8,16 @@ import pump from 'pump'
 import JSONStream from 'JSONStream'
 import parseGTFS from 'gtfs-stream'
 import { parse as ndParse } from 'ndjson'
-import camelcase from 'camelcase'
 import unzip from './unzip'
 import xml2json from './xml2json'
-import * as autoFormat from '../autoFormat'
 
 // these formatters receive one argument, "data source" object
 // and return a stream that maps strings to items
 export const csv = (opt) => {
-  if (opt.camelcase && typeof opt.camelcase !== 'boolean') throw new Error('Invalid camelcase option')
-  if (opt.autoFormat && typeof opt.autoFormat !== 'boolean') throw new Error('Invalid autoFormat option')
   if (opt.zip) return unzip(csv.bind(this, { ...opt, zip: undefined }), /\.csv$/)
 
   const head = csvStream({
-    mapHeaders: ({ header }) => opt.camelcase ? camelcase(header) : header.trim(),
-    mapValues: ({ value }) => opt.autoFormat ? autoFormat.simple(value) : value
+    mapHeaders: ({ header }) => header.trim()
   })
   // convert into normal objects
   const tail = through2.obj((row, _, cb) => {
@@ -32,12 +27,9 @@ export const csv = (opt) => {
   return pumpify.obj(head, tail)
 }
 export const excel = (opt) => {
-  if (opt.camelcase && typeof opt.camelcase !== 'boolean') throw new Error('Invalid camelcase option')
-  if (opt.autoFormat && typeof opt.autoFormat !== 'boolean') throw new Error('Invalid autoFormat option')
   if (opt.zip) return unzip(excel.bind(this, { ...opt, zip: undefined }), /\.xlsx$/)
   return excelStream({
-    mapHeaders: (v) => opt.camelcase ? camelcase(v) : v.trim(),
-    mapValues: (v) => opt.autoFormat ? autoFormat.simple(v) : v
+    mapHeaders: (header) => header.trim()
   })
 }
 
@@ -69,15 +61,11 @@ export const json = (opt) => {
 }
 
 export const xml = (opt) => {
-  if (opt.camelcase && typeof opt.camelcase !== 'boolean') throw new Error('Invalid camelcase option')
-  if (opt.autoFormat && typeof opt.autoFormat !== 'boolean') throw new Error('Invalid autoFormat option')
   if (opt.zip) return unzip(xml.bind(this, { ...opt, zip: undefined }), /\.xml$/)
   return pumpify.obj(xml2json(opt), json(opt))
 }
 
 export const html = (opt) => {
-  if (opt.camelcase && typeof opt.camelcase !== 'boolean') throw new Error('Invalid camelcase option')
-  if (opt.autoFormat && typeof opt.autoFormat !== 'boolean') throw new Error('Invalid autoFormat option')
   if (opt.zip) return unzip(html.bind(this, { ...opt, zip: undefined }), /\.xml$/)
   return pumpify.obj(xml2json({ ...opt, strict: false }), json(opt))
 }

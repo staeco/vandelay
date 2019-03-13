@@ -41,10 +41,6 @@ var _gtfsStream2 = _interopRequireDefault(_gtfsStream);
 
 var _ndjson = require('ndjson');
 
-var _camelcase = require('camelcase');
-
-var _camelcase2 = _interopRequireDefault(_camelcase);
-
 var _unzip = require('./unzip');
 
 var _unzip2 = _interopRequireDefault(_unzip);
@@ -53,22 +49,15 @@ var _xml2json = require('./xml2json');
 
 var _xml2json2 = _interopRequireDefault(_xml2json);
 
-var _autoParse = require('./autoParse');
-
-var _autoParse2 = _interopRequireDefault(_autoParse);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // these formatters receive one argument, "data source" object
 // and return a stream that maps strings to items
 const csv = exports.csv = opt => {
-  if (opt.camelcase && typeof opt.camelcase !== 'boolean') throw new Error('Invalid camelcase option');
-  if (opt.autoParse && typeof opt.autoParse !== 'boolean') throw new Error('Invalid autoParse option');
   if (opt.zip) return (0, _unzip2.default)(csv.bind(undefined, Object.assign({}, opt, { zip: undefined })), /\.csv$/);
 
   const head = (0, _csvParser2.default)({
-    mapHeaders: ({ header }) => opt.camelcase ? (0, _camelcase2.default)(header) : header.trim(),
-    mapValues: ({ value }) => opt.autoParse ? (0, _autoParse2.default)(value) : value
+    mapHeaders: ({ header }) => header.trim()
   });
   // convert into normal objects
   const tail = _through2.default.obj((row, _, cb) => {
@@ -78,12 +67,9 @@ const csv = exports.csv = opt => {
   return _pumpify2.default.obj(head, tail);
 };
 const excel = exports.excel = opt => {
-  if (opt.camelcase && typeof opt.camelcase !== 'boolean') throw new Error('Invalid camelcase option');
-  if (opt.autoParse && typeof opt.autoParse !== 'boolean') throw new Error('Invalid autoParse option');
   if (opt.zip) return (0, _unzip2.default)(excel.bind(undefined, Object.assign({}, opt, { zip: undefined })), /\.xlsx$/);
   return (0, _exceljsTransformStream2.default)({
-    mapHeaders: v => opt.camelcase ? (0, _camelcase2.default)(v) : v.trim(),
-    mapValues: v => opt.autoParse ? (0, _autoParse2.default)(v) : v
+    mapHeaders: header => header.trim()
   });
 };
 
@@ -113,15 +99,11 @@ const json = exports.json = opt => {
 };
 
 const xml = exports.xml = opt => {
-  if (opt.camelcase && typeof opt.camelcase !== 'boolean') throw new Error('Invalid camelcase option');
-  if (opt.autoParse && typeof opt.autoParse !== 'boolean') throw new Error('Invalid autoParse option');
   if (opt.zip) return (0, _unzip2.default)(xml.bind(undefined, Object.assign({}, opt, { zip: undefined })), /\.xml$/);
   return _pumpify2.default.obj((0, _xml2json2.default)(opt), json(opt));
 };
 
 const html = exports.html = opt => {
-  if (opt.camelcase && typeof opt.camelcase !== 'boolean') throw new Error('Invalid camelcase option');
-  if (opt.autoParse && typeof opt.autoParse !== 'boolean') throw new Error('Invalid autoParse option');
   if (opt.zip) return (0, _unzip2.default)(html.bind(undefined, Object.assign({}, opt, { zip: undefined })), /\.xml$/);
   return _pumpify2.default.obj((0, _xml2json2.default)(Object.assign({}, opt, { strict: false })), json(opt));
 };

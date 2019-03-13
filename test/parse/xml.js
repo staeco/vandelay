@@ -30,7 +30,6 @@ describe('parse xml', () => {
   })
   it('should throw on bad options', async () => {
     should.throws(() => parse('csv', { autoFormat: 'yes' }))
-    should.throws(() => parse('csv', { camelcase: 'yes' }))
   })
   it('should parse an array', async () => {
     const parser = parse('xml', { selector: 'root.item.*' })
@@ -43,7 +42,7 @@ describe('parse xml', () => {
     ])
   })
   it('should parse an array with autoFormat', async () => {
-    const parser = parse('xml', { selector: 'root.item.*', autoFormat: true })
+    const parser = parse('xml', { selector: 'root.item.*', autoFormat: 'simple' })
     const stream = streamify(data).pipe(parser())
     const res = await collect.array(stream)
     res.should.eql([
@@ -52,8 +51,8 @@ describe('parse xml', () => {
       { A: 7, B: 8, C: 9 }
     ])
   })
-  it('should parse an array with autoFormat and camelcase', async () => {
-    const parser = parse('xml', { selector: 'root.item.*', autoFormat: true, camelcase: true })
+  it('should parse an array with autoFormat aggressive', async () => {
+    const parser = parse('xml', { selector: 'root.item.*', autoFormat: 'aggressive' })
     const stream = streamify(data).pipe(parser())
     const res = await collect.array(stream)
     res.should.eql([
@@ -63,7 +62,7 @@ describe('parse xml', () => {
     ])
   })
   it('should parse a nested path', async () => {
-    const parser = parse('xml', { selector: 'root.item.*.A', autoFormat: true })
+    const parser = parse('xml', { selector: 'root.item.*.A', autoFormat: 'simple' })
     const stream = streamify(data).pipe(parser())
     const res = await collect.array(stream)
     res.should.eql([ 1, 4, 7 ])

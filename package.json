@@ -23,7 +23,7 @@
     "clean": "rimraf dist",
     "lint": "eslint src test",
     "lint:fix": "eslint src test --fix",
-    "test": "npm run-script lint && mocha --require babel-register --recursive --reporter spec"
+    "test": "mocha --require babel-register --recursive --reporter spec --bail && npm run-script lint"
   },
   "resolutions": {
     "end-of-stream": "github:isaacs/end-of-stream#custom-stream-premature-close-fix"
@@ -187,6 +187,7 @@
     "got-resume": "github:contra/got-resume",
     "gtfs-stream": "^1.0.0",
     "lodash.clone": "^4.5.0",
+    "lodash.omit": "^4.5.0",
     "merge2": "^1.2.3",
     "ndjson": "^1.5.0",
     "object-transform-stack": "^0.1.0",
