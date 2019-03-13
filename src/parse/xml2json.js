@@ -1,10 +1,10 @@
 import { parseString } from 'xml2js'
 import through2 from 'through2'
 import camelcase from 'camelcase'
-import autoParse from './autoParse'
+import * as autoFormat from '../autoFormat'
 
 export default (opt) => {
-  const valueProcessors = opt.autoParse ? [ autoParse ] : null
+  const valueProcessors = opt.autoFormat ? [ autoFormat.simple ] : null
   const nameProcessors = opt.camelcase ? [ camelcase ] : null
   const xmlOpt = {
     strict: opt.strict || true,

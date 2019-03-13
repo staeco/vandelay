@@ -99,11 +99,11 @@ Returns a function that creates a parser stream. Parser streams receive text as 
 Built in parsers are:
 
 - csv
-  - Optional `autoParse` option, to automatically infer types of values and convert them.
+  - Optional `autoFormat` option, to automatically infer types of values and convert them.
   - Optional `camelcase` option, to camelcase and normalize header keys.
   - Optional `zip` option, if the content is a zip file it will parse each CSV file in the zip.
 - excel
-  - Optional `autoParse` option, to automatically infer types of values and convert them.
+  - Optional `autoFormat` option, to automatically infer types of values and convert them.
   - Optional `camelcase` option, to camelcase and normalize header keys.
   - Optional `zip` option, if the content is a zip file it will parse each XLSX file in the zip.
 - shp
@@ -114,7 +114,7 @@ Built in parsers are:
 - xml
   - Requires a `selector` option that specifies where to grab rows in the data.
     - Note that the selector applies to the [xml2js](https://github.com/Leonidas-from-XIV/node-xml2js) output.
-  - Optional `autoParse` option, to automatically infer types of values and convert them.
+  - Optional `autoFormat` option, to automatically infer types of values and convert them.
   - Optional `camelcase` option, to camelcase and normalize header keys.
   - Optional `zip` option, if the content is a zip file it will parse each XML file in the zip.
 

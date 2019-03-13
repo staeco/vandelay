@@ -29,7 +29,7 @@ const arrToExcel = (arr) => {
 
 describe('parse excel', () => {
   it('should throw on bad options', async () => {
-    should.throws(() => parse('excel', { autoParse: 'yes' }))
+    should.throws(() => parse('excel', { autoFormat: 'yes' }))
     should.throws(() => parse('excel', { camelcase: 'yes' }))
   })
   it('should parse a basic list', async () => {
@@ -47,13 +47,13 @@ describe('parse excel', () => {
       { a: 7, b: 8, c: 9 }
     ])
   })
-  it('should parse a basic list with autoParse', async () => {
+  it('should parse a basic list with autoFormat', async () => {
     const sample = [
       { a: '1', b: '2', c: '3' },
       { a: 4, b: 5, c: 6 },
       { a: 7, b: ' 8', c: 9 }
     ]
-    const parser = parse('excel', { autoParse: true })
+    const parser = parse('excel', { autoFormat: true })
     const stream = arrToExcel(sample).pipe(parser())
     const res = await collect.array(stream)
     res.should.eql([
@@ -77,13 +77,13 @@ describe('parse excel', () => {
       { a: 7, b: 8, c: 9 }
     ])
   })
-  it('should parse a basic list with camelcase and autoParse', async () => {
+  it('should parse a basic list with camelcase and autoFormat', async () => {
     const sample = [
       { 'received at': 1, 'performed at': 2, called_at: 3 },
       { 'received at': '4', 'performed at': '5', called_at: '6' },
       { 'received at': 7, 'performed at': 8, called_at: 9 }
     ]
-    const parser = parse('excel', { autoParse: true, camelcase: true })
+    const parser = parse('excel', { autoFormat: true, camelcase: true })
     const stream = arrToExcel(sample).pipe(parser())
     const res = await collect.array(stream)
     res.should.eql([
@@ -93,7 +93,7 @@ describe('parse excel', () => {
     ])
   })
   it('should return a friendly error when unsupported XLS file is used', (done) => {
-    const parser = parse('excel', { autoParse: true })
+    const parser = parse('excel', { autoFormat: true })
     const stream = createReadStream(xlsFixture).pipe(parser())
     collect.array(stream)
       .catch((err) => {

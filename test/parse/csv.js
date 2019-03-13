@@ -12,7 +12,7 @@ const zipFixtureMulti = join(__dirname, 'csv-test-multi.zip')
 
 describe('parse csv', () => {
   it('should throw on bad options', async () => {
-    should.throws(() => parse('csv', { autoParse: 'yes' }))
+    should.throws(() => parse('csv', { autoFormat: 'yes' }))
     should.throws(() => parse('csv', { camelcase: 'yes' }))
   })
   it('should parse a basic list', async () => {
@@ -29,12 +29,12 @@ describe('parse csv', () => {
       { a: '7', b: '8', c: '9' }
     ])
   })
-  it('should parse a basic list with autoParse', async () => {
+  it('should parse a basic list with autoFormat', async () => {
     const data = `a,b,c
 1,2,3
 4,5,6
 7,8,9`
-    const parser = parse('csv', { autoParse: true })
+    const parser = parse('csv', { autoFormat: true })
     const stream = streamify(data).pipe(parser())
     const res = await collect.array(stream)
     res.should.eql([
@@ -81,12 +81,12 @@ describe('parse csv', () => {
       { a: '7', b: '8', c: '9' }
     ])
   })
-  it('should parse a basic list with camelcase and autoParse', async () => {
+  it('should parse a basic list with camelcase and autoFormat', async () => {
     const data = `received at,performed at,called_at
 1,2,3
 4,5,6
 7,8,9`
-    const parser = parse('csv', { autoParse: true, camelcase: true })
+    const parser = parse('csv', { autoFormat: true, camelcase: true })
     const stream = streamify(data).pipe(parser())
     const res = await collect.array(stream)
     res.should.eql([

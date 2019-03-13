@@ -34,7 +34,7 @@ describe('parse html', () => {
     should.throws(() => parse('html', { selector: null }))
   })
   it('should throw on bad options', async () => {
-    should.throws(() => parse('csv', { autoParse: 'yes' }))
+    should.throws(() => parse('csv', { autoFormat: 'yes' }))
     should.throws(() => parse('csv', { camelcase: 'yes' }))
   })
   it('should parse an array', async () => {
@@ -47,8 +47,8 @@ describe('parse html', () => {
       { A: '7', B: '8', C: '9' }
     ])
   })
-  it('should parse an array with autoParse', async () => {
-    const parser = parse('html', { selector: 'html.item.*', autoParse: true })
+  it('should parse an array with autoFormat', async () => {
+    const parser = parse('html', { selector: 'html.item.*', autoFormat: true })
     const stream = streamify(data).pipe(parser())
     const res = await collect.array(stream)
     res.should.eql([
@@ -57,8 +57,8 @@ describe('parse html', () => {
       { A: 7, B: 8, C: 9 }
     ])
   })
-  it('should parse an array with autoParse and camelcase', async () => {
-    const parser = parse('html', { selector: 'html.item.*', autoParse: true, camelcase: true })
+  it('should parse an array with autoFormat and camelcase', async () => {
+    const parser = parse('html', { selector: 'html.item.*', autoFormat: true, camelcase: true })
     const stream = streamify(data).pipe(parser())
     const res = await collect.array(stream)
     res.should.eql([
@@ -68,13 +68,13 @@ describe('parse html', () => {
     ])
   })
   it('should parse a nested path', async () => {
-    const parser = parse('html', { selector: 'html.item.*.A', autoParse: true })
+    const parser = parse('html', { selector: 'html.item.*.A', autoFormat: true })
     const stream = streamify(data).pipe(parser())
     const res = await collect.array(stream)
     res.should.eql([ 1, 4, 7 ])
   })
   it.skip('should parse a complex google page', async () => {
-    const parser = parse('html', { selector: 'html.item.*.A', autoParse: true })
+    const parser = parse('html', { selector: 'html.item.*.A', autoFormat: true })
     const stream = createReadStream(googFixture).pipe(parser())
     const res = await collect.array(stream)
     res.should.eql([ 1, 4, 7 ])
