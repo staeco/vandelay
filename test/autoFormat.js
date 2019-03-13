@@ -52,4 +52,40 @@ describe('autoFormat.infer', () => {
     format.infer('/Date(1526400472000)/').should.eql(sampleDate)
     format.infer('/Date(1526400472000+0400)/').should.eql(sampleDate)
   })
+  it('should parse WKT', async () => {
+    format.infer('POINT (30 10)').should.eql({ type: 'Point', coordinates: [ 30, 10 ] })
+    format.infer('LINESTRING(30 10, 10 30, 40 40)').should.eql({
+      type: 'LineString',
+      coordinates: [ [ 30, 10 ], [ 10, 30 ], [ 40, 40 ] ]
+    })
+    format.infer('MULTIPOLYGON (((40 40, 20 45, 45 30, 40 40)),((20 35, 10 30, 10 10, 30 5, 45 20, 20 35),(30 20, 20 15, 20 25, 30 20)))').should.eql({
+      type: 'MultiPolygon',
+      coordinates: [
+        [
+          [
+            [ 40, 40 ],
+            [ 20, 45 ],
+            [ 45, 30 ],
+            [ 40, 40 ]
+          ]
+        ],
+        [
+          [
+            [ 20, 35 ],
+            [ 10, 30 ],
+            [ 10, 10 ],
+            [ 30, 5 ],
+            [ 45, 20 ],
+            [ 20, 35 ]
+          ],
+          [
+            [ 30, 20 ],
+            [ 20, 15 ],
+            [ 20, 25 ],
+            [ 30, 20 ]
+          ]
+        ]
+      ]
+    })
+  })
 })

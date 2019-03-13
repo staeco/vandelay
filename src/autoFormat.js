@@ -1,4 +1,5 @@
 import parseNumber from 'parse-decimal-number'
+import wkx from 'wkx'
 import camelcase from 'camelcase'
 
 const transformObject = (o, fn) => {
@@ -90,6 +91,13 @@ export const infer = (v) => {
   // asp .net dates
   const msftDate = parseMicrosoftDate(v)
   if (msftDate) return msftDate
+
+  // wkx
+  try {
+    return wkx.Geometry.parse(v).toGeoJSON()
+  } catch (e) {
+    // not wkx
+  }
 
   // any json values
   try {

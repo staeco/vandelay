@@ -7,6 +7,10 @@ var _parseDecimalNumber = require('parse-decimal-number');
 
 var _parseDecimalNumber2 = _interopRequireDefault(_parseDecimalNumber);
 
+var _wkx = require('wkx');
+
+var _wkx2 = _interopRequireDefault(_wkx);
+
 var _camelcase = require('camelcase');
 
 var _camelcase2 = _interopRequireDefault(_camelcase);
@@ -86,6 +90,13 @@ const infer = exports.infer = v => {
   // asp .net dates
   const msftDate = parseMicrosoftDate(v);
   if (msftDate) return msftDate;
+
+  // wkx
+  try {
+    return _wkx2.default.Geometry.parse(v).toGeoJSON();
+  } catch (e) {}
+  // not wkx
+
 
   // any json values
   try {
