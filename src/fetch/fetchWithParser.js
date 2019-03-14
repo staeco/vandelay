@@ -1,16 +1,18 @@
 import through2 from 'through2'
 import pumpify from 'pumpify'
+import pickBy from 'lodash.pickby'
 import fetchURLPlain from './fetchURL'
 import hardClose from '../hardClose'
 
-export default ({ url, parser, source, token }, opt) => {
+const notNull = (v) => v != null
+export default ({ url, parser, source, accessToken }, opt) => {
   const fetchURL = opt.fetchURL || fetchURLPlain
-  const ourOpt = token
+  const ourOpt = accessToken
     ? {
       ...opt,
       headers: {
         ...opt.headers || {},
-        Authorization: `Bearer ${token}`
+        Authorization: `Bearer ${accessToken}`
       }
     }
     : opt
@@ -22,11 +24,12 @@ export default ({ url, parser, source, token }, opt) => {
   const map = (row, _, cb) => {
     // create the meta and put it on objects passing through
     if (row && typeof row === 'object') {
-      row.___meta = {
+      row.___meta = pickBy({
         row: ++rows,
         url: req.url,
+        accessToken,
         source
-      }
+      }, notNull)
 
       // json header info from the parser
       if (row.___header) {

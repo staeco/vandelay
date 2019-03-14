@@ -10,6 +10,10 @@ var _pumpify = require('pumpify');
 
 var _pumpify2 = _interopRequireDefault(_pumpify);
 
+var _lodash = require('lodash.pickby');
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
 var _fetchURL = require('./fetchURL');
 
 var _fetchURL2 = _interopRequireDefault(_fetchURL);
@@ -20,11 +24,13 @@ var _hardClose2 = _interopRequireDefault(_hardClose);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-exports.default = ({ url, parser, source, token }, opt) => {
+const notNull = v => v != null;
+
+exports.default = ({ url, parser, source, accessToken }, opt) => {
   const fetchURL = opt.fetchURL || _fetchURL2.default;
-  const ourOpt = token ? Object.assign({}, opt, {
+  const ourOpt = accessToken ? Object.assign({}, opt, {
     headers: Object.assign({}, opt.headers || {}, {
-      Authorization: `Bearer ${token}`
+      Authorization: `Bearer ${accessToken}`
     })
   }) : opt;
 
@@ -35,13 +41,15 @@ exports.default = ({ url, parser, source, token }, opt) => {
   const map = (row, _, cb) => {
     // create the meta and put it on objects passing through
     if (row && typeof row === 'object') {
-      row.___meta = {
+      row.___meta = (0, _lodash2.default)({
         row: ++rows,
         url: req.url,
+        accessToken,
         source
+      }, notNull);
 
-        // json header info from the parser
-      };if (row.___header) {
+      // json header info from the parser
+      if (row.___header) {
         row.___meta.header = row.___header;
         delete row.___header;
       }

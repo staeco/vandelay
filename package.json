@@ -1,6 +1,6 @@
 {
   "name": "vandelay",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "Imports, exports, and ETL",
   "main": "dist/index.js",
   "keywords": [],
@@ -189,6 +189,7 @@
     "gtfs-stream": "^1.0.0",
     "lodash.clone": "^4.5.0",
     "lodash.omit": "^4.5.0",
+    "lodash.pickby": "^4.6.0",
     "merge2": "^1.2.3",
     "ndjson": "^1.5.0",
     "object-transform-stack": "^0.1.0",

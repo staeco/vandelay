@@ -91,23 +91,23 @@ const fetchStream = (source, opt = {}, raw = false) => {
   if (src.oauth && typeof src.oauth.grant !== 'object') throw new Error('Invalid oauth.grant object');
 
   // actual work time
-  const runStream = token => {
+  const runStream = accessToken => {
     if (src.pagination) {
       const startPage = src.pagination.startPage || 0;
       return (0, _page2.default)(startPage, currentPage => {
         const newURL = mergeURL(src.url, getQuery(src.pagination, currentPage));
-        return (0, _fetchWithParser2.default)({ url: newURL, parser: src.parser, source, token }, getOptions(src, opt));
+        return (0, _fetchWithParser2.default)({ url: newURL, parser: src.parser, source, accessToken }, getOptions(src, opt));
       }, { concurrent }).pause();
     }
-    return (0, _fetchWithParser2.default)({ url: src.url, parser: src.parser, source, token }, getOptions(src, opt));
+    return (0, _fetchWithParser2.default)({ url: src.url, parser: src.parser, source, accessToken }, getOptions(src, opt));
   };
 
   let outStream;
   if (src.oauth) {
     // if oauth enabled, grab a token first and then set the pipeline
     outStream = _pumpify2.default.obj();
-    (0, _oauth.getToken)(src.oauth).then(token => {
-      outStream.setPipeline(runStream(token), _through2.default.obj());
+    (0, _oauth.getToken)(src.oauth).then(accessToken => {
+      outStream.setPipeline(runStream(accessToken), _through2.default.obj());
     }).catch(err => {
       outStream.emit('error', err);
       outStream.end();
