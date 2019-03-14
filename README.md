@@ -74,6 +74,12 @@ Returns a stream that fetches the given source and emits the parsed and selected
   - limitParam - Required `String`
   - startPage - Optional `Number`, defaults to 0
   - limit - Required `Number`
+- oauth - Optional `Object`
+  - grant - Required `Object`
+    - url - Required `String`
+      - OAuth2 API URL
+    - type - Required `String`
+      - Grant type, can be any [OAuth2 grant type](https://oauth.net/2/grant-types/)
 - headers - Optional `Object`
 
 #### options

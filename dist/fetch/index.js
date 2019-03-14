@@ -10,13 +10,19 @@ var _qs = require('qs');
 
 var _qs2 = _interopRequireDefault(_qs);
 
+var _pumpify = require('pumpify');
+
+var _pumpify2 = _interopRequireDefault(_pumpify);
+
 var _through = require('through2');
 
 var _through2 = _interopRequireDefault(_through);
 
-var _pumpify = require('pumpify');
+var _oauth = require('./oauth');
 
-var _pumpify2 = _interopRequireDefault(_pumpify);
+var _fetchWithParser = require('./fetchWithParser');
+
+var _fetchWithParser2 = _interopRequireDefault(_fetchWithParser);
 
 var _multi = require('./multi');
 
@@ -26,17 +32,9 @@ var _page = require('./page');
 
 var _page2 = _interopRequireDefault(_page);
 
-var _fetchURL = require('./fetchURL');
-
-var _fetchURL2 = _interopRequireDefault(_fetchURL);
-
 var _parse = require('../parse');
 
 var _parse2 = _interopRequireDefault(_parse);
-
-var _hardClose = require('../hardClose');
-
-var _hardClose2 = _interopRequireDefault(_hardClose);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -79,8 +77,6 @@ const fetchStream = (source, opt = {}, raw = false) => {
     });
   }
 
-  const fetchURL = opt.fetchURL || _fetchURL2.default;
-
   // validate params
   if (!source) throw new Error('Missing source argument');
   const src = Object.assign({}, source); // clone
@@ -91,57 +87,33 @@ const fetchStream = (source, opt = {}, raw = false) => {
   }
   if (typeof src.parser !== 'function') throw new Error('Invalid parser function');
   if (src.headers && typeof src.headers !== 'object') throw new Error('Invalid headers object');
+  if (src.oauth && typeof src.oauth !== 'object') throw new Error('Invalid oauth object');
+  if (src.oauth && typeof src.oauth.grant !== 'object') throw new Error('Invalid oauth.grant object');
 
-  // URL + Parser
-  const fetch = (url, opt) => {
-    // attaches some meta to the object for the transform fn to use
-    let rows = -1;
-    const req = fetchURL(url, opt);
-    if (opt.onFetch) opt.onFetch(req.url);
-    const map = function (row, _, cb) {
-      // create the meta and put it on objects passing through
-      if (row && typeof row === 'object') {
-        row.___meta = {
-          row: ++rows,
-          url: req.url,
-          source
-
-          // json header info from the parser
-        };if (row.___header) {
-          row.___meta.header = row.___header;
-          delete row.___header;
-        }
-      }
-      cb(null, row);
-    };
-
-    const out = _pumpify2.default.ctor({
-      autoDestroy: false,
-      destroy: false,
-      objectMode: true
-    })(req, src.parser(), (0, _through2.default)({ objectMode: true }, map));
-    out.raw = req.req;
-    out.url = req.url;
-    out.abort = () => {
-      req.abort();
-      (0, _hardClose2.default)(out);
-    };
-    out.on('error', err => {
-      err.source = source;
-      err.url = req.url;
-    });
-    return out;
+  // actual work time
+  const runStream = token => {
+    if (src.pagination) {
+      const startPage = src.pagination.startPage || 0;
+      return (0, _page2.default)(startPage, currentPage => {
+        const newURL = mergeURL(src.url, getQuery(src.pagination, currentPage));
+        return (0, _fetchWithParser2.default)({ url: newURL, parser: src.parser, source, token }, getOptions(src, opt));
+      }, { concurrent }).pause();
+    }
+    return (0, _fetchWithParser2.default)({ url: src.url, parser: src.parser, source, token }, getOptions(src, opt));
   };
 
   let outStream;
-  if (src.pagination) {
-    const startPage = src.pagination.startPage || 0;
-    outStream = (0, _page2.default)(startPage, currentPage => {
-      const newURL = mergeURL(src.url, getQuery(src.pagination, currentPage));
-      return fetch(newURL, getOptions(src, opt));
-    }, { concurrent }).pause();
+  if (src.oauth) {
+    // if oauth enabled, grab a token first and then set the pipeline
+    outStream = _pumpify2.default.obj();
+    (0, _oauth.getToken)(src.oauth).then(token => {
+      outStream.setPipeline(runStream(token), _through2.default.obj());
+    }).catch(err => {
+      outStream.emit('error', err);
+      outStream.end();
+    });
   } else {
-    outStream = fetch(src.url, getOptions(src, opt));
+    outStream = runStream();
   }
 
   if (raw) return outStream; // child of an array of sources, error mgmt handled already

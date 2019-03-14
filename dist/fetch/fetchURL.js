@@ -22,31 +22,21 @@ var _urlTemplate = require('url-template');
 
 var _urlTemplate2 = _interopRequireDefault(_urlTemplate);
 
+var _httpError = require('./httpError');
+
+var _httpError2 = _interopRequireDefault(_httpError);
+
+var _userAgent = require('./userAgent');
+
+var _userAgent2 = _interopRequireDefault(_userAgent);
+
 var _hardClose = require('../hardClose');
 
 var _hardClose2 = _interopRequireDefault(_hardClose);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-const defaultUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36';
-
 const sizeLimit = 512000; // 512kb
-const rewriteError = err => {
-  if (err.statusCode) return new Error(`Server responded with "${err.statusMessage}"`);
-  if (err.code === 'ENOTFOUND') return new Error('Failed to resolve server host');
-  if (err.code === 'ECONNRESET') return new Error('Connection to server was lost');
-  if (typeof err.code === 'string' && err.code.includes('TIMEDOUT')) return new Error('Server took too long to respond');
-  return new Error('Failed to connect to server');
-};
-const httpError = (err, res) => {
-  const nerror = rewriteError(err);
-  nerror.requestError = true;
-  nerror.code = err.code;
-  nerror.status = res && res.statusCode;
-  nerror.headers = res && res.headers;
-  nerror.body = res && res.text;
-  return nerror;
-};
 const oneDay = 86400000;
 
 exports.default = (url, { attempts = 10, headers = {}, timeout, log, context } = {}) => {
@@ -67,7 +57,7 @@ exports.default = (url, { attempts = 10, headers = {}, timeout, log, context } =
         socket: oneDay
       },
       headers: Object.assign({
-        'user-agent': defaultUserAgent
+        'user-agent': _userAgent2.default
       }, headers)
     }
   };
@@ -79,7 +69,7 @@ exports.default = (url, { attempts = 10, headers = {}, timeout, log, context } =
     const original = err.original || err;
     const { res } = original;
     if (res) res.text = await (0, _getStream2.default)(res, { maxBuffer: sizeLimit });
-    out.emit('error', httpError(original, res));
+    out.emit('error', (0, _httpError2.default)(original, res));
     out.abort();
   }).once('response', () => {
     if (isCollectingError) return;

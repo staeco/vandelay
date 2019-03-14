@@ -3,27 +3,11 @@ import through2 from 'through2'
 import collect from 'get-stream'
 import pump from 'pump'
 import template from 'url-template'
+import httpError from './httpError'
+import userAgent from './userAgent'
 import hardClose from '../hardClose'
 
-const defaultUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36'
-
 const sizeLimit = 512000 // 512kb
-const rewriteError = (err) => {
-  if (err.statusCode) return new Error(`Server responded with "${err.statusMessage}"`)
-  if (err.code === 'ENOTFOUND') return new Error('Failed to resolve server host')
-  if (err.code === 'ECONNRESET') return new Error('Connection to server was lost')
-  if (typeof err.code === 'string' && err.code.includes('TIMEDOUT')) return new Error('Server took too long to respond')
-  return new Error('Failed to connect to server')
-}
-const httpError = (err, res) => {
-  const nerror = rewriteError(err)
-  nerror.requestError = true
-  nerror.code = err.code
-  nerror.status = res && res.statusCode
-  nerror.headers = res && res.headers
-  nerror.body = res && res.text
-  return nerror
-}
 const oneDay = 86400000
 
 export default (url, { attempts=10, headers={}, timeout, log, context }={}) => {
@@ -46,7 +30,7 @@ export default (url, { attempts=10, headers={}, timeout, log, context }={}) => {
         socket: oneDay
       },
       headers: {
-        'user-agent': defaultUserAgent,
+        'user-agent': userAgent,
         ...headers
       }
     }

@@ -1,12 +1,12 @@
 import url from 'url'
 import qs from 'qs'
-import through2 from 'through2'
 import pumpify from 'pumpify'
+import through2 from 'through2'
+import { getToken } from './oauth'
+import fetch from './fetchWithParser'
 import multi from './multi'
 import pageStream from './page'
-import fetchURLPlain from './fetchURL'
 import parse from '../parse'
-import hardClose from '../hardClose'
 
 const getOptions = (src, opt) => ({
   log: opt.log,
@@ -50,8 +50,6 @@ const fetchStream = (source, opt={}, raw=false) => {
     })
   }
 
-  const fetchURL = opt.fetchURL || fetchURLPlain
-
   // validate params
   if (!source) throw new Error('Missing source argument')
   const src = { ...source } // clone
@@ -62,62 +60,35 @@ const fetchStream = (source, opt={}, raw=false) => {
   }
   if (typeof src.parser !== 'function') throw new Error('Invalid parser function')
   if (src.headers && typeof src.headers !== 'object') throw new Error('Invalid headers object')
+  if (src.oauth && typeof src.oauth !== 'object') throw new Error('Invalid oauth object')
+  if (src.oauth && typeof src.oauth.grant !== 'object') throw new Error('Invalid oauth.grant object')
 
-  // URL + Parser
-  const fetch = (url, opt) => {
-    // attaches some meta to the object for the transform fn to use
-    let rows = -1
-    const req = fetchURL(url, opt)
-    if (opt.onFetch) opt.onFetch(req.url)
-    const map = function (row, _, cb) {
-      // create the meta and put it on objects passing through
-      if (row && typeof row === 'object') {
-        row.___meta = {
-          row: ++rows,
-          url: req.url,
-          source
-        }
-
-        // json header info from the parser
-        if (row.___header) {
-          row.___meta.header = row.___header
-          delete row.___header
-        }
-      }
-      cb(null, row)
+  // actual work time
+  const runStream = (token) => {
+    if (src.pagination) {
+      const startPage = src.pagination.startPage || 0
+      return pageStream(startPage, (currentPage) => {
+        const newURL = mergeURL(src.url, getQuery(src.pagination, currentPage))
+        return fetch({ url: newURL, parser: src.parser, source, token }, getOptions(src, opt))
+      }, { concurrent }).pause()
     }
-
-    const out = pumpify.ctor({
-      autoDestroy: false,
-      destroy: false,
-      objectMode: true
-    })(
-      req,
-      src.parser(),
-      through2({ objectMode: true }, map)
-    )
-    out.raw = req.req
-    out.url = req.url
-    out.abort = () => {
-      req.abort()
-      hardClose(out)
-    }
-    out.on('error', (err) => {
-      err.source = source
-      err.url = req.url
-    })
-    return out
+    return fetch({ url: src.url, parser: src.parser, source, token }, getOptions(src, opt))
   }
 
   let outStream
-  if (src.pagination) {
-    const startPage = src.pagination.startPage || 0
-    outStream = pageStream(startPage, (currentPage) => {
-      const newURL = mergeURL(src.url, getQuery(src.pagination, currentPage))
-      return fetch(newURL, getOptions(src, opt))
-    }, { concurrent }).pause()
+  if (src.oauth) {
+    // if oauth enabled, grab a token first and then set the pipeline
+    outStream = pumpify.obj()
+    getToken(src.oauth)
+      .then((token) => {
+        outStream.setPipeline(runStream(token), through2.obj())
+      })
+      .catch((err) => {
+        outStream.emit('error', err)
+        outStream.end()
+      })
   } else {
-    outStream = fetch(src.url, getOptions(src, opt))
+    outStream = runStream()
   }
 
   if (raw) return outStream // child of an array of sources, error mgmt handled already

@@ -5,6 +5,7 @@ import collect from 'get-stream'
 import express from 'express'
 import getPort from 'get-port'
 import parseRange from 'range-parser'
+import parseBody from 'body-parser'
 import fetch from '../../src/fetch'
 import parse from '../../src/parse'
 
@@ -19,6 +20,19 @@ describe('fetch', () => {
   before(async () => {
     port = await getPort()
     app = express()
+    app.use(parseBody.urlencoded({ extended: true }))
+    app.post('/token', (req, res) => {
+      if (req.body.grant_type !== 'password' || req.body.username !== 'root' || req.body.password !== 'admin') {
+        return res.status(401).send('401').end()
+      }
+      res.json({ access_token: 'abc' })
+    })
+    app.get('/secure-api', (req, res) => {
+      if (req.headers.authorization !== 'Bearer abc') {
+        return res.status(401).send('401').end()
+      }
+      res.json({ data: sample })
+    })
     app.get('/check-headers', (req, res) => {
       if (req.headers.a !== 'abc') return res.status(500).send('500').end()
       res.json({ data: sample })
@@ -132,6 +146,53 @@ describe('fetch', () => {
       { a: 4, b: 5, c: 6, ___meta: { row: 1, url: source.url, source } },
       { a: 7, b: 8, c: 9, ___meta: { row: 2, url: source.url, source } }
     ])
+  })
+  it('should request a flat json file with oauth', async () => {
+    const source = {
+      url: `http://localhost:${port}/secure-api`,
+      oauth: {
+        grant: {
+          url: `http://localhost:${port}/token`,
+          type: 'password',
+          username: 'root',
+          password: 'admin'
+        }
+      },
+      parser: parse('json', { selector: 'data.*' })
+    }
+    const stream = fetch(source)
+    const res = await collect.array(stream)
+    res.should.eql([
+      { a: 1, b: 2, c: 3, ___meta: { row: 0, url: source.url, source } },
+      { a: 4, b: 5, c: 6, ___meta: { row: 1, url: source.url, source } },
+      { a: 7, b: 8, c: 9, ___meta: { row: 2, url: source.url, source } }
+    ])
+  })
+  it('should blow up correctly with invalid oauth', (done) => {
+    const source = {
+      url: `http://localhost:${port}/secure-api`,
+      oauth: {
+        grant: {
+          url: `http://localhost:${port}/token`,
+          type: 'password',
+          username: 'root',
+          password: 'not the right password'
+        }
+      },
+      parser: parse('json', { selector: 'data.*' })
+    }
+    const stream = fetch(source)
+    stream.once('error', (err) => {
+      should.exist(err)
+      should.exist(err.status)
+      err.status.should.equal(401)
+      should.exist(err.message)
+      err.message.should.equal('Server responded with "Unauthorized"')
+      should.exist(err.body)
+      err.body.should.equal('401')
+      should.not.exist(err.code)
+      done()
+    })
   })
   it('should work with declarative parser', async () => {
     const source = {
