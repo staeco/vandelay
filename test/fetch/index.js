@@ -168,6 +168,29 @@ describe('fetch', () => {
       { a: 7, b: 8, c: 9, ___meta: { row: 2, url: source.url, source, accessToken: 'abc' } }
     ])
   })
+  it('should end stream as needed with oauth', async () => {
+    const max = 1
+    let curr = 0
+    const source = {
+      url: `http://localhost:${port}/secure-api`,
+      oauth: {
+        grant: {
+          url: `http://localhost:${port}/token`,
+          type: 'password',
+          username: 'root',
+          password: 'admin'
+        }
+      },
+      parser: parse('json', { selector: 'data.*' })
+    }
+    const stream = fetch(source)
+    stream.on('data', () => {
+      ++curr
+      if (curr >= max) stream.abort()
+    })
+    const res = await collect.array(stream)
+    res.length.should.equal(max)
+  })
   it('should blow up correctly with invalid oauth', (done) => {
     const source = {
       url: `http://localhost:${port}/secure-api`,

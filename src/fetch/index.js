@@ -6,6 +6,7 @@ import { getToken } from './oauth'
 import fetch from './fetchWithParser'
 import multi from './multi'
 import pageStream from './page'
+import hardClose from '../hardClose'
 import parse from '../parse'
 
 const getOptions = (src, opt, accessToken) => ({
@@ -82,11 +83,13 @@ const fetchStream = (source, opt={}, raw=false) => {
     outStream = pumpify.obj()
     getToken(src.oauth)
       .then((accessToken) => {
-        outStream.setPipeline(runStream(accessToken), through2.obj())
+        const realStream = runStream(accessToken)
+        outStream.abort = realStream.abort
+        outStream.setPipeline(realStream, through2.obj())
       })
       .catch((err) => {
         outStream.emit('error', err)
-        outStream.end()
+        hardClose(outStream)
       })
   } else {
     outStream = runStream()

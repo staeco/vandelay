@@ -32,6 +32,10 @@ var _page = require('./page');
 
 var _page2 = _interopRequireDefault(_page);
 
+var _hardClose = require('../hardClose');
+
+var _hardClose2 = _interopRequireDefault(_hardClose);
+
 var _parse = require('../parse');
 
 var _parse2 = _interopRequireDefault(_parse);
@@ -108,10 +112,12 @@ const fetchStream = (source, opt = {}, raw = false) => {
     // if oauth enabled, grab a token first and then set the pipeline
     outStream = _pumpify2.default.obj();
     (0, _oauth.getToken)(src.oauth).then(accessToken => {
-      outStream.setPipeline(runStream(accessToken), _through2.default.obj());
+      const realStream = runStream(accessToken);
+      outStream.abort = realStream.abort;
+      outStream.setPipeline(realStream, _through2.default.obj());
     }).catch(err => {
       outStream.emit('error', err);
-      outStream.end();
+      (0, _hardClose2.default)(outStream);
     });
   } else {
     outStream = runStream();
