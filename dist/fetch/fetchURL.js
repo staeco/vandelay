@@ -39,13 +39,17 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 const sizeLimit = 512000; // 512kb
 const oneDay = 86400000;
 
-exports.default = (url, { attempts = 10, headers = {}, timeout, log, context } = {}) => {
+exports.default = (url, { attempts = 10, headers = {}, timeout, accessToken, log, context } = {}) => {
   const decoded = unescape(url);
   const fullURL = context && decoded.includes('{') ? _urlTemplate2.default.parse(decoded).expand(context) : url;
 
   const out = (0, _through2.default)();
   let isCollectingError = false;
 
+  const actualHeaders = Object.assign({
+    'User-Agent': _userAgent2.default
+  }, headers);
+  if (accessToken) actualHeaders.Authorization = `Bearer ${accessToken}`;
   const options = {
     log,
     attempts,
@@ -56,9 +60,7 @@ exports.default = (url, { attempts = 10, headers = {}, timeout, log, context } =
         connect: oneDay,
         socket: oneDay
       },
-      headers: Object.assign({
-        'user-agent': _userAgent2.default
-      }, headers)
+      headers: actualHeaders
     }
   };
 

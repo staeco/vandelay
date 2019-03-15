@@ -8,7 +8,8 @@ import multi from './multi'
 import pageStream from './page'
 import parse from '../parse'
 
-const getOptions = (src, opt) => ({
+const getOptions = (src, opt, accessToken) => ({
+  accessToken,
   log: opt.log,
   timeout: opt.timeout,
   attempts: opt.attempts,
@@ -69,10 +70,10 @@ const fetchStream = (source, opt={}, raw=false) => {
       const startPage = src.pagination.startPage || 0
       return pageStream(startPage, (currentPage) => {
         const newURL = mergeURL(src.url, getQuery(src.pagination, currentPage))
-        return fetch({ url: newURL, parser: src.parser, source, accessToken }, getOptions(src, opt))
+        return fetch({ url: newURL, parser: src.parser, source }, getOptions(src, opt, accessToken))
       }, { concurrent }).pause()
     }
-    return fetch({ url: src.url, parser: src.parser, source, accessToken }, getOptions(src, opt))
+    return fetch({ url: src.url, parser: src.parser, source }, getOptions(src, opt, accessToken))
   }
 
   let outStream

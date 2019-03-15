@@ -38,7 +38,8 @@ var _parse2 = _interopRequireDefault(_parse);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-const getOptions = (src, opt) => ({
+const getOptions = (src, opt, accessToken) => ({
+  accessToken,
   log: opt.log,
   timeout: opt.timeout,
   attempts: opt.attempts,
@@ -96,10 +97,10 @@ const fetchStream = (source, opt = {}, raw = false) => {
       const startPage = src.pagination.startPage || 0;
       return (0, _page2.default)(startPage, currentPage => {
         const newURL = mergeURL(src.url, getQuery(src.pagination, currentPage));
-        return (0, _fetchWithParser2.default)({ url: newURL, parser: src.parser, source, accessToken }, getOptions(src, opt));
+        return (0, _fetchWithParser2.default)({ url: newURL, parser: src.parser, source }, getOptions(src, opt, accessToken));
       }, { concurrent }).pause();
     }
-    return (0, _fetchWithParser2.default)({ url: src.url, parser: src.parser, source, accessToken }, getOptions(src, opt));
+    return (0, _fetchWithParser2.default)({ url: src.url, parser: src.parser, source }, getOptions(src, opt, accessToken));
   };
 
   let outStream;

@@ -7,12 +7,13 @@ export const getToken = async (oauth) => {
   const rest = omit(oauth.grant, [ 'url', 'type' ])
   const res = await request
     .post(oauth.grant.url)
+    .type('form')
+    .accept('json')
     .send({
       grant_type: oauth.grant.type,
       ...rest
     })
     .set({
-      'Content-Type': 'application/x-www-form-urlencoded',
       'Cache-Control': 'no-cache',
       'User-Agent': userAgent
     })

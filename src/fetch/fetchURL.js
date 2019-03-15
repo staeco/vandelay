@@ -10,7 +10,7 @@ import hardClose from '../hardClose'
 const sizeLimit = 512000 // 512kb
 const oneDay = 86400000
 
-export default (url, { attempts=10, headers={}, timeout, log, context }={}) => {
+export default (url, { attempts=10, headers={}, timeout, accessToken, log, context }={}) => {
   const decoded = unescape(url)
   const fullURL = context && decoded.includes('{')
     ? template.parse(decoded).expand(context)
@@ -19,6 +19,11 @@ export default (url, { attempts=10, headers={}, timeout, log, context }={}) => {
   const out = through2()
   let isCollectingError = false
 
+  const actualHeaders = {
+    'User-Agent': userAgent,
+    ...headers
+  }
+  if (accessToken) actualHeaders.Authorization = `Bearer ${accessToken}`
   const options = {
     log,
     attempts,
@@ -29,10 +34,7 @@ export default (url, { attempts=10, headers={}, timeout, log, context }={}) => {
         connect: oneDay,
         socket: oneDay
       },
-      headers: {
-        'user-agent': userAgent,
-        ...headers
-      }
+      headers: actualHeaders
     }
   }
 

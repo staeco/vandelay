@@ -26,17 +26,12 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 const notNull = v => v != null;
 
-exports.default = ({ url, parser, source, accessToken }, opt) => {
+exports.default = ({ url, parser, source }, opt) => {
   const fetchURL = opt.fetchURL || _fetchURL2.default;
-  const ourOpt = accessToken ? Object.assign({}, opt, {
-    headers: Object.assign({}, opt.headers || {}, {
-      Authorization: `Bearer ${accessToken}`
-    })
-  }) : opt;
 
   // attaches some meta to the object for the transform fn to use
   let rows = -1;
-  const req = fetchURL(url, ourOpt);
+  const req = fetchURL(url, opt);
   if (opt.onFetch) opt.onFetch(req.url);
   const map = (row, _, cb) => {
     // create the meta and put it on objects passing through
@@ -44,7 +39,7 @@ exports.default = ({ url, parser, source, accessToken }, opt) => {
       row.___meta = (0, _lodash2.default)({
         row: ++rows,
         url: req.url,
-        accessToken,
+        accessToken: opt && opt.accessToken,
         source
       }, notNull);
 

@@ -5,21 +5,12 @@ import fetchURLPlain from './fetchURL'
 import hardClose from '../hardClose'
 
 const notNull = (v) => v != null
-export default ({ url, parser, source, accessToken }, opt) => {
+export default ({ url, parser, source }, opt) => {
   const fetchURL = opt.fetchURL || fetchURLPlain
-  const ourOpt = accessToken
-    ? {
-      ...opt,
-      headers: {
-        ...opt.headers || {},
-        Authorization: `Bearer ${accessToken}`
-      }
-    }
-    : opt
 
   // attaches some meta to the object for the transform fn to use
   let rows = -1
-  const req = fetchURL(url, ourOpt)
+  const req = fetchURL(url, opt)
   if (opt.onFetch) opt.onFetch(req.url)
   const map = (row, _, cb) => {
     // create the meta and put it on objects passing through
@@ -27,7 +18,7 @@ export default ({ url, parser, source, accessToken }, opt) => {
       row.___meta = pickBy({
         row: ++rows,
         url: req.url,
-        accessToken,
+        accessToken: opt && opt.accessToken,
         source
       }, notNull)
 
