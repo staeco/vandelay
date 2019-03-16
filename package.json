@@ -1,6 +1,6 @@
 {
   "name": "vandelay",
-  "version": "3.1.3",
+  "version": "3.1.4",
   "description": "Imports, exports, and ETL",
   "main": "dist/index.js",
   "keywords": [],
@@ -23,7 +23,7 @@
     "clean": "rimraf dist",
     "lint": "eslint src test",
     "lint:fix": "eslint src test --fix",
-    "test": "mocha --require babel-register --recursive --reporter spec --bail --timeout 10000 && npm run-script lint"
+    "test": "mocha --require babel-register --recursive --reporter spec --bail --timeout 3000 && npm run-script lint"
   },
   "resolutions": {
     "end-of-stream": "github:isaacs/end-of-stream#custom-stream-premature-close-fix"

@@ -408,7 +408,7 @@ describe('fetch', () => {
     const stream = fetch({
       url: `http://localhost:${port}/404.json`,
       parser: parse('json', { selector: 'data.*' })
-    }, { attempts: 1 })
+    })
     stream.once('error', (err) => {
       should.exist(err)
       should.exist(err.status)
@@ -423,9 +423,9 @@ describe('fetch', () => {
   })
   it('should emit not found errors', (done) => {
     const stream = fetch({
-      url: 'http://lkddflskdjf.io/404.json',
+      url: 'http://this-domain-does-not-exist.io/connfailed.csv',
       parser: parse('json', { selector: 'data.*' })
-    }, { attempts: 1 })
+    })
     stream.once('error', (err) => {
       should.exist(err)
       err.message.should.equal('Failed to resolve server host')

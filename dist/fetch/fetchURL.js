@@ -39,6 +39,22 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 const sizeLimit = 512000; // 512kb
 const oneDay = 86400000;
 
+const shouldRetry = (_, original) => {
+  const code = original && original.code;
+  const res = original && original.res;
+
+  // their server having issues, give it another go
+  if (res && res.statusCode >= 500) return true;
+
+  // no point retry anything over 400
+  if (res && res.statusCode >= 400) return false;
+
+  // no point retrying on domains that dont exists
+  if (code === 'ENOTFOUND') return false;
+
+  return true;
+};
+
 exports.default = (url, { attempts = 10, headers = {}, timeout, accessToken, log, context } = {}) => {
   const decoded = unescape(url);
   const fullURL = context && decoded.includes('{') ? _urlTemplate2.default.parse(decoded).expand(context) : url;
@@ -53,6 +69,7 @@ exports.default = (url, { attempts = 10, headers = {}, timeout, accessToken, log
   const options = {
     log,
     attempts,
+    shouldRetry,
     got: {
       followRedirects: true,
       timeout: {
