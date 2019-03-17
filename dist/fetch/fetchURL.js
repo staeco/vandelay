@@ -55,7 +55,7 @@ const shouldRetry = (_, original) => {
   return true;
 };
 
-exports.default = (url, { attempts = 10, headers = {}, timeout, accessToken, log, context } = {}) => {
+exports.default = (url, { attempts = 10, headers = {}, timeout, accessToken, debug, context } = {}) => {
   const decoded = unescape(url);
   const fullURL = context && decoded.includes('{') ? _urlTemplate2.default.parse(decoded).expand(context) : url;
 
@@ -67,7 +67,7 @@ exports.default = (url, { attempts = 10, headers = {}, timeout, accessToken, log
   }, headers);
   if (accessToken) actualHeaders.Authorization = `Bearer ${accessToken}`;
   const options = {
-    log,
+    log: debug,
     attempts,
     shouldRetry,
     got: {
@@ -81,21 +81,25 @@ exports.default = (url, { attempts = 10, headers = {}, timeout, accessToken, log
     }
   };
 
+  if (debug) debug('Fetching', fullURL);
   const req = (0, _gotResume2.default)(fullURL, options)
   // handle errors
   .once('error', async err => {
     isCollectingError = true;
     const original = err.original || err;
     const { res } = original;
+    if (debug) debug('Got error while fetching', original);
     if (res) res.text = await (0, _getStream2.default)(res, { maxBuffer: sizeLimit });
     out.emit('error', (0, _httpError2.default)(original, res));
     out.abort();
   }).once('response', () => {
     if (isCollectingError) return;
+    if (debug) debug('Got a response');
     (0, _pump2.default)(req, out);
   });
 
   out.abort = () => {
+    if (debug) debug('Abort called');
     (0, _hardClose2.default)(out);
     req.cancel();
   };

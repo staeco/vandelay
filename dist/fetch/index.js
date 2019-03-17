@@ -44,7 +44,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 const getOptions = (src, opt, accessToken) => ({
   accessToken,
-  log: opt.log,
+  debug: opt.debug,
   timeout: opt.timeout,
   attempts: opt.attempts,
   headers: src.headers,
@@ -74,6 +74,7 @@ const fetchStream = (source, opt = {}, raw = false) => {
   const concurrent = opt.concurrency != null ? opt.concurrency : 50;
   if (Array.isArray(source)) {
     // zips eat memory, do not run more than one at a time
+    if (opt.debug) opt.debug('Detected zip, running with concurrency=1');
     const containsZips = source.some(i => i.parserOptions && i.parserOptions.zip);
     return (0, _multi2.default)({
       concurrent: containsZips ? 1 : concurrent,
@@ -109,13 +110,16 @@ const fetchStream = (source, opt = {}, raw = false) => {
 
   let outStream;
   if (src.oauth) {
+    if (opt.debug) opt.debug('Fetching OAuth token');
     // if oauth enabled, grab a token first and then set the pipeline
     outStream = _pumpify2.default.obj();
     (0, _oauth.getToken)(src.oauth).then(accessToken => {
+      if (opt.debug) opt.debug('Got OAuth token', accessToken);
       const realStream = runStream(accessToken);
       outStream.abort = realStream.abort;
       outStream.setPipeline(realStream, _through2.default.obj());
     }).catch(err => {
+      if (opt.debug) opt.debug('Failed to get OAuth token', err);
       outStream.emit('error', err);
       (0, _hardClose2.default)(outStream);
     });
