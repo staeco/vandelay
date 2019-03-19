@@ -44,6 +44,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 const getOptions = (src, opt, accessToken) => ({
   accessToken,
+  fetchURL: opt.fetchURL,
   debug: opt.debug,
   timeout: opt.timeout,
   attempts: opt.attempts,

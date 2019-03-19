@@ -6,6 +6,7 @@ import express from 'express'
 import getPort from 'get-port'
 import parseRange from 'range-parser'
 import parseBody from 'body-parser'
+import through2 from 'through2'
 import fetch from '../../src/fetch'
 import parse from '../../src/parse'
 
@@ -124,6 +125,31 @@ describe('fetch', () => {
       parser: parse('json', { selector: 'data.*' })
     }
     const stream = fetch(source, { context: { fileName: 'file' } })
+    const res = await collect.array(stream)
+    res.should.eql([
+      { a: 1, b: 2, c: 3, ___meta: { row: 0, url: expectedURL, source } },
+      { a: 4, b: 5, c: 6, ___meta: { row: 1, url: expectedURL, source } },
+      { a: 7, b: 8, c: 9, ___meta: { row: 2, url: expectedURL, source } }
+    ])
+  })
+  it('should work with custom fetchURL', async () => {
+    const expectedURL = `http://localhost:${port}/file.json`
+    const source = {
+      url: `http://localhost:${port}/{fileName}.json`,
+      parser: parse('json', { selector: 'data.*' })
+    }
+    const stream = fetch(source, {
+      fetchURL: (url, opt) => {
+        should.exist(url)
+        should.exist(opt)
+        const stream = through2.obj()
+        stream.write(JSON.stringify({ data: sample }))
+        stream.url = expectedURL
+        process.nextTick(() => stream.end())
+        return stream
+      },
+      context: { fileName: 'file' }
+    })
     const res = await collect.array(stream)
     res.should.eql([
       { a: 1, b: 2, c: 3, ___meta: { row: 0, url: expectedURL, source } },

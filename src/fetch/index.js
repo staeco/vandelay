@@ -11,6 +11,7 @@ import parse from '../parse'
 
 const getOptions = (src, opt, accessToken) => ({
   accessToken,
+  fetchURL: opt.fetchURL,
   debug: opt.debug,
   timeout: opt.timeout,
   attempts: opt.attempts,
