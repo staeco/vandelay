@@ -73,9 +73,11 @@ const fetchStream = (source, opt={}, raw=false) => {
       const startPage = src.pagination.startPage || 0
       return pageStream(startPage, (currentPage) => {
         const newURL = mergeURL(src.url, getQuery(src.pagination, currentPage))
+        if (opt.debug) opt.debug('Fetching next page', newURL)
         return fetch({ url: newURL, parser: src.parser, source }, getOptions(src, opt, accessToken))
       }, { concurrent }).pause()
     }
+    if (opt.debug) opt.debug('Fetching', src.url)
     return fetch({ url: src.url, parser: src.parser, source }, getOptions(src, opt, accessToken))
   }
 

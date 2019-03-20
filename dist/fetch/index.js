@@ -103,9 +103,11 @@ const fetchStream = (source, opt = {}, raw = false) => {
       const startPage = src.pagination.startPage || 0;
       return (0, _page2.default)(startPage, currentPage => {
         const newURL = mergeURL(src.url, getQuery(src.pagination, currentPage));
+        if (opt.debug) opt.debug('Fetching next page', newURL);
         return (0, _fetchWithParser2.default)({ url: newURL, parser: src.parser, source }, getOptions(src, opt, accessToken));
       }, { concurrent }).pause();
     }
+    if (opt.debug) opt.debug('Fetching', src.url);
     return (0, _fetchWithParser2.default)({ url: src.url, parser: src.parser, source }, getOptions(src, opt, accessToken));
   };
 
