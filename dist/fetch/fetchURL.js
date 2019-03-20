@@ -39,6 +39,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 const sizeLimit = 512000; // 512kb
 const oneDay = 86400000;
 
+const retryWorthy = [420, 444, 408, 429, 449, 499];
 const shouldRetry = (_, original) => {
   const code = original && original.code;
   const res = original && original.res;
@@ -46,8 +47,8 @@ const shouldRetry = (_, original) => {
   // their server having issues, give it another go
   if (res && res.statusCode >= 500) return true;
 
-  // no point retry anything over 400
-  if (res && res.statusCode >= 400) return false;
+  // no point retry anything over 400 that will keep happening
+  if (res && res.statusCode >= 400 && !retryWorthy.includes(res.statusCode)) return false;
 
   // no point retrying on domains that dont exists
   if (code === 'ENOTFOUND') return false;
