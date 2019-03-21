@@ -18,7 +18,8 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 // merges a bunch of streams, unordered - and has some special error management
 // so one wont fail the whole bunch
-exports.default = (startPage, getNext, { concurrent = 10, onError } = {}) => {
+exports.default = (startPage, getNext, { concurrent = 2, onError } = {}) => {
+  const actualConcurrency = Math.min(2, concurrent); // limit concurrency to either 1 or 2
   const out = (0, _through2.default)({ objectMode: true });
   out.currentPage = startPage;
   out.running = [];
@@ -55,7 +56,7 @@ exports.default = (startPage, getNext, { concurrent = 10, onError } = {}) => {
 
   const schedule = () => {
     if (out._closed) return;
-    const remainingSlots = concurrent - out.running.length;
+    const remainingSlots = actualConcurrency - out.running.length;
     if (remainingSlots === 0) return;
     const nextPage = out.currentPage;
     out.currentPage = nextPage + 1;
