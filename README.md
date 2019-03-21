@@ -84,7 +84,7 @@ Returns a stream that fetches the given source and emits the parsed and selected
 
 #### options
 
-- concurrency - Optional `Number`, defaults to 50
+- concurrency - Optional `Number`, defaults to 10
 - context - Optional `Object`
   - If specified, will be templated into the URL via [RFC6570](https://tools.ietf.org/html/rfc6570)
 - modifyRequest - Optional `Function`
@@ -149,7 +149,7 @@ Built in parsers are:
   - Only applies when using a string transformer
 - compiler - Optional `Function`
   - Only applies when using a string transformer
-- concurrency - Optional `Number`, defaults to 50
+- concurrency - Optional `Number`, defaults to 10
 - onBegin(row, meta) - Optional `Function`
 - onError(err, row, meta) - Optional `Function`
 - onSkip(row, meta) - Optional `Function`
@@ -164,7 +164,7 @@ Built in parsers are:
 
 #### options
 
-- concurrency - Optional `Number`, defaults to 50
+- concurrency - Optional `Number`, defaults to 10
 
 ### normalize([options])
 
@@ -172,7 +172,7 @@ Returns the plain objects without any meta fields attached, useful for the end o
 
 #### options
 
-- concurrency - Optional `Number`, defaults to 50
+- concurrency - Optional `Number`, defaults to 10
 
 [downloads-image]: http://img.shields.io/npm/dm/vandelay.svg
 [npm-url]: https://npmjs.org/package/vandelay

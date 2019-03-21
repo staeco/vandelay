@@ -72,7 +72,7 @@ const getQuery = (pageOpt, page) => {
 };
 
 const fetchStream = (source, opt = {}, raw = false) => {
-  const concurrent = opt.concurrency != null ? opt.concurrency : 50;
+  const concurrent = opt.concurrency != null ? opt.concurrency : 10;
   if (Array.isArray(source)) {
     // zips eat memory, do not run more than one at a time
     if (opt.debug) opt.debug('Detected zip, running with concurrency=1');
@@ -105,7 +105,10 @@ const fetchStream = (source, opt = {}, raw = false) => {
         const newURL = mergeURL(src.url, getQuery(src.pagination, currentPage));
         if (opt.debug) opt.debug('Fetching next page', newURL);
         return (0, _fetchWithParser2.default)({ url: newURL, parser: src.parser, source }, getOptions(src, opt, accessToken));
-      }, { concurrent }).pause();
+      }, {
+        concurrent,
+        onError: defaultErrorHandler
+      }).pause();
     }
     if (opt.debug) opt.debug('Fetching', src.url);
     return (0, _fetchWithParser2.default)({ url: src.url, parser: src.parser, source }, getOptions(src, opt, accessToken));

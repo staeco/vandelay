@@ -4,7 +4,7 @@ import hardClose from '../hardClose'
 
 // merges a bunch of streams, unordered - and has some special error management
 // so one wont fail the whole bunch
-export default (startPage, getNext, { concurrent=50, onError }={}) => {
+export default (startPage, getNext, { concurrent=10, onError }={}) => {
   const out = through2({ objectMode: true })
   out.currentPage = startPage
   out.running = []

@@ -18,7 +18,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 // merges a bunch of streams, unordered - and has some special error management
 // so one wont fail the whole bunch
-exports.default = (startPage, getNext, { concurrent = 50, onError } = {}) => {
+exports.default = (startPage, getNext, { concurrent = 10, onError } = {}) => {
   const out = (0, _through2.default)({ objectMode: true });
   out.currentPage = startPage;
   out.running = [];
@@ -68,8 +68,7 @@ exports.default = (startPage, getNext, { concurrent = 50, onError } = {}) => {
     src.once('data', () => {
       src._gotData = true;
       schedule();
-    });
-    src.pause(); // since the data handler will put it in a flowing state
+    }).pause(); // since the data handler will put it in a flowing state
     src.pipe(out, { end: false });
   };
 

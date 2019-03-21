@@ -4,7 +4,7 @@ import hardClose from '../hardClose'
 
 // merges a bunch of streams, unordered - and has some special error management
 // so one wont fail the whole bunch
-export default ({ concurrent=50, onError, inputs=[] }={}) => {
+export default ({ concurrent=10, onError, inputs=[] }={}) => {
   if (inputs.length === 0) throw new Error('No inputs specified!')
 
   const out = through2({ objectMode: true })

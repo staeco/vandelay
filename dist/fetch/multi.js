@@ -18,7 +18,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 // merges a bunch of streams, unordered - and has some special error management
 // so one wont fail the whole bunch
-exports.default = ({ concurrent = 50, onError, inputs = [] } = {}) => {
+exports.default = ({ concurrent = 10, onError, inputs = [] } = {}) => {
   if (inputs.length === 0) throw new Error('No inputs specified!');
 
   const out = (0, _through2.default)({ objectMode: true });
