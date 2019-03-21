@@ -4,7 +4,8 @@ import hardClose from '../hardClose'
 
 // merges a bunch of streams, unordered - and has some special error management
 // so one wont fail the whole bunch
-export default (startPage, getNext, { concurrent=10, onError }={}) => {
+export default (startPage, getNext, { concurrent=2, onError }={}) => {
+  const actualConcurrency = Math.min(2, concurrent) // limit concurrency to either 1 or 2
   const out = through2({ objectMode: true })
   out.currentPage = startPage
   out.running = []
@@ -41,7 +42,7 @@ export default (startPage, getNext, { concurrent=10, onError }={}) => {
 
   const schedule = () => {
     if (out._closed) return
-    const remainingSlots = concurrent - out.running.length
+    const remainingSlots = actualConcurrency - out.running.length
     if (remainingSlots === 0) return
     const nextPage = out.currentPage
     out.currentPage = nextPage + 1
