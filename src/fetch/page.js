@@ -54,8 +54,7 @@ export default (startPage, getNext, { concurrent=50, onError }={}) => {
     src.once('data', () => {
       src._gotData = true
       schedule()
-    })
-    src.pause() // since the data handler will put it in a flowing state
+    }).pause() // since the data handler will put it in a flowing state
     src.pipe(out, { end: false })
   }
 

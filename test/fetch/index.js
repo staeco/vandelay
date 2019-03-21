@@ -47,6 +47,9 @@ describe('fetch', () => {
     app.get('/500.json', (req, res) => {
       res.status(500).send('500').end()
     })
+    app.get('/429.json', (req, res) => {
+      res.status(429).send('429').end()
+    })
     app.get('/bad.json', (req, res) => {
       res.status(200).send('{ "a": [ { "b": 1 }, { zzzzz').end()
     })
@@ -491,6 +494,41 @@ describe('fetch', () => {
         should.equal(canContinue, false)
         done()
       }
+    })
+  })
+  it('should emit 429 http errors', (done) => {
+    const stream = fetch({
+      url: `http://localhost:${port}/429.json`,
+      parser: parse('json', { selector: 'data.*' })
+    }, { attempts: 1 })
+    stream.once('error', (err) => {
+      should.exist(err)
+      should.exist(err.status)
+      err.status.should.equal(429)
+      err.message.should.equal('Server responded with "Too Many Requests"')
+      err.body.should.equal('429')
+      should.not.exist(err.code)
+      done()
+    })
+  })
+  it('should emit 429 http errors with pagination', (done) => {
+    const stream = fetch({
+      url: `http://localhost:${port}/429.json`,
+      parser: parse('json', { selector: 'data.*' }),
+      pagination: {
+        limitParam: 'limit',
+        offsetParam: 'offset',
+        limit: 1
+      }
+    }, { attempts: 1 })
+    stream.once('error', (err) => {
+      should.exist(err)
+      should.exist(err.status)
+      err.status.should.equal(429)
+      err.message.should.equal('Server responded with "Too Many Requests"')
+      err.body.should.equal('429')
+      should.not.exist(err.code)
+      done()
     })
   })
   it('should allow continuing via onError', (done) => {
