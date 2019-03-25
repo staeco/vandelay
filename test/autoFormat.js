@@ -17,7 +17,7 @@ describe('autoFormat.infer', () => {
     should.equal(format.infer('nUll', null))
     should.equal(format.infer('NULL', null))
     should.equal(format.infer('-', null))
-    should.equal(format.infer(' - ', null))
+    should.equal(format.infer(' ', null))
   })
   it('should parse booleans', async () => {
     format.infer('true').should.equal(true)
@@ -31,6 +31,7 @@ describe('autoFormat.infer', () => {
     format.infer('-129.9451234567').should.equal(-129.9451234567)
     format.infer('129.9451234567').should.equal(129.9451234567)
     format.infer('0').should.equal(0)
+    format.infer('0000').should.equal(0)
     format.infer('-0').should.equal(-0)
     format.infer('123').should.equal(123)
     format.infer('-123').should.equal(-123)
@@ -86,6 +87,106 @@ describe('autoFormat.infer', () => {
           ]
         ]
       ]
+    })
+  })
+})
+
+describe('autoFormat.extreme', () => {
+  it('should work with nested objects', () => {
+    format.extreme({
+      'type': 'Feature',
+      'properties': {
+        'OBJECTID': 5001,
+        'ID': 1993276342,
+        'ADDRESS': '8830 SW 41 ST                ',
+        'STNDADDR': '8830 SW 41ST ST',
+        'UNIT': '    ',
+        'PROCNUM': 'C1993374261',
+        'FOLIO': '3040210070610',
+        'GEOFOLIO': '3040210070610',
+        'ISCONDO': 'N',
+        'TYPE': 'BLDG',
+        'CAT1': '0095',
+        'DESC1': 'ASPHALT (FIBERGLASS) SHINGLE ROOFS                          ',
+        'CAT2': '0000',
+        'DESC2': '                                                            ',
+        'CAT3': '0000',
+        'DESC3': '                                                            ',
+        'CAT4': '0000',
+        'DESC4': '                                                            ',
+        'CAT5': '0000',
+        'DESC5': '                                                            ',
+        'CAT6': '0000',
+        'DESC6': '                                                            ',
+        'CAT7': '0000',
+        'DESC7': '                                                            ',
+        'CAT8': '0000',
+        'DESC8': '                                                            ',
+        'CAT9': '0000',
+        'DESC9': '                                                            ',
+        'CAT10': '0000',
+        'DESC10': '                                                            ',
+        'ISSUDATE': '1993-08-18T00:00:00.000Z',
+        'LSTINSDT': '00000000',
+        'RENDATE': '00000000',
+        'CCDATE': '00000000',
+        'BLDCMPDT': '00000000',
+        'RESCOMM': 'R',
+        'BPSTATUS': 'E',
+        'PROPUSE': '0220',
+        'APPTYPE': '13',
+        'CLUC': '0001',
+        'FFRMLINE': ' REROOF            ',
+        'LGLDESC1': 'LAKEVIEW MANORS       PB 61-14   ',
+        'LGLDESC2': 'LOT 5                 BLK 5      ',
+        'ESTVALUE': '00000003150',
+        'PTSOURCE': 'P',
+        'MPRMTNUM': 0,
+        'LSTAPPRDT': '00000000',
+        'CONTRNUM': 'CCC056647       ',
+        'CONTRNAME': 'VICH ROBERTO S                                              '
+      },
+      'geometry': {
+        'type': 'Point',
+        'coordinates': [
+          -80.33846015975838,
+          25.731568261802746
+        ]
+      }
+    }).should.eql({
+      'geometry': {
+        'coordinates': [
+          -80.33846015975838,
+          25.731568261802746
+        ],
+        'type': 'Point'
+      },
+      'properties': {
+        'address': '8830 SW 41 ST',
+        'apptype': 13,
+        'bpstatus': 'E',
+        'cat1': 95,
+        'cluc': 1,
+        'contrname': 'VICH ROBERTO S',
+        'contrnum': 'CCC056647',
+        'desc1': 'ASPHALT (FIBERGLASS) SHINGLE ROOFS',
+        'estvalue': 3150,
+        'ffrmline': 'REROOF',
+        'folio': 3040210070610,
+        'geofolio': 3040210070610,
+        'id': 1993276342,
+        'issudate': new Date('1993-08-18T00:00:00.000Z'),
+        'lgldesc1': 'LAKEVIEW MANORS       PB 61-14',
+        'lgldesc2': 'LOT 5                 BLK 5',
+        'objectid': 5001,
+        'procnum': 'C1993374261',
+        'propuse': 220,
+        'ptsource': 'P',
+        'rescomm': 'R',
+        'stndaddr': '8830 SW 41ST ST',
+        'type': 'BLDG'
+      },
+      'type': 'Feature'
     })
   })
 })

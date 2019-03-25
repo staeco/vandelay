@@ -1,6 +1,6 @@
 {
   "name": "vandelay",
-  "version": "3.2.1",
+  "version": "3.3.0",
   "description": "Imports, exports, and ETL",
   "main": "dist/index.js",
   "keywords": [],
@@ -187,6 +187,7 @@
     "get-stream": "^4.0.0",
     "got-resume": "github:contra/got-resume",
     "gtfs-stream": "^1.0.0",
+    "is-plain-object": "^2.0.4",
     "lodash.clone": "^4.5.0",
     "lodash.omit": "^4.5.0",
     "lodash.pickby": "^4.6.0",

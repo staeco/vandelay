@@ -1,17 +1,31 @@
 import parseNumber from 'parse-decimal-number'
 import wkx from 'wkx'
 import camelcase from 'camelcase'
+import isObject from 'is-plain-object'
+import pickBy from 'lodash.pickby'
 
 const transformObject = (o, fn) => {
-  if (!o || typeof o !== 'object') return fn(o)[0]
   // recurse arrays
   if (Array.isArray(o)) return o.map((v) => transformObject(v, fn))
 
-  return Object.entries(o).reduce((prev, [ k, v ]) => {
-    const res = fn(v, k)
+  // flat value? return it
+  if (!isObject(o)) return fn(o)[0]
+
+  // dive into the object
+  return pickBy(Object.entries(o).reduce((prev, [ k, v ]) => {
+    let res = fn(v, k)
+
+    // recurse arrays or objects nested in object
+    if (Array.isArray(res[0])) {
+      res[0] = res[0].map((v) => transformObject(v, fn))
+    }
+    if (isObject(res[0])) {
+      res[0] = transformObject(res[0], fn)
+    }
+
     prev[res[1]] = res[0]
     return prev
-  }, {})
+  }, {}))
 }
 
 const renamePatterns = {
