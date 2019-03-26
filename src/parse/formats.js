@@ -7,6 +7,7 @@ import pumpify from 'pumpify'
 import pump from 'pump'
 import JSONStream from 'JSONStream'
 import parseGTFS from 'gtfs-stream'
+import omit from 'lodash.omit'
 import { parse as ndParse } from 'ndjson'
 import unzip from './unzip'
 import xml2json from './xml2json'
@@ -21,8 +22,7 @@ export const csv = (opt) => {
   })
   // convert into normal objects
   const tail = through2.obj((row, _, cb) => {
-    delete row.headers
-    cb(null, { ...row })
+    cb(null, omit(row, 'headers'))
   })
   return pumpify.obj(head, tail)
 }

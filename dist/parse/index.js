@@ -14,6 +14,14 @@ var _lodash = require('lodash.omit');
 
 var _lodash2 = _interopRequireDefault(_lodash);
 
+var _isPlainObject = require('is-plain-object');
+
+var _isPlainObject2 = _interopRequireDefault(_isPlainObject);
+
+var _removeBomStream = require('remove-bom-stream');
+
+var _removeBomStream2 = _interopRequireDefault(_removeBomStream);
+
 var _formats = require('./formats');
 
 var formats = _interopRequireWildcard(_formats);
@@ -37,11 +45,12 @@ exports.default = (format, opt = {}) => {
     const head = fmt(opt);
     const tail = _through2.default.obj((row, _, cb) => {
       // fun dance to retain the json header field needed for our metadata
-      const out = autoFormat[opt.autoFormat](row && typeof o === 'object' ? Array.isArray(row) ? row : (0, _lodash2.default)(row, '___header') : row);
+      const nrow = (0, _isPlainObject2.default)(row) ? (0, _lodash2.default)(row, '___header') : row;
+      const out = autoFormat[opt.autoFormat](nrow);
       if (row.___header) out.___header = row.___header;
       cb(null, out);
     });
-    return _pumpify2.default.obj(head, tail);
+    return _pumpify2.default.obj((0, _removeBomStream2.default)(), head, tail);
   };
 };
 

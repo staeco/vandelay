@@ -1,6 +1,8 @@
 import through2 from 'through2'
 import pumpify from 'pumpify'
 import omit from 'lodash.omit'
+import isObject from 'is-plain-object'
+import bom from 'remove-bom-stream'
 import * as formats from './formats'
 import * as autoFormat from '../autoFormat'
 
@@ -15,16 +17,13 @@ export default (format, opt={}) => {
     const head = fmt(opt)
     const tail = through2.obj((row, _, cb) => {
       // fun dance to retain the json header field needed for our metadata
-      const out = autoFormat[opt.autoFormat](
-        row && typeof o === 'object'
-          ? Array.isArray(row)
-            ? row
-            : omit(row, '___header')
-          : row
-      )
+      const nrow = isObject(row)
+        ? omit(row, '___header')
+        : row
+      const out = autoFormat[opt.autoFormat](nrow)
       if (row.___header) out.___header = row.___header
       cb(null, out)
     })
-    return pumpify.obj(head, tail)
+    return pumpify.obj(bom(), head, tail)
   }
 }

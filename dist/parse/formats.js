@@ -39,6 +39,10 @@ var _gtfsStream = require('gtfs-stream');
 
 var _gtfsStream2 = _interopRequireDefault(_gtfsStream);
 
+var _lodash = require('lodash.omit');
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
 var _ndjson = require('ndjson');
 
 var _unzip = require('./unzip');
@@ -61,8 +65,7 @@ const csv = exports.csv = opt => {
   });
   // convert into normal objects
   const tail = _through2.default.obj((row, _, cb) => {
-    delete row.headers;
-    cb(null, Object.assign({}, row));
+    cb(null, (0, _lodash2.default)(row, 'headers'));
   });
   return _pumpify2.default.obj(head, tail);
 };
