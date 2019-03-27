@@ -2,7 +2,9 @@
 
 exports.__esModule = true;
 
-var _bluestream = require('bluestream');
+var _through2Concurrent = require('through2-concurrent');
+
+var _through2Concurrent2 = _interopRequireDefault(_through2Concurrent);
 
 var _lodash = require('lodash.clone');
 
@@ -12,26 +14,27 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 exports.default = (fn, opt = {}) => {
   if (typeof fn !== 'function') throw new Error('Invalid function!');
-  const concurrent = opt.concurrency != null ? opt.concurrency : 10;
+  const maxConcurrency = opt.concurrency != null ? opt.concurrency : 10;
 
-  const tap = async row => {
+  const tap = (row, _, cb) => {
     let meta;
     // pluck the ___meta attr we attached in fetch
     if (row && typeof row === 'object') {
       meta = row.___meta;
       delete row.___meta;
     }
-    row = await fn(row, meta);
-    if (row == null) return;
-    if (meta) {
-      row = (0, _lodash2.default)(row);
-      row.___meta = meta;
-    }
-    return row;
+    fn(row, meta).catch(cb).then(res => {
+      if (res == null) return cb();
+      if (meta) {
+        res = (0, _lodash2.default)(res);
+        res.___meta = meta;
+      }
+      cb(null, res);
+    });
   };
-  return (0, _bluestream.transform)({
-    concurrent,
-    highWaterMark: Math.max(concurrent * 2, 32)
+  return _through2Concurrent2.default.obj({
+    maxConcurrency,
+    highWaterMark: Math.max(maxConcurrency * 2, 32)
   }, tap);
 };
 

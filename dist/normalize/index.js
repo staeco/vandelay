@@ -2,18 +2,22 @@
 
 exports.__esModule = true;
 
-var _bluestream = require('bluestream');
+var _through2Concurrent = require('through2-concurrent');
+
+var _through2Concurrent2 = _interopRequireDefault(_through2Concurrent);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.default = (opt = {}) => {
-  const concurrent = opt.concurrency != null ? opt.concurrency : 10;
-  const normalize = async row => {
+  const maxConcurrency = opt.concurrency != null ? opt.concurrency : 10;
+  const normalize = (row, _, cb) => {
     // strip internal crap back off
     if (row && typeof row === 'object') delete row.___meta;
-    return row;
+    cb(null, row);
   };
-  return (0, _bluestream.transform)({
-    concurrent,
-    highWaterMark: Math.max(concurrent * 2, 32)
+  return _through2Concurrent2.default.obj({
+    maxConcurrency,
+    highWaterMark: Math.max(maxConcurrency * 2, 32)
   }, normalize);
 };
 
