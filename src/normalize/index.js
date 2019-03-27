@@ -1,14 +1,14 @@
-import { transform } from 'bluestream'
+import through from 'through2-concurrent'
 
 export default (opt={}) => {
-  const concurrent = opt.concurrency != null ? opt.concurrency : 10
-  const normalize = async (row) => {
+  const maxConcurrency = opt.concurrency != null ? opt.concurrency : 10
+  const normalize = (row, _, cb) => {
     // strip internal crap back off
     if (row && typeof row === 'object') delete row.___meta
-    return row
+    cb(null, row)
   }
-  return transform({
-    concurrent,
-    highWaterMark: Math.max(concurrent * 2, 32)
+  return through.obj({
+    maxConcurrency,
+    highWaterMark: Math.max(maxConcurrency * 2, 32)
   }, normalize)
 }

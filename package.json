@@ -1,6 +1,6 @@
 {
   "name": "vandelay",
-  "version": "3.3.2",
+  "version": "3.4.0",
   "description": "Imports, exports, and ETL",
   "main": "dist/index.js",
   "keywords": [],
@@ -178,7 +178,6 @@
   "dependencies": {
     "JSONStream": "^1.3.2",
     "babel-runtime": "^6.3.19",
-    "bluestream": "^10.0.0",
     "camelcase": "^5.0.0",
     "csv-parser": "^2.0.0",
     "duplexer2": "^0.1.4",
@@ -202,6 +201,7 @@
     "shp2json": "^1.2.1",
     "superagent": "^4.1.0",
     "through2": "^3.0.0",
+    "through2-concurrent": "^2.0.0",
     "unzipper": "^0.9.3",
     "url-template": "^2.0.8",
     "vm2": "^3.6.0",
