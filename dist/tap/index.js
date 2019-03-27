@@ -31,7 +31,7 @@ exports.default = (fn, opt = {}) => {
   };
   return (0, _bluestream.transform)({
     concurrent,
-    highWaterMark: concurrent
+    highWaterMark: Math.max(concurrent * 2, 32)
   }, tap);
 };
 

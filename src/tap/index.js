@@ -22,6 +22,6 @@ export default (fn, opt={}) => {
   }
   return transform({
     concurrent,
-    highWaterMark: concurrent
+    highWaterMark: Math.max(concurrent * 2, 32)
   }, tap)
 }

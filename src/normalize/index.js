@@ -9,6 +9,6 @@ export default (opt={}) => {
   }
   return transform({
     concurrent,
-    highWaterMark: concurrent
+    highWaterMark: Math.max(concurrent * 2, 32)
   }, normalize)
 }
