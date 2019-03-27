@@ -249,4 +249,13 @@ describe('transform', () => {
     process.removeListener('uncaughtException', fail)
     process.removeListener('uncaughtRejection', fail)
   })
+  it.skip('should handle while(true)', async () => {
+    const map = `module.exports = (row) => {
+      while (true) {}
+      return row
+    }`
+    const stream = streamify.obj(data).pipe(transform(map, { timeout: 1000 }))
+    const res = await collect.array(stream)
+    res.should.eql([])
+  })
 })
