@@ -180,7 +180,7 @@
     "babel-runtime": "^6.3.19",
     "camelcase": "^5.0.0",
     "csv-parser": "^2.0.0",
-    "duplexer2": "^0.1.4",
+    "duplexify": "^4.0.0",
     "end-of-stream": "github:isaacs/end-of-stream#custom-stream-premature-close-fix",
     "exceljs-transform-stream": "^1.0.0",
     "get-stream": "^4.0.0",

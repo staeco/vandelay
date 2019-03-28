@@ -1,6 +1,6 @@
 import pumpify from 'pumpify'
 import merge from 'merge2'
-import duplex from 'duplexer2'
+import duplexify from 'duplexify'
 import through2 from 'through2'
 import zip from 'unzipper'
 import eos from 'end-of-stream'
@@ -21,5 +21,5 @@ export default (parser, regex) => {
     }))
 
   eos(dataStream, () => out.push(null))
-  return duplex({ objectMode: true }, dataStream, out)
+  return duplexify.obj(dataStream, out)
 }
