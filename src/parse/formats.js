@@ -2,7 +2,7 @@ import csvStream from 'csv-parser'
 import excelStream from 'exceljs-transform-stream'
 import through2 from 'through2'
 import shpToJSON from 'shp2json'
-import duplex from 'duplexer2'
+import duplexify from 'duplexify'
 import pumpify from 'pumpify'
 import pump from 'pump'
 import JSONStream from 'JSONStream'
@@ -45,7 +45,7 @@ export const json = (opt) => {
     opt.selector.forEach((selector) =>
       pump(inStream, json({ ...opt, selector }), outStream)
     )
-    return duplex({ objectMode: true }, inStream, outStream)
+    return duplexify.obj(inStream, outStream)
   }
 
   if (typeof opt.selector !== 'string') throw new Error('Missing selector for JSON parser!')
@@ -74,7 +74,7 @@ export const shp = () => {
   const head = through2()
   const mid = shpToJSON(head)
   const tail = JSONStream.parse('features.*')
-  return duplex({ objectMode: true }, head, pump(mid, tail))
+  return duplexify.obj(head, pump(mid, tail))
 }
 
 export const gtfsrt = () => parseGTFS.rt()
