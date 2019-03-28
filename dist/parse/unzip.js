@@ -10,9 +10,9 @@ var _merge = require('merge2');
 
 var _merge2 = _interopRequireDefault(_merge);
 
-var _duplexer = require('duplexer2');
+var _duplexify = require('duplexify');
 
-var _duplexer2 = _interopRequireDefault(_duplexer);
+var _duplexify2 = _interopRequireDefault(_duplexify);
 
 var _through = require('through2');
 
@@ -42,7 +42,7 @@ exports.default = (parser, regex) => {
   }));
 
   (0, _endOfStream2.default)(dataStream, () => out.push(null));
-  return (0, _duplexer2.default)({ objectMode: true }, dataStream, out);
+  return _duplexify2.default.obj(dataStream, out);
 };
 
 module.exports = exports.default;

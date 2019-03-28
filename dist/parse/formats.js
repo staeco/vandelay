@@ -19,9 +19,9 @@ var _shp2json = require('shp2json');
 
 var _shp2json2 = _interopRequireDefault(_shp2json);
 
-var _duplexer = require('duplexer2');
+var _duplexify = require('duplexify');
 
-var _duplexer2 = _interopRequireDefault(_duplexer);
+var _duplexify2 = _interopRequireDefault(_duplexify);
 
 var _pumpify = require('pumpify');
 
@@ -86,7 +86,7 @@ const json = exports.json = opt => {
     const inStream = (0, _through2.default)();
     const outStream = _through2.default.obj();
     opt.selector.forEach(selector => (0, _pump2.default)(inStream, json(Object.assign({}, opt, { selector })), outStream));
-    return (0, _duplexer2.default)({ objectMode: true }, inStream, outStream);
+    return _duplexify2.default.obj(inStream, outStream);
   }
 
   if (typeof opt.selector !== 'string') throw new Error('Missing selector for JSON parser!');
@@ -115,7 +115,7 @@ const shp = exports.shp = () => {
   const head = (0, _through2.default)();
   const mid = (0, _shp2json2.default)(head);
   const tail = _JSONStream2.default.parse('features.*');
-  return (0, _duplexer2.default)({ objectMode: true }, head, (0, _pump2.default)(mid, tail));
+  return _duplexify2.default.obj(head, (0, _pump2.default)(mid, tail));
 };
 
 const gtfsrt = exports.gtfsrt = () => _gtfsStream2.default.rt();
