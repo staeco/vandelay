@@ -119,4 +119,4 @@ const shp = exports.shp = () => {
 };
 
 const gtfsrt = exports.gtfsrt = () => _gtfsStream2.default.rt();
-const gtfs = exports.gtfs = () => (0, _gtfsStream2.default)();
+const gtfs = exports.gtfs = () => _gtfsStream2.default.enhanced();

@@ -78,4 +78,4 @@ export const shp = () => {
 }
 
 export const gtfsrt = () => parseGTFS.rt()
-export const gtfs = () => parseGTFS()
+export const gtfs = () => parseGTFS.enhanced()

@@ -13,22 +13,22 @@ const data = [
 
 describe('transform', () => {
   it('should work with a plain identity function', async () => {
-    const stream = streamify.obj(data).pipe(transform((row) => row))
+    const stream = streamify.object(data).pipe(transform((row) => row))
     const res = await collect.array(stream)
     res.should.eql(data)
   })
   it('should work with an async identity function', async () => {
-    const stream = streamify.obj(data).pipe(transform(async (row) => row))
+    const stream = streamify.object(data).pipe(transform(async (row) => row))
     const res = await collect.array(stream)
     res.should.eql(data)
   })
   it('should work with a plain string identity function', async () => {
-    const stream = streamify.obj(data).pipe(transform('module.exports = (row) => row'))
+    const stream = streamify.object(data).pipe(transform('module.exports = (row) => row'))
     const res = await collect.array(stream)
     res.should.eql(data)
   })
   it('should work with an async string identity function', async () => {
-    const stream = streamify.obj(data).pipe(transform('module.exports = async (row) => row'))
+    const stream = streamify.object(data).pipe(transform('module.exports = async (row) => row'))
     const res = await collect.array(stream)
     res.should.eql(data)
   })
@@ -46,12 +46,12 @@ describe('transform', () => {
     res.length.should.equal(max)
   })
   it('should work with an empty transform stack', async () => {
-    const stream = streamify.obj(data).pipe(transform([]))
+    const stream = streamify.object(data).pipe(transform([]))
     const res = await collect.array(stream)
     res.should.eql(data.map(() => ({})))
   })
   it('should work with a working transform stack', async () => {
-    const stream = streamify.obj(data).pipe(transform([ { to: 'data', from: 'a' } ]))
+    const stream = streamify.object(data).pipe(transform([ { to: 'data', from: 'a' } ]))
     const res = await collect.array(stream)
     res.should.eql(data.map(({ a }) => ({ data: a })))
   })
@@ -70,7 +70,7 @@ describe('transform', () => {
   })
   it('should pass on changes', async () => {
     const map = (row) => ({ ...row, a: null })
-    const stream = streamify.obj(data).pipe(transform(map, {
+    const stream = streamify.object(data).pipe(transform(map, {
       onSuccess: (record, old) => {
         should.exist(record)
         should.exist(old)
@@ -83,7 +83,7 @@ describe('transform', () => {
   })
   it('should work with arrays', async () => {
     const map = (row) => [ row, row ]
-    const stream = streamify.obj(data).pipe(transform(map, {
+    const stream = streamify.object(data).pipe(transform(map, {
       onSuccess: (record, old) => {
         should.exist(record)
         should.exist(old)
@@ -95,7 +95,7 @@ describe('transform', () => {
   })
   it('should skip when null returned', async () => {
     const filter = (row) => row.a > 1 ? null : row
-    const stream = streamify.obj(data).pipe(transform(filter, {
+    const stream = streamify.object(data).pipe(transform(filter, {
       onSuccess: (record, old) => {
         should.exist(record)
         should.exist(old)
@@ -113,7 +113,7 @@ describe('transform', () => {
   it('should skip when false returned from filter fn', async () => {
     const map = (row) => row
     const filter = (row) => row.a <= 1
-    const stream = streamify.obj(data).pipe(transform(map, {
+    const stream = streamify.object(data).pipe(transform(map, {
       filter,
       onSuccess: (record, old) => {
         should.exist(record)
@@ -135,7 +135,7 @@ describe('transform', () => {
       if (row.a > 1) throw new Error('wot')
       return row
     }
-    const stream = streamify.obj(data).pipe(transform(map, {
+    const stream = streamify.object(data).pipe(transform(map, {
       onSuccess: (record, old) => {
         should.exist(record)
         should.exist(old)
@@ -163,7 +163,7 @@ describe('transform', () => {
     }
     process.on('uncaughtException', fail)
     process.on('uncaughtRejection', fail)
-    const stream = streamify.obj(data).pipe(transform(map, {
+    const stream = streamify.object(data).pipe(transform(map, {
       onSuccess: (record, old) => {
         should.exist(record)
         should.exist(old)
@@ -197,7 +197,7 @@ describe('transform', () => {
     }
     process.on('uncaughtException', fail)
     process.on('uncaughtRejection', fail)
-    const stream = streamify.obj(data).pipe(transform(map, {
+    const stream = streamify.object(data).pipe(transform(map, {
       onSuccess: (record, old) => {
         should.exist(record)
         should.exist(old)
@@ -229,7 +229,7 @@ describe('transform', () => {
     }
     process.on('uncaughtException', fail)
     process.on('uncaughtRejection', fail)
-    const stream = streamify.obj(data).pipe(transform(map, {
+    const stream = streamify.object(data).pipe(transform(map, {
       onSuccess: (record, old) => {
         should.exist(record)
         should.exist(old)
@@ -254,7 +254,7 @@ describe('transform', () => {
       while (true) {}
       return row
     }`
-    const stream = streamify.obj(data).pipe(transform(map, { timeout: 1000 }))
+    const stream = streamify.object(data).pipe(transform(map, { timeout: 1000 }))
     const res = await collect.array(stream)
     res.should.eql([])
   })
