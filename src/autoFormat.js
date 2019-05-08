@@ -129,9 +129,13 @@ export const infer = (v) => {
   const n = parseNumber(v)
   if (!isNaN(n)) return n
 
-  const d = new Date(v)
-  if (!isNaN(d)) return d
-
+  // if a string is a number with characters prefixing it, the date constructor
+  // will discard the character and try to parse from the number
+  // so this checks for that case and handles it
+  if (!/^\D+-\d+$/.test(v)) {
+    const d = new Date(v)
+    if (!isNaN(d)) return d
+  }
   return v
 }
 

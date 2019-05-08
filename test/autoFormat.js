@@ -52,6 +52,11 @@ describe('autoFormat.infer', () => {
     format.infer('5/15/2018').should.be.instanceof(Date)
     format.infer('/Date(1526400472000)/').should.eql(sampleDate)
     format.infer('/Date(1526400472000+0400)/').should.eql(sampleDate)
+
+    // false positive checks
+    format.infer('R-1').should.eql('R-1')
+    format.infer('R-105').should.eql('R-105')
+    format.infer('RAAAAAAA-105').should.eql('RAAAAAAA-105')
   })
   it('should parse WKT', async () => {
     format.infer('POINT (30 10)').should.eql({ type: 'Point', coordinates: [ 30, 10 ] })
