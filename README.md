@@ -85,6 +85,10 @@ Returns a stream that fetches the given source and emits the parsed and selected
 #### options
 
 - concurrency - Optional `Number`, defaults to 10
+- timeout - Optional `Number`
+  - Timeout for the entire request, defaults to one day
+- connectTimeout - Optional `Number`
+  - Timeout to establish the initial connection, defaults to five minutes
 - context - Optional `Object`
   - If specified, will be templated into the URL via [RFC6570](https://tools.ietf.org/html/rfc6570)
 - modifyRequest - Optional `Function`

@@ -14,6 +14,7 @@ const getOptions = (src, opt, accessToken) => ({
   fetchURL: opt.fetchURL,
   debug: opt.debug,
   timeout: opt.timeout,
+  connectTimeout: opt.connectTimeout,
   attempts: opt.attempts,
   headers: src.headers,
   context: opt.context

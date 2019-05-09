@@ -1,6 +1,6 @@
 {
   "name": "vandelay",
-  "version": "4.0.2",
+  "version": "4.0.3",
   "description": "Imports, exports, and ETL",
   "main": "dist/index.js",
   "keywords": [],

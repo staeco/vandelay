@@ -57,7 +57,7 @@ const shouldRetry = (_, original) => {
   return true;
 };
 
-exports.default = (url, { attempts = 10, headers = {}, timeout, accessToken, debug, context } = {}) => {
+exports.default = (url, { attempts = 10, headers = {}, timeout, connectTimeout, accessToken, debug, context } = {}) => {
   const decoded = unescape(url);
   const fullURL = context && decoded.includes('{') ? _urlTemplate2.default.parse(decoded).expand(context) : url;
 
@@ -76,8 +76,8 @@ exports.default = (url, { attempts = 10, headers = {}, timeout, accessToken, deb
       followRedirects: true,
       timeout: {
         request: timeout || oneDay,
-        connect: fiveMinutes,
-        socket: fiveMinutes
+        connect: connectTimeout || fiveMinutes,
+        socket: oneDay
       },
       headers: actualHeaders
     }

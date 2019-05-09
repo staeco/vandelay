@@ -30,7 +30,7 @@ const shouldRetry = (_, original) => {
   return true
 }
 
-export default (url, { attempts=10, headers={}, timeout, accessToken, debug, context }={}) => {
+export default (url, { attempts=10, headers={}, timeout, connectTimeout, accessToken, debug, context }={}) => {
   const decoded = unescape(url)
   const fullURL = context && decoded.includes('{')
     ? template.parse(decoded).expand(context)
@@ -52,8 +52,8 @@ export default (url, { attempts=10, headers={}, timeout, accessToken, debug, con
       followRedirects: true,
       timeout: {
         request: timeout || oneDay,
-        connect: fiveMinutes,
-        socket: fiveMinutes
+        connect: connectTimeout || fiveMinutes,
+        socket: oneDay
       },
       headers: actualHeaders
     }
