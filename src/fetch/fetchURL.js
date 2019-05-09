@@ -9,6 +9,7 @@ import hardClose from '../hardClose'
 
 const sizeLimit = 512000 // 512kb
 const oneDay = 86400000
+const fiveMinutes = 300000
 
 const retryWorthy = [
   420, 444, 408, 429, 449, 499
@@ -51,8 +52,8 @@ export default (url, { attempts=10, headers={}, timeout, accessToken, debug, con
       followRedirects: true,
       timeout: {
         request: timeout || oneDay,
-        connect: oneDay,
-        socket: oneDay
+        connect: fiveMinutes,
+        socket: fiveMinutes
       },
       headers: actualHeaders
     }

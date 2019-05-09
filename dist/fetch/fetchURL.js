@@ -38,6 +38,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 const sizeLimit = 512000; // 512kb
 const oneDay = 86400000;
+const fiveMinutes = 300000;
 
 const retryWorthy = [420, 444, 408, 429, 449, 499];
 const shouldRetry = (_, original) => {
@@ -75,8 +76,8 @@ exports.default = (url, { attempts = 10, headers = {}, timeout, accessToken, deb
       followRedirects: true,
       timeout: {
         request: timeout || oneDay,
-        connect: oneDay,
-        socket: oneDay
+        connect: fiveMinutes,
+        socket: fiveMinutes
       },
       headers: actualHeaders
     }
