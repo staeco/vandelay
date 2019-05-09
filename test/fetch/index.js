@@ -38,6 +38,11 @@ describe('fetch', () => {
       if (req.headers.a !== 'abc') return res.status(500).send('500').end()
       res.json({ data: sample })
     })
+    app.get('/slow-file.json', (req, res) => {
+      setTimeout(() => {
+        res.json({ data: sample })
+      }, 5000)
+    })
     app.get('/file.json', (req, res) => {
       res.json({ data: sample })
     })
@@ -133,6 +138,82 @@ describe('fetch', () => {
       { a: 1, b: 2, c: 3, ___meta: { row: 0, url: expectedURL, source } },
       { a: 4, b: 5, c: 6, ___meta: { row: 1, url: expectedURL, source } },
       { a: 7, b: 8, c: 9, ___meta: { row: 2, url: expectedURL, source } }
+    ])
+  })
+  it('should respect timeouts', async () => {
+    const source = {
+      url: `http://localhost:${port}/slow-file.json`,
+      parser: parse('json', { selector: 'data.*' })
+    }
+    const stream = fetch(source, {
+      timeout: 10,
+      attempts: 1
+    })
+    try {
+      await collect.array(stream)
+    } catch (err) {
+      should(err.code).equal('ETIMEDOUT')
+      should(err.requestError).equal(true)
+      should.exist(err.source)
+      should.exist(err.url)
+      return
+    }
+    throw new Error('Did not timeout!')
+  })
+  it('should respect timeouts with multiple files, slow first', async () => {
+    const source = {
+      url: `http://localhost:${port}/slow-file.json`,
+      parser: parse('json', { selector: 'data.*' })
+    }
+    const source2 = {
+      url: `http://localhost:${port}/file.json`,
+      parser: parse('json', { selector: 'data.*' })
+    }
+    const stream = fetch([ source, source2 ], {
+      timeout: 100,
+      attempts: 1,
+      onError: ({ error, canContinue, fatal }) => {
+        should(error.code).equal('ETIMEDOUT')
+        should(error.requestError).equal(true)
+        should.exist(error.source)
+        should.exist(error.url)
+        canContinue.should.equal(false)
+        fatal.should.equal(false)
+      }
+    })
+    const res = await collect.array(stream)
+    res.should.eql([
+      { a: 1, b: 2, c: 3, ___meta: { row: 0, url: source2.url, source: source2 } },
+      { a: 4, b: 5, c: 6, ___meta: { row: 1, url: source2.url, source: source2 } },
+      { a: 7, b: 8, c: 9, ___meta: { row: 2, url: source2.url, source: source2 } }
+    ])
+  })
+  it('should respect timeouts with multiple files, slow last', async () => {
+    const source = {
+      url: `http://localhost:${port}/slow-file.json`,
+      parser: parse('json', { selector: 'data.*' })
+    }
+    const source2 = {
+      url: `http://localhost:${port}/file.json`,
+      parser: parse('json', { selector: 'data.*' })
+    }
+    const stream = fetch([ source2, source ], {
+      timeout: 100,
+      attempts: 1,
+      onError: ({ error, canContinue, fatal }) => {
+        should(error.code).equal('ETIMEDOUT')
+        should(error.requestError).equal(true)
+        should.exist(error.source)
+        should.exist(error.url)
+        canContinue.should.equal(false)
+        fatal.should.equal(false)
+      }
+    })
+    const res = await collect.array(stream)
+    res.should.eql([
+      { a: 1, b: 2, c: 3, ___meta: { row: 0, url: source2.url, source: source2 } },
+      { a: 4, b: 5, c: 6, ___meta: { row: 1, url: source2.url, source: source2 } },
+      { a: 7, b: 8, c: 9, ___meta: { row: 2, url: source2.url, source: source2 } }
     ])
   })
   it('should work with custom fetchURL', async () => {

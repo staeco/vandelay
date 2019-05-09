@@ -33,6 +33,7 @@ export default ({ concurrent=10, onError, inputs=[] }={}) => {
     if (err && onError) {
       onError({
         canContinue,
+        fatal: !canContinue && inputs.length === 1,
         error: err,
         output: out,
         input: src
