@@ -142,6 +142,7 @@ Built in parsers are:
 
 - Asynchronous function, receives the current row and the meta information object.
 - If transformer is a string, it will compile it and sandbox it using [vm2](https://github.com/patriksimek/vm2).
+- If transformer is an array of objects, it will use [object-transform-stack](https://github.com/staeco/object-transform-stack) to map objects.
 - Returning an object will pass it on, and null or undefined will remove the item from the stream (skip).
 
 #### options

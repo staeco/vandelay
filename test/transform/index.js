@@ -51,7 +51,7 @@ describe('transform', () => {
     res.should.eql(data.map(() => ({})))
   })
   it('should work with a working transform stack', async () => {
-    const stream = streamify.object(data).pipe(transform([ { to: 'data', from: 'a' } ]))
+    const stream = streamify.object(data).pipe(transform([ { to: 'data', from: { field: 'a' } } ]))
     const res = await collect.array(stream)
     res.should.eql(data.map(({ a }) => ({ data: a })))
   })
@@ -64,7 +64,7 @@ describe('transform', () => {
       stream.end()
     }
     process.nextTick(write)
-    const stream = transform([ { to: 'data', from: 'a' } ])
+    const stream = transform([ { to: 'data', from: { field: 'a' } } ])
     const res = await collect.array(stream)
     res.length.should.equal(max)
   })
