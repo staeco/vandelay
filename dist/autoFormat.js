@@ -23,7 +23,30 @@ var _lodash = require('lodash.pickby');
 
 var _lodash2 = _interopRequireDefault(_lodash);
 
+var _moment = require('moment');
+
+var _moment2 = _interopRequireDefault(_moment);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const minLooseLength = 25;
+const looseDateFormats = ['ddd MMM DD YYYY HH:mm:ss ZZ', // Tue May 15 2018 12:07:52 GMT-0400 (EDT)
+'MMM DD, YYYY HH:mm:ss ZZ', // May 15, 2018 12:07:52 -0400
+'ddd, DD MMM YYYY HH:mm:ss ZZ' // Tue, 15 May 2018 16:07:52 GMT
+];
+const strictDateFormats = [_moment2.default.RFC_2822, _moment2.default.ISO_8601, 'YYYY-MM-DD hh:mm:ss a', // 2016-01-01 11:31:23 PM
+'MMMM Do, YYYY', // February 3rd, 2014
+'MMMM D, YYYY', // February 3, 2014
+'MMM D, YYYY', // Feb 3, 2014
+'YYYY-M-D', // 2019-5-15
+'YYYY-MM-DD', // 2019-05-15
+'M/D/YYYY', // 1/2/2019
+'MM/DD/YYYY', // 01/02/2019
+'M-D-YYYY', // 1-2-2019
+'MM-DD-YYYY', // 01-02-2019
+'M/YYYY', // 5/2018
+'M-YYYY' // 5-2018
+];
 
 const transformObject = (o, fn) => {
   // recurse arrays
@@ -134,12 +157,14 @@ const infer = exports.infer = v => {
   const n = (0, _parseDecimalNumber2.default)(v);
   if (!isNaN(n)) return n;
 
-  // if a string is a number with characters prefixing it, the date constructor
-  // will discard the character and try to parse from the number
-  // so this checks for that case and handles it
-  if (!/^\D+-\d+$/.test(v)) {
-    const d = new Date(v);
-    if (!isNaN(d)) return d;
+  // conservative
+  const d2 = (0, _moment2.default)(v, strictDateFormats, true);
+  if (d2.isValid()) return d2.toDate();
+
+  // looser
+  if (v.length >= minLooseLength) {
+    const d = (0, _moment2.default)(v, looseDateFormats);
+    if (d.isValid()) return d.toDate();
   }
   return v;
 };

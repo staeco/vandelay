@@ -1,6 +1,6 @@
 {
   "name": "vandelay",
-  "version": "5.0.1",
+  "version": "5.0.2",
   "description": "Imports, exports, and ETL",
   "main": "dist/index.js",
   "keywords": [],
@@ -191,6 +191,7 @@
     "lodash.omit": "^4.5.0",
     "lodash.pickby": "^4.6.0",
     "merge2": "^1.2.3",
+    "moment": "^2.24.0",
     "ndjson": "^1.5.0",
     "object-transform-stack": "^2.0.0",
     "parse-decimal-number": "^1.0.0",
