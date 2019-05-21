@@ -204,7 +204,23 @@ describe('autoFormat.extreme', () => {
         'ptsource': 'P',
         'rescomm': 'R',
         'stndaddr': '8830 SW 41ST ST',
-        'type': 'BLDG'
+        'type': 'BLDG',
+        'iscondo': false,
+        'lstapprdt': 0,
+        'bldcmpdt': 0,
+        'lstinsdt': 0,
+        'mprmtnum': 0,
+        'cat10': 0,
+        'cat2': 0,
+        'cat3': 0,
+        'cat4': 0,
+        'cat5': 0,
+        'cat6': 0,
+        'cat7': 0,
+        'cat8': 0,
+        'cat9': 0,
+        'ccdate': 0,
+        'rendate': 0
       },
       'type': 'Feature'
     })

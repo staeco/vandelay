@@ -2,7 +2,6 @@ import parseNumber from 'parse-decimal-number'
 import wkx from 'wkx'
 import camelcase from 'camelcase'
 import isObject from 'is-plain-object'
-import pickBy from 'lodash.pickby'
 import moment from 'moment'
 
 const minLooseLength = 25
@@ -36,8 +35,10 @@ const transformObject = (o, fn) => {
   if (!isObject(o)) return fn(o)[0]
 
   // dive into the object
-  return pickBy(Object.entries(o).reduce((prev, [ k, v ]) => {
+  return Object.entries(o).reduce((prev, [ k, v ]) => {
     let res = fn(v, k)
+
+    if (typeof res[0] === 'undefined') return prev
 
     // recurse arrays or objects nested in object
     if (Array.isArray(res[0])) {
@@ -49,7 +50,7 @@ const transformObject = (o, fn) => {
 
     prev[res[1]] = res[0]
     return prev
-  }, {}))
+  }, {})
 }
 
 const renamePatterns = {
@@ -122,7 +123,7 @@ export const infer = (v) => {
 
   // basics first
   v = v.trim()
-  if (!v) return
+  if (v.length === 0) return
   if (v === '-') return null
   if (v === 'NaN') return NaN
 

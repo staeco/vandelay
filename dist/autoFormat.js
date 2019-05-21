@@ -19,10 +19,6 @@ var _isPlainObject = require('is-plain-object');
 
 var _isPlainObject2 = _interopRequireDefault(_isPlainObject);
 
-var _lodash = require('lodash.pickby');
-
-var _lodash2 = _interopRequireDefault(_lodash);
-
 var _moment = require('moment');
 
 var _moment2 = _interopRequireDefault(_moment);
@@ -56,8 +52,10 @@ const transformObject = (o, fn) => {
   if (!(0, _isPlainObject2.default)(o)) return fn(o)[0];
 
   // dive into the object
-  return (0, _lodash2.default)(Object.entries(o).reduce((prev, [k, v]) => {
+  return Object.entries(o).reduce((prev, [k, v]) => {
     let res = fn(v, k);
+
+    if (typeof res[0] === 'undefined') return prev;
 
     // recurse arrays or objects nested in object
     if (Array.isArray(res[0])) {
@@ -69,7 +67,7 @@ const transformObject = (o, fn) => {
 
     prev[res[1]] = res[0];
     return prev;
-  }, {}));
+  }, {});
 };
 
 const renamePatterns = {
@@ -126,7 +124,7 @@ const infer = exports.infer = v => {
 
   // basics first
   v = v.trim();
-  if (!v) return;
+  if (v.length === 0) return;
   if (v === '-') return null;
   if (v === 'NaN') return NaN;
 
