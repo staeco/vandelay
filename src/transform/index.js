@@ -1,9 +1,10 @@
 import { transform as transformObject } from 'object-transform-stack'
+import isObject from 'is-plain-object'
 import sandbox from './sandbox'
 import tap from '../tap'
 
 export default (transformer, opt={}) => {
-  if (Array.isArray(transformer)) {
+  if (isObject(transformer)) {
     const stack = transformer
     transformer = (v) => transformObject(stack, v, opt)
   }

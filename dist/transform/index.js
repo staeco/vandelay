@@ -4,6 +4,10 @@ exports.__esModule = true;
 
 var _objectTransformStack = require('object-transform-stack');
 
+var _isPlainObject = require('is-plain-object');
+
+var _isPlainObject2 = _interopRequireDefault(_isPlainObject);
+
 var _sandbox = require('./sandbox');
 
 var _sandbox2 = _interopRequireDefault(_sandbox);
@@ -15,7 +19,7 @@ var _tap2 = _interopRequireDefault(_tap);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.default = (transformer, opt = {}) => {
-  if (Array.isArray(transformer)) {
+  if ((0, _isPlainObject2.default)(transformer)) {
     const stack = transformer;
     transformer = v => (0, _objectTransformStack.transform)(stack, v, opt);
   }
