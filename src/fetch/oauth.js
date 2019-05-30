@@ -13,7 +13,7 @@ export const getToken = async (oauth) => {
     .send(pickBy({
       grant_type: oauth.grant.type,
       ...rest
-    }))
+    }, (v, k) => !!k && !!v))
     .set({
       'Cache-Control': 'no-cache',
       'User-Agent': userAgent

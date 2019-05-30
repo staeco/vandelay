@@ -70,7 +70,7 @@ exports.default = (url, { attempts = 10, headers = {}, timeout, connectTimeout, 
 
   const actualHeaders = (0, _lodash2.default)(Object.assign({
     'User-Agent': _userAgent2.default
-  }, headers));
+  }, headers), (v, k) => !!k && !!v);
   if (accessToken) actualHeaders.Authorization = `Bearer ${accessToken}`;
   const options = {
     log: debug,

@@ -43,7 +43,7 @@ export default (url, { attempts=10, headers={}, timeout, connectTimeout, accessT
   const actualHeaders = pickBy({
     'User-Agent': userAgent,
     ...headers
-  })
+  }, (v, k) => !!k && !!v)
   if (accessToken) actualHeaders.Authorization = `Bearer ${accessToken}`
   const options = {
     log: debug,

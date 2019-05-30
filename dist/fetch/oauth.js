@@ -29,7 +29,7 @@ const getToken = exports.getToken = async oauth => {
   const rest = (0, _lodash2.default)(oauth.grant, ['url', 'type']);
   const res = await _superagent2.default.post(oauth.grant.url).type('form').accept('json').send((0, _lodash4.default)(Object.assign({
     grant_type: oauth.grant.type
-  }, rest))).set({
+  }, rest), (v, k) => !!k && !!v)).set({
     'Cache-Control': 'no-cache',
     'User-Agent': _userAgent2.default
   }).retry(10).timeout(30000).catch(err => {
