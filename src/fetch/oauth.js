@@ -1,5 +1,6 @@
 import request from 'superagent'
 import omit from 'lodash.omit'
+import pickBy from 'lodash.pickby'
 import userAgent from './userAgent'
 import httpError from './httpError'
 
@@ -9,10 +10,10 @@ export const getToken = async (oauth) => {
     .post(oauth.grant.url)
     .type('form')
     .accept('json')
-    .send({
+    .send(pickBy({
       grant_type: oauth.grant.type,
       ...rest
-    })
+    }))
     .set({
       'Cache-Control': 'no-cache',
       'User-Agent': userAgent

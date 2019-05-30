@@ -3,6 +3,7 @@ import through2 from 'through2'
 import collect from 'get-stream'
 import pump from 'pump'
 import template from 'url-template'
+import pickBy from 'lodash.pickby'
 import httpError from './httpError'
 import userAgent from './userAgent'
 import hardClose from '../hardClose'
@@ -39,10 +40,10 @@ export default (url, { attempts=10, headers={}, timeout, connectTimeout, accessT
   const out = through2()
   let isCollectingError = false
 
-  const actualHeaders = {
+  const actualHeaders = pickBy({
     'User-Agent': userAgent,
     ...headers
-  }
+  })
   if (accessToken) actualHeaders.Authorization = `Bearer ${accessToken}`
   const options = {
     log: debug,

@@ -22,6 +22,10 @@ var _urlTemplate = require('url-template');
 
 var _urlTemplate2 = _interopRequireDefault(_urlTemplate);
 
+var _lodash = require('lodash.pickby');
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
 var _httpError = require('./httpError');
 
 var _httpError2 = _interopRequireDefault(_httpError);
@@ -64,9 +68,9 @@ exports.default = (url, { attempts = 10, headers = {}, timeout, connectTimeout, 
   const out = (0, _through2.default)();
   let isCollectingError = false;
 
-  const actualHeaders = Object.assign({
+  const actualHeaders = (0, _lodash2.default)(Object.assign({
     'User-Agent': _userAgent2.default
-  }, headers);
+  }, headers));
   if (accessToken) actualHeaders.Authorization = `Bearer ${accessToken}`;
   const options = {
     log: debug,
