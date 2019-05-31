@@ -257,6 +257,24 @@ describe('fetch', () => {
       { a: 7, b: 8, c: 9, ___meta: { row: 2, url: source.url, source } }
     ])
   })
+  it('should request a flat json file and ignore invalid headers', async () => {
+    const source = {
+      url: `http://localhost:${port}/file.json`,
+      headers: {
+        '': 'abc',
+        'yo': '',
+        ' ': ''
+      },
+      parser: parse('json', { selector: 'data.*' })
+    }
+    const stream = fetch(source)
+    const res = await collect.array(stream)
+    res.should.eql([
+      { a: 1, b: 2, c: 3, ___meta: { row: 0, url: source.url, source } },
+      { a: 4, b: 5, c: 6, ___meta: { row: 1, url: source.url, source } },
+      { a: 7, b: 8, c: 9, ___meta: { row: 2, url: source.url, source } }
+    ])
+  })
   it('should request a flat json file with oauth', async () => {
     const source = {
       url: `http://localhost:${port}/secure-api`,
@@ -404,9 +422,9 @@ describe('fetch', () => {
     res.should.eql([ 1, 4, 7 ])
   })
   it('should handle backpressure correctly with a single stream', async () => {
-    const max = 100000
+    const max = 10000
     const source = {
-      url: `http://localhost:${port}/infinite?close=100000`,
+      url: `http://localhost:${port}/infinite?close=10000`,
       parser: 'json',
       parserOptions: { selector: '*.a' }
     }

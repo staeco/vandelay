@@ -61,22 +61,32 @@ export default (url, { attempts=10, headers={}, timeout, connectTimeout, accessT
   }
 
   if (debug) debug('Fetching', fullURL)
-  const req = got(fullURL, options)
-    // handle errors
-    .once('error', async (err) => {
-      isCollectingError = true
-      const original = err.original || err
-      const { res } = original
-      if (debug) debug('Got error while fetching', original)
-      if (res) res.text = await collect(res, { maxBuffer: sizeLimit })
-      out.emit('error', httpError(original, res))
-      out.abort()
+  let req
+
+  // got throws errors on invalid headers or other invalid args, so handle them instead of throwing
+  try {
+    req = got(fullURL, options)
+      // handle errors
+      .once('error', async (err) => {
+        isCollectingError = true
+        const original = err.original || err
+        const { res } = original
+        if (debug) debug('Got error while fetching', original)
+        if (res) res.text = await collect(res, { maxBuffer: sizeLimit })
+        out.emit('error', httpError(original, res))
+        out.abort()
+      })
+      .once('response', () => {
+        if (isCollectingError) return
+        if (debug) debug('Got a response')
+        pump(req, out)
+      })
+  } catch (err) {
+    process.nextTick(() => {
+      out.emit('error', err)
     })
-    .once('response', () => {
-      if (isCollectingError) return
-      if (debug) debug('Got a response')
-      pump(req, out)
-    })
+    return out
+  }
 
   out.abort = () => {
     if (debug) debug('Abort called')

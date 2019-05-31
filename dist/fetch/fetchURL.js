@@ -88,21 +88,31 @@ exports.default = (url, { attempts = 10, headers = {}, timeout, connectTimeout, 
   };
 
   if (debug) debug('Fetching', fullURL);
-  const req = (0, _gotResume2.default)(fullURL, options)
-  // handle errors
-  .once('error', async err => {
-    isCollectingError = true;
-    const original = err.original || err;
-    const { res } = original;
-    if (debug) debug('Got error while fetching', original);
-    if (res) res.text = await (0, _getStream2.default)(res, { maxBuffer: sizeLimit });
-    out.emit('error', (0, _httpError2.default)(original, res));
-    out.abort();
-  }).once('response', () => {
-    if (isCollectingError) return;
-    if (debug) debug('Got a response');
-    (0, _pump2.default)(req, out);
-  });
+  let req;
+
+  // got throws errors on invalid headers or other invalid args, so handle them instead of throwing
+  try {
+    req = (0, _gotResume2.default)(fullURL, options)
+    // handle errors
+    .once('error', async err => {
+      isCollectingError = true;
+      const original = err.original || err;
+      const { res } = original;
+      if (debug) debug('Got error while fetching', original);
+      if (res) res.text = await (0, _getStream2.default)(res, { maxBuffer: sizeLimit });
+      out.emit('error', (0, _httpError2.default)(original, res));
+      out.abort();
+    }).once('response', () => {
+      if (isCollectingError) return;
+      if (debug) debug('Got a response');
+      (0, _pump2.default)(req, out);
+    });
+  } catch (err) {
+    process.nextTick(() => {
+      out.emit('error', err);
+    });
+    return out;
+  }
 
   out.abort = () => {
     if (debug) debug('Abort called');
