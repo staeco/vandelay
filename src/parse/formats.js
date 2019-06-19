@@ -1,7 +1,7 @@
 import csvStream from 'csv-parser'
 import excelStream from 'exceljs-transform-stream'
 import through2 from 'through2'
-import shpToJSON from 'shp2json'
+import { from } from 'verrazzano'
 import duplexify from 'duplexify'
 import pumpify from 'pumpify'
 import pump from 'pump'
@@ -70,12 +70,11 @@ export const html = (opt) => {
   return pumpify.obj(xml2json({ ...opt, strict: false }), json(opt))
 }
 
-export const shp = () => {
-  const head = through2()
-  const mid = shpToJSON(head)
-  const tail = JSONStream.parse('features.*')
-  return duplexify.obj(head, pump(mid, tail))
-}
+export const gdb = (opts) => from.bind(null, 'gdb')(opts)
+export const gpx = (opts) => from.bind(null, 'gpx')(opts)
+export const kml = (opts) => from.bind(null, 'kml')(opts)
+export const kmz = (opts) => from.bind(null, 'kmz')(opts)
+export const shp = (opts) => from.bind(null, 'shp')(opts)
 
 export const gtfsrt = () => parseGTFS.rt()
 export const gtfs = () => parseGTFS.enhanced()
