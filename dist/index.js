@@ -1,32 +1,25 @@
-'use strict';
+"use strict";
 
 exports.__esModule = true;
-exports.normalize = exports.transform = exports.tap = exports.parse = exports.fetch = undefined;
 
-var _fetch = require('./fetch');
+var _fetch = _interopRequireDefault(require("./fetch"));
 
-var _fetch2 = _interopRequireDefault(_fetch);
+exports.fetch = _fetch.default;
 
-var _parse = require('./parse');
+var _parse = _interopRequireDefault(require("./parse"));
 
-var _parse2 = _interopRequireDefault(_parse);
+exports.parse = _parse.default;
 
-var _tap = require('./tap');
+var _tap = _interopRequireDefault(require("./tap"));
 
-var _tap2 = _interopRequireDefault(_tap);
+exports.tap = _tap.default;
 
-var _transform = require('./transform');
+var _transform = _interopRequireDefault(require("./transform"));
 
-var _transform2 = _interopRequireDefault(_transform);
+exports.transform = _transform.default;
 
-var _normalize = require('./normalize');
+var _normalize = _interopRequireDefault(require("./normalize"));
 
-var _normalize2 = _interopRequireDefault(_normalize);
+exports.normalize = _normalize.default;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-exports.fetch = _fetch2.default;
-exports.parse = _parse2.default;
-exports.tap = _tap2.default;
-exports.transform = _transform2.default;
-exports.normalize = _normalize2.default;

@@ -1,6 +1,8 @@
-'use strict';
+"use strict";
 
 exports.__esModule = true;
+exports.default = void 0;
+
 const rewriteError = info => {
   if (info.status) return new Error(`Server responded with "${info.statusMessage}"`);
   if (info.code === 'ENOTFOUND') return new Error('Failed to resolve server host');
@@ -9,7 +11,7 @@ const rewriteError = info => {
   return new Error('Failed to connect to server');
 };
 
-exports.default = (err, res) => {
+var _default = (err, res) => {
   const base = {
     code: res && res.code || err.code,
     status: res && res.statusCode || err.statusCode,
@@ -29,4 +31,5 @@ exports.default = (err, res) => {
   return nerror;
 };
 
+exports.default = _default;
 module.exports = exports.default;

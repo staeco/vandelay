@@ -1,122 +1,158 @@
-'use strict';
+"use strict";
 
 exports.__esModule = true;
-exports.gtfs = exports.gtfsrt = exports.shp = exports.html = exports.xml = exports.json = exports.ndjson = exports.excel = exports.csv = undefined;
+exports.gtfs = exports.gtfsrt = exports.shp = exports.kmz = exports.kml = exports.gpx = exports.gdb = exports.html = exports.xml = exports.json = exports.ndjson = exports.excel = exports.csv = void 0;
 
-var _csvParser = require('csv-parser');
+var _csvParser = _interopRequireDefault(require("csv-parser"));
 
-var _csvParser2 = _interopRequireDefault(_csvParser);
+var _exceljsTransformStream = _interopRequireDefault(require("exceljs-transform-stream"));
 
-var _exceljsTransformStream = require('exceljs-transform-stream');
+var _through = _interopRequireDefault(require("through2"));
 
-var _exceljsTransformStream2 = _interopRequireDefault(_exceljsTransformStream);
+var _verrazzano = require("verrazzano");
 
-var _through = require('through2');
+var _duplexify = _interopRequireDefault(require("duplexify"));
 
-var _through2 = _interopRequireDefault(_through);
+var _pumpify = _interopRequireDefault(require("pumpify"));
 
-var _shp2json = require('shp2json');
+var _pump = _interopRequireDefault(require("pump"));
 
-var _shp2json2 = _interopRequireDefault(_shp2json);
+var _JSONStream = _interopRequireDefault(require("JSONStream"));
 
-var _duplexify = require('duplexify');
+var _gtfsStream = _interopRequireDefault(require("gtfs-stream"));
 
-var _duplexify2 = _interopRequireDefault(_duplexify);
+var _lodash = _interopRequireDefault(require("lodash.omit"));
 
-var _pumpify = require('pumpify');
+var _ndjson = require("ndjson");
 
-var _pumpify2 = _interopRequireDefault(_pumpify);
+var _unzip = _interopRequireDefault(require("./unzip"));
 
-var _pump = require('pump');
-
-var _pump2 = _interopRequireDefault(_pump);
-
-var _JSONStream = require('JSONStream');
-
-var _JSONStream2 = _interopRequireDefault(_JSONStream);
-
-var _gtfsStream = require('gtfs-stream');
-
-var _gtfsStream2 = _interopRequireDefault(_gtfsStream);
-
-var _lodash = require('lodash.omit');
-
-var _lodash2 = _interopRequireDefault(_lodash);
-
-var _ndjson = require('ndjson');
-
-var _unzip = require('./unzip');
-
-var _unzip2 = _interopRequireDefault(_unzip);
-
-var _xml2json = require('./xml2json');
-
-var _xml2json2 = _interopRequireDefault(_xml2json);
+var _xml2json = _interopRequireDefault(require("./xml2json"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 // these formatters receive one argument, "data source" object
 // and return a stream that maps strings to items
-const csv = exports.csv = opt => {
-  if (opt.zip) return (0, _unzip2.default)(csv.bind(undefined, Object.assign({}, opt, { zip: undefined })), /\.csv$/);
+const csv = opt => {
+  if (opt.zip) return (0, _unzip.default)(csv.bind(void 0, _objectSpread({}, opt, {
+    zip: undefined
+  })), /\.csv$/);
+  const head = (0, _csvParser.default)({
+    mapHeaders: ({
+      header
+    }) => header.trim()
+  }); // convert into normal objects
 
-  const head = (0, _csvParser2.default)({
-    mapHeaders: ({ header }) => header.trim()
+  const tail = _through.default.obj((row, _, cb) => {
+    cb(null, (0, _lodash.default)(row, 'headers'));
   });
-  // convert into normal objects
-  const tail = _through2.default.obj((row, _, cb) => {
-    cb(null, (0, _lodash2.default)(row, 'headers'));
-  });
-  return _pumpify2.default.obj(head, tail);
+
+  return _pumpify.default.obj(head, tail);
 };
-const excel = exports.excel = opt => {
-  if (opt.zip) return (0, _unzip2.default)(excel.bind(undefined, Object.assign({}, opt, { zip: undefined })), /\.xlsx$/);
-  return (0, _exceljsTransformStream2.default)({
+
+exports.csv = csv;
+
+const excel = opt => {
+  if (opt.zip) return (0, _unzip.default)(excel.bind(void 0, _objectSpread({}, opt, {
+    zip: undefined
+  })), /\.xlsx$/);
+  return (0, _exceljsTransformStream.default)({
     mapHeaders: header => header.trim()
   });
 };
 
-const ndjson = exports.ndjson = opt => {
-  if (opt.zip) return (0, _unzip2.default)(ndjson.bind(undefined, Object.assign({}, opt, { zip: undefined })), /\.ndjson$/);
+exports.excel = excel;
+
+const ndjson = opt => {
+  if (opt.zip) return (0, _unzip.default)(ndjson.bind(void 0, _objectSpread({}, opt, {
+    zip: undefined
+  })), /\.ndjson$/);
   return (0, _ndjson.parse)();
 };
 
-const json = exports.json = opt => {
+exports.ndjson = ndjson;
+
+const json = opt => {
   if (Array.isArray(opt.selector)) {
-    const inStream = (0, _through2.default)();
-    const outStream = _through2.default.obj();
-    opt.selector.forEach(selector => (0, _pump2.default)(inStream, json(Object.assign({}, opt, { selector })), outStream));
-    return _duplexify2.default.obj(inStream, outStream);
+    const inStream = (0, _through.default)();
+
+    const outStream = _through.default.obj();
+
+    opt.selector.forEach(selector => (0, _pump.default)(inStream, json(_objectSpread({}, opt, {
+      selector
+    })), outStream));
+    return _duplexify.default.obj(inStream, outStream);
   }
 
   if (typeof opt.selector !== 'string') throw new Error('Missing selector for JSON parser!');
-  if (opt.zip) return (0, _unzip2.default)(json.bind(undefined, Object.assign({}, opt, { zip: undefined })), /\.json$/);
-  const head = _JSONStream2.default.parse(opt.selector);
+  if (opt.zip) return (0, _unzip.default)(json.bind(void 0, _objectSpread({}, opt, {
+    zip: undefined
+  })), /\.json$/);
+
+  const head = _JSONStream.default.parse(opt.selector);
+
   let header;
   head.once('header', data => header = data);
-  const tail = _through2.default.obj((row, _, cb) => {
+
+  const tail = _through.default.obj((row, _, cb) => {
     if (header && typeof row === 'object') row.___header = header; // internal attr, json header info for fetch stream
+
     cb(null, row);
   });
-  return _pumpify2.default.obj(head, tail);
+
+  return _pumpify.default.obj(head, tail);
 };
 
-const xml = exports.xml = opt => {
-  if (opt.zip) return (0, _unzip2.default)(xml.bind(undefined, Object.assign({}, opt, { zip: undefined })), /\.xml$/);
-  return _pumpify2.default.obj((0, _xml2json2.default)(opt), json(opt));
+exports.json = json;
+
+const xml = opt => {
+  if (opt.zip) return (0, _unzip.default)(xml.bind(void 0, _objectSpread({}, opt, {
+    zip: undefined
+  })), /\.xml$/);
+  return _pumpify.default.obj((0, _xml2json.default)(opt), json(opt));
 };
 
-const html = exports.html = opt => {
-  if (opt.zip) return (0, _unzip2.default)(html.bind(undefined, Object.assign({}, opt, { zip: undefined })), /\.xml$/);
-  return _pumpify2.default.obj((0, _xml2json2.default)(Object.assign({}, opt, { strict: false })), json(opt));
+exports.xml = xml;
+
+const html = opt => {
+  if (opt.zip) return (0, _unzip.default)(html.bind(void 0, _objectSpread({}, opt, {
+    zip: undefined
+  })), /\.xml$/);
+  return _pumpify.default.obj((0, _xml2json.default)(_objectSpread({}, opt, {
+    strict: false
+  })), json(opt));
 };
 
-const shp = exports.shp = () => {
-  const head = (0, _through2.default)();
-  const mid = (0, _shp2json2.default)(head);
-  const tail = _JSONStream2.default.parse('features.*');
-  return _duplexify2.default.obj(head, (0, _pump2.default)(mid, tail));
-};
+exports.html = html;
 
-const gtfsrt = exports.gtfsrt = () => _gtfsStream2.default.rt();
-const gtfs = exports.gtfs = () => _gtfsStream2.default.enhanced();
+const gdb = opts => _verrazzano.from.bind(null, 'gdb')(opts);
+
+exports.gdb = gdb;
+
+const gpx = opts => _verrazzano.from.bind(null, 'gpx')(opts);
+
+exports.gpx = gpx;
+
+const kml = opts => _verrazzano.from.bind(null, 'kml')(opts);
+
+exports.kml = kml;
+
+const kmz = opts => _verrazzano.from.bind(null, 'kmz')(opts);
+
+exports.kmz = kmz;
+
+const shp = opts => _verrazzano.from.bind(null, 'shp')(opts);
+
+exports.shp = shp;
+
+const gtfsrt = () => _gtfsStream.default.rt();
+
+exports.gtfsrt = gtfsrt;
+
+const gtfs = () => _gtfsStream.default.enhanced();
+
+exports.gtfs = gtfs;

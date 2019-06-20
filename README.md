@@ -116,7 +116,6 @@ Built in parsers are:
   - Optional `autoFormat` option, to automatically infer types of values and convert them.
   - Optional `camelcase` option, to camelcase and normalize header keys.
   - Optional `zip` option, if the content is a zip file it will parse each XLSX file in the zip.
-- shp
 - json
   - Requires a `selector` option that specifies where to grab rows in the data.
     - If needed, you may provide multiple selectors as an array (`selector: [ 'a.*', 'b.*' ]`)
@@ -127,6 +126,14 @@ Built in parsers are:
   - Optional `autoFormat` option, to automatically infer types of values and convert them.
   - Optional `camelcase` option, to camelcase and normalize header keys.
   - Optional `zip` option, if the content is a zip file it will parse each XML file in the zip.
+- ndjson
+- shp
+- kml
+- kmz
+- gdb
+- gpx
+- gtfs
+- gtfsrt
 
 ### options
 
