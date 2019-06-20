@@ -13,7 +13,6 @@ export default (fn, opt={}) => {
       delete row.___meta
     }
     fn(row, meta)
-      .catch(cb)
       .then((res) => {
         if (res == null) return cb()
         if (meta) {
@@ -22,6 +21,7 @@ export default (fn, opt={}) => {
         }
         cb(null, res)
       })
+      .catch(cb)
   }
   return through.obj({
     maxConcurrency,

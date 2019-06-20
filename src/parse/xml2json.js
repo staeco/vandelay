@@ -7,7 +7,7 @@ export default (opt) => {
     explicitArray: false
   }
   const xml2JsonStream = through2.obj((row, _, cb) => {
-    let str = row.toString()
+    const str = row.toString()
     parseString(str, xmlOpt, (err, js) => {
       cb(err, JSON.stringify(js))
     })

@@ -1,4 +1,4 @@
-/*eslint no-console: 0*/
+/*eslint no-console: 0, no-loops/no-loops: "off" */
 import collect from 'get-stream'
 import express from 'express'
 import getPort from 'get-port'
