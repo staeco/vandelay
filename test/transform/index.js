@@ -1,4 +1,4 @@
-/*eslint no-console: 0*/
+/*eslint no-console: 0, no-loops/no-loops: "off" */
 
 import should from 'should'
 import streamify from 'into-stream'

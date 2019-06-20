@@ -1,3 +1,4 @@
+/* eslint no-loops/no-loops: "off" */
 import through2 from 'through2'
 import eos from 'end-of-stream'
 import hardClose from '../hardClose'

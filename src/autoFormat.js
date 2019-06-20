@@ -36,7 +36,7 @@ const transformObject = (o, fn) => {
 
   // dive into the object
   return Object.entries(o).reduce((prev, [ k, v ]) => {
-    let res = fn(v, k)
+    const res = fn(v, k)
 
     if (typeof res[0] === 'undefined') return prev
 
