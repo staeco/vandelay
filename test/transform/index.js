@@ -3,6 +3,7 @@
 import should from 'should'
 import streamify from 'into-stream'
 import collect from 'get-stream'
+import compile from 'vandelay-es6'
 import transform from '../../src/transform'
 
 const data = [
@@ -257,5 +258,32 @@ describe('transform', () => {
     const stream = streamify.object(data).pipe(transform(map, { timeout: 1000 }))
     const res = await collect.array(stream)
     res.should.eql([])
+  })
+  it('should work with a compiler and support ES7', (done) => {
+    let finished = false
+    // demonstrating as many language features as possible in one function
+    const stream = streamify.object(data).pipe(transform(`
+      export default async (row) => {
+        if (row?.properties?.noExist) return null
+        const dummy = Array.from(new Set([ 1, 2, 3, 2, 1 ]))
+        await new Promise((resolve) => setTimeout(resolve, 100))
+        return {
+          ...row
+        }
+      }
+    `, {
+      compiler: compile,
+      timeout: 1000,
+      onError: (err) => {
+        if (!finished) {
+          finished = true
+          done(err)
+        }
+      }
+    }))
+    collect.array(stream).then((res) => {
+      res.should.eql(data)
+      if (!finished) done()
+    }).catch(done)
   })
 })
