@@ -7,7 +7,15 @@ export default (code, opt={}) => {
   const script = new VMScript(opt.compiler ? opt.compiler(code) : code)
   const vm = new NodeVM({
     console: opt.console,
-    timeout: opt.timeout
+    timeout: opt.timeout,
+    require: {
+      external: {
+        modules: [
+          'core-js',
+          'core-js/*'
+        ]
+      }
+    }
   })
   if (opt.sandbox) {
     Object.keys(opt.sandbox).forEach((k) => {
