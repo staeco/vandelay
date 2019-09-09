@@ -26,7 +26,7 @@
     ],
     "all": true,
     "skip-full": true,
-    "check-coverage": false
+    "check-coverage": true
   },
   "scripts": {
     "preversion": "npm run clean && npm run build",

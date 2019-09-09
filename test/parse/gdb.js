@@ -33,7 +33,8 @@ const expected = {
 }
 
 
-describe('parse gdb', () => {
+describe('parse gdb', function () {
+  this.timeout(510000)
   it('should parse a gdb file', async () => {
     const parser = parse('gdb')
     const stream = createReadStream(gdbFixture).pipe(parser())
