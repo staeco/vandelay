@@ -104,17 +104,8 @@ const msftDate = /\/Date\((\d+)(?:([-+])(\d+))?\)\//i
 const parseMicrosoftDate = (v) => {
   const res = msftDate.exec(v)
   if (!res) return
-  const [ , rsr, tzop, tzoffset ] = res
-  const ts = parseInt(rsr, 10)
-  let offset = 0
-  if (tzop != null && tzoffset != null) {
-    const east = tzop == '+'
-    const hh = parseInt(tzoffset.slice(0, 2), 10)
-    const mm = parseInt(tzoffset.slice(2), 10)
-    offset = hh * 60 + mm - new Date().getTimezoneOffset()
-    if (east) offset = -offset
-  }
-  return new Date(ts + offset * 60000)
+  const [ , rsr, , ] = res
+  return new Date(Number(rsr)) //number is stored as UTC anyway, so ignore the offset when parsing
 }
 
 // order of operations is crucial here
@@ -161,7 +152,7 @@ export const infer = (v) => {
   // looser
   if (v.length >= minLooseLength) {
     const d = moment(v, looseDateFormats)
-    if (d.isValid()) return d.toDate()
+    if (d.isValid()) return new Date(Date.parse(v))
   }
   return v
 }
