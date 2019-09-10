@@ -19,14 +19,23 @@
   "files": [
     "dist"
   ],
+  "nyc": {
+    "extends": "@istanbuljs/nyc-config-babel",
+    "include": [
+      "src/**/*.js"
+    ],
+    "all": true,
+    "skip-full": true,
+    "check-coverage": true
+  },
   "scripts": {
     "preversion": "npm run clean && npm run build",
     "build": "babel src --out-dir dist",
     "clean": "rimraf dist",
     "lint": "eslint src test",
     "lint:fix": "eslint src test --fix",
-    "test": "mocha --require @babel/register --recursive --reporter spec --bail --exit --timeout 36000 && npm run-script lint",
-    "test:debug": "mocha --inspect-brk=0.0.0.0 --require @babel/register --recursive --reporter spec --bail --timeout 36000"
+    "test": "NODE_ENV=testing nyc mocha --require @babel/register --recursive --reporter spec --bail --exit --timeout 36000 && npm run-script lint",
+    "test:debug": "NODE_ENV=testing nyc mocha --inspect-brk=0.0.0.0 --require @babel/register --recursive --reporter spec --bail --timeout 36000"
   },
   "resolutions": {
     "end-of-stream": "github:isaacs/end-of-stream#custom-stream-premature-close-fix"
@@ -35,8 +44,10 @@
     "@babel/cli": "^7.4.4",
     "@babel/core": "^7.4.5",
     "@babel/register": "^7.4.4",
+    "@istanbuljs/nyc-config-babel": "^2.1.1",
     "@stae/babel-node": "^0.1.0",
     "@stae/linters": "^0.1.2",
+    "babel-plugin-istanbul": "^5.2.0",
     "body-parser": "^1.18.3",
     "eslint": "^6.0.0",
     "eslint-cli": "^1.0.0",
@@ -45,6 +56,7 @@
     "graceful-fs": "^4.1.11",
     "into-stream": "^5.0.0",
     "mocha": "^6.0.0",
+    "nyc": "^14.1.1",
     "range-parser": "^1.2.0",
     "rimraf": "^2.5.0",
     "should": "^13.0.0",

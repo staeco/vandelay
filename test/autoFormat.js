@@ -44,8 +44,8 @@ describe('autoFormat.infer', () => {
     format.infer('"1"').should.eql('1')
   })
   it('should parse dates', async () => {
-    const sampleDate = new Date('Tue May 15 2018 12:07:52 GMT-0400 (EDT)')
-    //format.infer('Tue May 15 2018 12:07:52 GMT-0400 (EDT)').should.eql(sampleDate)
+    const sampleDate = new Date(1526400472000)
+    format.infer('Tue May 15 2018 12:07:52 GMT-0400 (EDT)').should.eql(sampleDate)
     format.infer('2018-05-15T16:07:52.000Z').should.eql(sampleDate)
     format.infer('May 15, 2018 12:07:52 EDT').should.eql(sampleDate)
     format.infer('Tue, 15 May 2018 16:07:52 GMT').should.eql(sampleDate)

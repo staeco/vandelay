@@ -23,3 +23,6 @@ coverage
 *.orig
 .idea
 sandbox
+
+## Istanbuljs code coverage
+.nyc_output
