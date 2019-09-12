@@ -1,7 +1,7 @@
 import parseNumber from 'parse-decimal-number'
 import wkx from 'wkx'
 import camelcase from 'camelcase'
-import isObject from 'is-plain-object'
+import isObject from 'is-plain-obj'
 import moment from 'moment'
 
 const minLooseLength = 25

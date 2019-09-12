@@ -1,7 +1,7 @@
 import through2 from 'through2'
 import pumpify from 'pumpify'
 import omit from 'lodash.omit'
-import isObject from 'is-plain-object'
+import isObject from 'is-plain-obj'
 import bom from 'remove-bom-stream'
 import * as formats from './formats'
 import * as autoFormat from '../autoFormat'

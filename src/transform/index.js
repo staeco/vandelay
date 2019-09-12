@@ -1,5 +1,5 @@
 import { transform as transformObject } from 'object-transform-stack'
-import isObject from 'is-plain-object'
+import isObject from 'is-plain-obj'
 import sandbox from './sandbox'
 import tap from '../tap'
 

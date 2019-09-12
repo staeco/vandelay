@@ -9,7 +9,7 @@ var _wkx = _interopRequireDefault(require("wkx"));
 
 var _camelcase = _interopRequireDefault(require("camelcase"));
 
-var _isPlainObject = _interopRequireDefault(require("is-plain-object"));
+var _isPlainObj = _interopRequireDefault(require("is-plain-obj"));
 
 var _moment = _interopRequireDefault(require("moment"));
 
@@ -38,7 +38,7 @@ const transformObject = (o, fn) => {
   // recurse arrays
   if (Array.isArray(o)) return o.map(v => transformObject(v, fn)); // flat value? return it
 
-  if (!(0, _isPlainObject.default)(o)) return fn(o)[0]; // dive into the object
+  if (!(0, _isPlainObj.default)(o)) return fn(o)[0]; // dive into the object
 
   return Object.entries(o).reduce((prev, [k, v]) => {
     const res = fn(v, k);
@@ -48,7 +48,7 @@ const transformObject = (o, fn) => {
       res[0] = res[0].map(v => transformObject(v, fn));
     }
 
-    if ((0, _isPlainObject.default)(res[0])) {
+    if ((0, _isPlainObj.default)(res[0])) {
       res[0] = transformObject(res[0], fn);
     }
 
