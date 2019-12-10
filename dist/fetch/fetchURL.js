@@ -21,11 +21,13 @@ var _userAgent = _interopRequireDefault(require("./userAgent"));
 
 var _hardClose = _interopRequireDefault(require("../hardClose"));
 
+var _mergeURL = _interopRequireDefault(require("../mergeURL"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(source, true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(source).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
@@ -50,6 +52,7 @@ const shouldRetry = (_, original) => {
 var _default = (url, {
   attempts = 10,
   headers = {},
+  query,
   timeout,
   connectTimeout,
   accessToken,
@@ -57,13 +60,14 @@ var _default = (url, {
   context
 } = {}) => {
   const decoded = unescape(url);
-  const fullURL = context && decoded.includes('{') ? _urlTemplate.default.parse(decoded).expand(context) : url;
+  let fullURL = context && decoded.includes('{') ? _urlTemplate.default.parse(decoded).expand(context) : url;
   const out = (0, _through.default)();
   let isCollectingError = false;
   const actualHeaders = (0, _lodash.default)(_objectSpread({
     'User-Agent': _userAgent.default
   }, headers), (v, k) => !!k && !!v);
   if (accessToken) actualHeaders.Authorization = `Bearer ${accessToken}`;
+  if (query) fullURL = (0, _mergeURL.default)(fullURL, query);
   const options = {
     log: debug,
     attempts,

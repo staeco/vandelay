@@ -7,7 +7,7 @@ var _objectTransformStack = require("object-transform-stack");
 
 var _isPlainObj = _interopRequireDefault(require("is-plain-obj"));
 
-var _sandbox = _interopRequireDefault(require("./sandbox"));
+var _sandbox = _interopRequireDefault(require("../sandbox"));
 
 var _tap = _interopRequireDefault(require("../tap"));
 

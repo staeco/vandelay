@@ -1,17 +1,11 @@
 "use strict";
 
 exports.__esModule = true;
-exports.getToken = void 0;
+exports.default = void 0;
 
-var _superagent = _interopRequireDefault(require("superagent"));
+var _url = _interopRequireDefault(require("url"));
 
-var _lodash = _interopRequireDefault(require("lodash.omit"));
-
-var _lodash2 = _interopRequireDefault(require("lodash.pickby"));
-
-var _userAgent = _interopRequireDefault(require("./userAgent"));
-
-var _httpError = _interopRequireDefault(require("./httpError"));
+var _qs = _interopRequireDefault(require("qs"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -21,17 +15,17 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-const getToken = async oauth => {
-  const rest = (0, _lodash.default)(oauth.grant, ['url', 'type']);
-  const res = await _superagent.default.post(oauth.grant.url).type('form').accept('json').send((0, _lodash2.default)(_objectSpread({
-    grant_type: oauth.grant.type
-  }, rest), (v, k) => !!k && !!v)).set({
-    'Cache-Control': 'no-cache',
-    'User-Agent': _userAgent.default
-  }).retry(10).timeout(30000).catch(err => {
-    throw (0, _httpError.default)(err, err.response && err.response.res);
+var _default = (origUrl, newQuery) => {
+  const sourceUrl = _url.default.parse(origUrl);
+
+  const query = _qs.default.stringify(_objectSpread({}, _qs.default.parse(sourceUrl.query), {}, newQuery), {
+    strictNullHandling: true
   });
-  return res.body.access_token;
+
+  return _url.default.format(_objectSpread({}, sourceUrl, {
+    search: query
+  }));
 };
 
-exports.getToken = getToken;
+exports.default = _default;
+module.exports = exports.default;
