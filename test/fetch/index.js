@@ -296,7 +296,7 @@ describe('fetch', () => {
   it('should request a flat json file with text pre function', async () => {
     const source = {
       url: `http://localhost:${port}/secure-api`,
-      pre: `export default async () => ({ accessToken: 'abc' })`,
+      pre: `module.exports = async () => ({ accessToken: 'abc' })`,
       parser: parse('json', { selector: 'data.*' })
     }
     const stream = fetch(source)
