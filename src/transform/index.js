@@ -1,6 +1,6 @@
 import { transform as transformObject } from 'object-transform-stack'
 import isObject from 'is-plain-obj'
-import sandbox from './sandbox'
+import sandbox from '../sandbox'
 import tap from '../tap'
 
 export default (transformer, opt={}) => {

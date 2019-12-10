@@ -7,6 +7,7 @@ import pickBy from 'lodash.pickby'
 import httpError from './httpError'
 import userAgent from './userAgent'
 import hardClose from '../hardClose'
+import mergeURL from '../mergeURL'
 
 const sizeLimit = 512000 // 512kb
 const oneDay = 86400000
@@ -31,9 +32,9 @@ const shouldRetry = (_, original) => {
   return true
 }
 
-export default (url, { attempts=10, headers={}, timeout, connectTimeout, accessToken, debug, context }={}) => {
+export default (url, { attempts=10, headers={}, query, timeout, connectTimeout, accessToken, debug, context }={}) => {
   const decoded = unescape(url)
-  const fullURL = context && decoded.includes('{')
+  let fullURL = context && decoded.includes('{')
     ? template.parse(decoded).expand(context)
     : url
 
@@ -45,6 +46,7 @@ export default (url, { attempts=10, headers={}, timeout, connectTimeout, accessT
     ...headers
   }, (v, k) => !!k && !!v)
   if (accessToken) actualHeaders.Authorization = `Bearer ${accessToken}`
+  if (query) fullURL = mergeURL(fullURL, query)
   const options = {
     log: debug,
     attempts,

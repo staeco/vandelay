@@ -276,6 +276,37 @@ describe('fetch', () => {
       { a: 7, b: 8, c: 9, ___meta: { row: 2, url: source.url, source } }
     ])
   })
+  it('should request a flat json file with pre function', async () => {
+    const source = {
+      url: `http://localhost:${port}/secure-api`,
+      pre: async (source) => {
+        should.exist(source)
+        return { accessToken: 'abc' }
+      },
+      parser: parse('json', { selector: 'data.*' })
+    }
+    const stream = fetch(source)
+    const res = await collect.array(stream)
+    res.should.eql([
+      { a: 1, b: 2, c: 3, ___meta: { row: 0, url: source.url, source, accessToken: 'abc' } },
+      { a: 4, b: 5, c: 6, ___meta: { row: 1, url: source.url, source, accessToken: 'abc' } },
+      { a: 7, b: 8, c: 9, ___meta: { row: 2, url: source.url, source, accessToken: 'abc' } }
+    ])
+  })
+  it('should request a flat json file with text pre function', async () => {
+    const source = {
+      url: `http://localhost:${port}/secure-api`,
+      pre: `export default async () => ({ accessToken: 'abc' })`,
+      parser: parse('json', { selector: 'data.*' })
+    }
+    const stream = fetch(source)
+    const res = await collect.array(stream)
+    res.should.eql([
+      { a: 1, b: 2, c: 3, ___meta: { row: 0, url: source.url, source, accessToken: 'abc' } },
+      { a: 4, b: 5, c: 6, ___meta: { row: 1, url: source.url, source, accessToken: 'abc' } },
+      { a: 7, b: 8, c: 9, ___meta: { row: 2, url: source.url, source, accessToken: 'abc' } }
+    ])
+  })
   it('should request a flat json file with oauth', async () => {
     const source = {
       url: `http://localhost:${port}/secure-api`,
