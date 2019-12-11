@@ -9,7 +9,7 @@ import pageStream from './page'
 import hardClose from '../hardClose'
 import parse from '../parse'
 
-const getFetchOptions = (src, opt, pre) => ({
+const getFetchOptions = (src, opt, setupResult) => ({
   fetchURL: opt.fetchURL,
   debug: opt.debug,
   timeout: opt.timeout,
@@ -17,7 +17,7 @@ const getFetchOptions = (src, opt, pre) => ({
   attempts: opt.attempts,
   headers: src.headers,
   context: opt.context,
-  ...pre
+  ...setupResult
 })
 
 // default behavior is to fail on first error
@@ -60,40 +60,40 @@ const fetchStream = (source, opt={}, raw=false) => {
   if (src.oauth && typeof src.oauth.grant !== 'object') throw new Error('Invalid oauth.grant object')
 
   // actual work time
-  const runStream = (pre={}) => {
+  const runStream = (setupResult={}) => {
     if (src.pagination) {
       const startPage = src.pagination.startPage || 0
       return pageStream(startPage, (currentPage) => {
         const newURL = mergeURL(src.url, getQuery(src.pagination, currentPage))
         if (opt.debug) opt.debug('Fetching next page', newURL)
-        return fetch({ url: newURL, parser: src.parser, source }, getFetchOptions(src, opt, pre))
+        return fetch({ url: newURL, parser: src.parser, source }, getFetchOptions(src, opt, setupResult))
       }, {
         concurrent,
         onError: defaultErrorHandler
       }).pause()
     }
     if (opt.debug) opt.debug('Fetching', src.url)
-    return fetch({ url: src.url, parser: src.parser, source }, getFetchOptions(src, opt, pre))
+    return fetch({ url: src.url, parser: src.parser, source }, getFetchOptions(src, opt, setupResult))
   }
 
   // allow simple declarative oauth handling
   if (src.oauth) {
-    src.pre = async (ourSource) => getToken(ourSource.oauth).then((accessToken) => ({ accessToken }))
+    src.setup = async (ourSource) => getToken(ourSource.oauth).then((accessToken) => ({ accessToken }))
   }
 
   let outStream
-  if (src.pre) {
-    if (typeof src.pre === 'string') {
-      src.pre = sandbox(src.pre, opt)
+  if (src.setup) {
+    if (typeof src.setup === 'string') {
+      src.setup = sandbox(src.setup, opt)
     }
-    const preFn = src.pre?.default || src.pre
-    if (typeof preFn !== 'function') throw new Error('Invalid pre function!')
+    const setupFn = src.setup?.default || src.setup
+    if (typeof setupFn !== 'function') throw new Error('Invalid setup function!')
 
     // if oauth enabled, grab a token first and then set the pipeline
     outStream = pumpify.obj()
-    preFn(src)
-      .then((preResponse) => {
-        const realStream = runStream(preResponse)
+    setupFn(src)
+      .then((setupResponse) => {
+        const realStream = runStream(setupResponse)
         outStream.abort = realStream.abort
         outStream.setPipeline(realStream, through2.obj())
       })

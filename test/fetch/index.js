@@ -276,10 +276,10 @@ describe('fetch', () => {
       { a: 7, b: 8, c: 9, ___meta: { row: 2, url: source.url, source } }
     ])
   })
-  it('should request a flat json file with pre function', async () => {
+  it('should request a flat json file with setup function', async () => {
     const source = {
       url: `http://localhost:${port}/secure-api`,
-      pre: async (source) => {
+      setup: async (source) => {
         should.exist(source)
         return { accessToken: 'abc' }
       },
@@ -293,10 +293,10 @@ describe('fetch', () => {
       { a: 7, b: 8, c: 9, ___meta: { row: 2, url: source.url, source, accessToken: 'abc' } }
     ])
   })
-  it('should request a flat json file with text pre function', async () => {
+  it('should request a flat json file with text setup function', async () => {
     const source = {
       url: `http://localhost:${port}/secure-api`,
-      pre: `module.exports = async () => ({ accessToken: 'abc' })`,
+      setup: `module.exports = async () => ({ accessToken: 'abc' })`,
       parser: parse('json', { selector: 'data.*' })
     }
     const stream = fetch(source)
