@@ -20,7 +20,10 @@ const getFetchOptions = (src, opt, setupResult={}) => ({
     ...src.headers || {},
     ...setupResult.headers || {}
   },
-  query: setupResult.query,
+  query: {
+    ...src.query || {},
+    ...setupResult.query || {}
+  },
   accessToken: setupResult.accessToken
 })
 

@@ -74,6 +74,10 @@ Returns a stream that fetches the given source and emits the parsed and selected
   - limitParam - Required `String`
   - startPage - Optional `Number`, defaults to 0
   - limit - Required `Number`
+- setup - Optional `Function` or `String`
+  - Asynchronous function, runs once before the request starts for each source. Receives `source` as an argument.
+  - If it a string, it will compile it and sandbox it using [vm2](https://github.com/patriksimek/vm2).
+  - Returns an object that controls request parameters.
 - oauth - Optional `Object`
   - grant - Required `Object`
     - url - Required `String`
@@ -81,6 +85,7 @@ Returns a stream that fetches the given source and emits the parsed and selected
     - type - Required `String`
       - Grant type, can be any [OAuth2 grant type](https://oauth.net/2/grant-types/)
 - headers - Optional `Object`
+- query - Optional `Object`
 
 #### options
 
@@ -91,10 +96,6 @@ Returns a stream that fetches the given source and emits the parsed and selected
   - Timeout to establish the initial connection, defaults to five minutes
 - context - Optional `Object`
   - If specified, will be templated into the URL via [RFC6570](https://tools.ietf.org/html/rfc6570)
-- setup - Optional `Function` or `String`
-  - Asynchronous function, runs once before the request starts for each source. Receives `source` as an argument.
-  - If it a string, it will compile it and sandbox it using [vm2](https://github.com/patriksimek/vm2).
-  - Returns an object that controls request parameters.
 - sandbox - Optional `Object`
   - Creates a frozen global context, used for sandboxed setup functions
   - Only applies when using a string setup function
