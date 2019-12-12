@@ -31,15 +31,17 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-const getFetchOptions = (src, opt, setupResult) => _objectSpread({
+const getFetchOptions = (src, opt, setupResult = {}) => ({
   fetchURL: opt.fetchURL,
   debug: opt.debug,
   timeout: opt.timeout,
   connectTimeout: opt.connectTimeout,
   attempts: opt.attempts,
-  headers: src.headers,
-  context: opt.context
-}, setupResult); // default behavior is to fail on first error
+  context: opt.context,
+  headers: _objectSpread({}, src.headers || {}, {}, setupResult.headers || {}),
+  query: setupResult.query,
+  accessToken: setupResult.accessToken
+}); // default behavior is to fail on first error
 
 
 const defaultErrorHandler = ({
@@ -89,7 +91,7 @@ const fetchStream = (source, opt = {}, raw = false) => {
   if (src.oauth && typeof src.oauth !== 'object') throw new Error('Invalid oauth object');
   if (src.oauth && typeof src.oauth.grant !== 'object') throw new Error('Invalid oauth.grant object'); // actual work time
 
-  const runStream = (setupResult = {}) => {
+  const runStream = setupResult => {
     if (src.pagination) {
       const startPage = src.pagination.startPage || 0;
       return (0, _page.default)(startPage, currentPage => {
@@ -134,8 +136,8 @@ const fetchStream = (source, opt = {}, raw = false) => {
     if (typeof setupFn !== 'function') throw new Error('Invalid setup function!'); // if oauth enabled, grab a token first and then set the pipeline
 
     outStream = _pumpify.default.obj();
-    setupFn(src).then(setupResponse => {
-      const realStream = runStream(setupResponse);
+    setupFn(src).then(setupResult => {
+      const realStream = runStream(setupResult);
       outStream.abort = realStream.abort;
       outStream.setPipeline(realStream, _through.default.obj());
     }).catch(err => {

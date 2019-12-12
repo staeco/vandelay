@@ -9,15 +9,19 @@ import pageStream from './page'
 import hardClose from '../hardClose'
 import parse from '../parse'
 
-const getFetchOptions = (src, opt, setupResult) => ({
+const getFetchOptions = (src, opt, setupResult={}) => ({
   fetchURL: opt.fetchURL,
   debug: opt.debug,
   timeout: opt.timeout,
   connectTimeout: opt.connectTimeout,
   attempts: opt.attempts,
-  headers: src.headers,
   context: opt.context,
-  ...setupResult
+  headers: {
+    ...src.headers || {},
+    ...setupResult.headers || {}
+  },
+  query: setupResult.query,
+  accessToken: setupResult.accessToken
 })
 
 // default behavior is to fail on first error
@@ -60,7 +64,7 @@ const fetchStream = (source, opt={}, raw=false) => {
   if (src.oauth && typeof src.oauth.grant !== 'object') throw new Error('Invalid oauth.grant object')
 
   // actual work time
-  const runStream = (setupResult={}) => {
+  const runStream = (setupResult) => {
     if (src.pagination) {
       const startPage = src.pagination.startPage || 0
       return pageStream(startPage, (currentPage) => {
@@ -92,8 +96,8 @@ const fetchStream = (source, opt={}, raw=false) => {
     // if oauth enabled, grab a token first and then set the pipeline
     outStream = pumpify.obj()
     setupFn(src)
-      .then((setupResponse) => {
-        const realStream = runStream(setupResponse)
+      .then((setupResult) => {
+        const realStream = runStream(setupResult)
         outStream.abort = realStream.abort
         outStream.setPipeline(realStream, through2.obj())
       })
