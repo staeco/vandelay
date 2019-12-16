@@ -129,7 +129,7 @@ const fetchStream = (source, opt = {}, raw = false) => {
     var _src$setup;
 
     if (typeof src.setup === 'string') {
-      src.setup = (0, _sandbox.default)(src.setup, opt);
+      src.setup = (0, _sandbox.default)(src.setup, opt.setup);
     }
 
     const setupFn = ((_src$setup = src.setup) === null || _src$setup === void 0 ? void 0 : _src$setup.default) || src.setup;

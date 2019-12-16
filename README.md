@@ -96,13 +96,14 @@ Returns a stream that fetches the given source and emits the parsed and selected
   - Timeout to establish the initial connection, defaults to five minutes
 - context - Optional `Object`
   - If specified, will be templated into the URL via [RFC6570](https://tools.ietf.org/html/rfc6570)
-- sandbox - Optional `Object`
-  - Creates a frozen global context, used for sandboxed setup functions
-  - Only applies when using a string setup function
-- timeout - Optional `Number`
-  - Only applies when using a string setup function
-- compiler - Optional `Function`
-  - Only applies when using a string setup function
+- setup - Optional `Object`
+  - sandbox - Optional `Object`
+    - Creates a frozen global context, used for sandboxed setup functions
+    - Only applies when using a string setup function
+  - timeout - Optional `Number`
+    - Only applies when using a string setup function
+  - compiler - Optional `Function`
+    - Only applies when using a string setup function
 - onError - Optional `Function`
   - Receives a context object when an error occurs, so you can decide how to handle the error and opt out of the default behavior.
   - The default handler will emit an error on the stream.

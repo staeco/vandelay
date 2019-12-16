@@ -91,7 +91,7 @@ const fetchStream = (source, opt={}, raw=false) => {
   let outStream
   if (src.setup) {
     if (typeof src.setup === 'string') {
-      src.setup = sandbox(src.setup, opt)
+      src.setup = sandbox(src.setup, opt.setup)
     }
     const setupFn = src.setup?.default || src.setup
     if (typeof setupFn !== 'function') throw new Error('Invalid setup function!')

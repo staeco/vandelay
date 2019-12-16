@@ -8,6 +8,7 @@ import getPort from 'get-port'
 import parseRange from 'range-parser'
 import parseBody from 'body-parser'
 import through2 from 'through2'
+import compile from 'vandelay-es6'
 import fetch from '../../src/fetch'
 import parse from '../../src/parse'
 
@@ -300,6 +301,20 @@ describe('fetch', () => {
       parser: parse('json', { selector: 'data.*' })
     }
     const stream = fetch(source)
+    const res = await collect.array(stream)
+    res.should.eql([
+      { a: 1, b: 2, c: 3, ___meta: { row: 0, url: source.url, source, accessToken: 'abc' } },
+      { a: 4, b: 5, c: 6, ___meta: { row: 1, url: source.url, source, accessToken: 'abc' } },
+      { a: 7, b: 8, c: 9, ___meta: { row: 2, url: source.url, source, accessToken: 'abc' } }
+    ])
+  })
+  it('should request a flat json file with ES7 setup function', async () => {
+    const source = {
+      url: `http://localhost:${port}/secure-api`,
+      setup: `export default async () => ({ accessToken: 'abc' })`,
+      parser: parse('json', { selector: 'data.*' })
+    }
+    const stream = fetch(source, { setup: { compiler: compile } })
     const res = await collect.array(stream)
     res.should.eql([
       { a: 1, b: 2, c: 3, ___meta: { row: 0, url: source.url, source, accessToken: 'abc' } },
