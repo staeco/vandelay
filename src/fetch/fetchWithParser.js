@@ -18,7 +18,8 @@ export default ({ url, parser, source }, opt) => {
       row.___meta = pickBy({
         row: ++rows,
         url: req.url,
-        accessToken: opt && opt.accessToken,
+        accessToken: opt?.accessToken,
+        context: opt?.context,
         source
       }, notNull)
 

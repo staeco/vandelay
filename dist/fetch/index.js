@@ -136,7 +136,9 @@ const fetchStream = (source, opt = {}, raw = false) => {
     if (typeof setupFn !== 'function') throw new Error('Invalid setup function!'); // if oauth enabled, grab a token first and then set the pipeline
 
     outStream = _pumpify.default.obj();
-    setupFn(src).then(setupResult => {
+    setupFn(src, {
+      context: opt.context
+    }).then(setupResult => {
       const realStream = runStream(setupResult);
       outStream.abort = realStream.abort;
       outStream.setPipeline(realStream, _through.default.obj());

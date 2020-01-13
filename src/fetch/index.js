@@ -98,7 +98,7 @@ const fetchStream = (source, opt={}, raw=false) => {
 
     // if oauth enabled, grab a token first and then set the pipeline
     outStream = pumpify.obj()
-    setupFn(src)
+    setupFn(src, { context: opt.context })
       .then((setupResult) => {
         const realStream = runStream(setupResult)
         outStream.abort = realStream.abort
