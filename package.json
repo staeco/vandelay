@@ -61,7 +61,7 @@
     "rimraf": "^3.0.0",
     "should": "^13.0.0",
     "tempfile": "^3.0.0",
-    "vandelay-es6": "^1.0.1",
+    "vandelay-es6": "^2.0.0",
     "xlsx": "^0.15.3"
   },
   "dependencies": {
