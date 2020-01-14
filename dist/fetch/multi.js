@@ -77,7 +77,7 @@ var _default = ({
   const run = i => {
     const src = typeof i === 'function' ? i() : i;
     out.running.push(src);
-    if (!out.first) out.first = src;
+    if (!out.url) out.url = src.url;
     (0, _endOfStream.default)(src, err => done(src, err));
     src.pipe(out, {
       end: false
