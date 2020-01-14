@@ -2,6 +2,20 @@ import through2 from 'through2'
 import eos from 'end-of-stream'
 import hardClose from '../hardClose'
 
+const getURL = (stream) =>
+  stream.first
+    ? getURL(stream.first)
+    : typeof stream.url === 'function'
+      ? stream.url()
+      : stream.url
+
+
+const closeIt = (i) => {
+  if (!i.readable) return
+  if (i.abort) return i.abort()
+  hardClose(i)
+}
+
 // merges a bunch of streams, unordered - and has some special error management
 // so one wont fail the whole bunch
 export default (startPage, getNext, { concurrent=2, onError }={}) => {
@@ -12,12 +26,9 @@ export default (startPage, getNext, { concurrent=2, onError }={}) => {
   out.setMaxListeners(0)
   out.abort = () => {
     hardClose(out)
-    out.running.forEach((i) => {
-      if (!i.readable) return
-      if (i.abort) return i.abort()
-      hardClose(i)
-    })
+    out.running.forEach(closeIt)
   }
+  out.url = getURL.bind(null, out)
   out.on('unpipe', (src) => done(src))
 
   const done = (src, err) => {
@@ -51,6 +62,7 @@ export default (startPage, getNext, { concurrent=2, onError }={}) => {
 
   const run = (src) => {
     out.running.push(src)
+    if (!out.first) out.first = src
     eos(src, (err) => done(src, err))
     src.once('data', () => {
       src._gotData = true

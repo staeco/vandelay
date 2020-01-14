@@ -6,7 +6,9 @@ import hardClose from '../hardClose'
 const getURL = (stream) =>
   stream.first
     ? getURL(stream.first)
-    : stream.url
+    : typeof stream.url === 'function'
+      ? stream.url()
+      : stream.url
 
 const closeIt = (i) => {
   if (!i.readable) return

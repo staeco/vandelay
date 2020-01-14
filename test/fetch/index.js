@@ -460,6 +460,7 @@ describe('fetch', () => {
       }
     }
     const stream = fetch(source)
+    stream.url().should.equal(`${source.url}?limit=1&offset=0`)
     const res = await collect.array(stream)
     res.should.containDeep([
       { a: 1, b: 2, c: 3, ___meta: { row: 0, url: `${source.url}?limit=1&offset=0`, source } },
@@ -468,6 +469,7 @@ describe('fetch', () => {
     ])
   })
   it('should request with pagination and context', async () => {
+    const context = { path: 'data' }
     const source = {
       url: `http://localhost:${port}/{path}`,
       parser: parse('json', { selector: 'data.*' }),
@@ -477,7 +479,8 @@ describe('fetch', () => {
         limit: 1
       }
     }
-    const stream = fetch(source, { context: { path: 'data' } })
+    const stream = fetch(source, { context })
+    stream.url().should.equal(`http://localhost:${port}/${context.path}?limit=1&offset=0`)
     const res = await collect.array(stream)
     res.should.containDeep([
       { a: 1, b: 2, c: 3, ___meta: { row: 0, url: `http://localhost:${port}/data?limit=1&offset=0`, source } },

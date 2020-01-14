@@ -12,7 +12,7 @@ var _hardClose = _interopRequireDefault(require("../hardClose"));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /* eslint no-loops/no-loops: "off" */
-const getURL = stream => stream.first ? getURL(stream.first) : stream.url;
+const getURL = stream => stream.first ? getURL(stream.first) : typeof stream.url === 'function' ? stream.url() : stream.url;
 
 const closeIt = i => {
   if (!i.readable) return;

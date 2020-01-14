@@ -11,8 +11,16 @@ var _hardClose = _interopRequireDefault(require("../hardClose"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-// merges a bunch of streams, unordered - and has some special error management
+const getURL = stream => stream.first ? getURL(stream.first) : typeof stream.url === 'function' ? stream.url() : stream.url;
+
+const closeIt = i => {
+  if (!i.readable) return;
+  if (i.abort) return i.abort();
+  (0, _hardClose.default)(i);
+}; // merges a bunch of streams, unordered - and has some special error management
 // so one wont fail the whole bunch
+
+
 var _default = (startPage, getNext, {
   concurrent = 2,
   onError
@@ -28,13 +36,10 @@ var _default = (startPage, getNext, {
 
   out.abort = () => {
     (0, _hardClose.default)(out);
-    out.running.forEach(i => {
-      if (!i.readable) return;
-      if (i.abort) return i.abort();
-      (0, _hardClose.default)(i);
-    });
+    out.running.forEach(closeIt);
   };
 
+  out.url = getURL.bind(null, out);
   out.on('unpipe', src => done(src));
 
   const done = (src, err) => {
@@ -71,6 +76,7 @@ var _default = (startPage, getNext, {
 
   const run = src => {
     out.running.push(src);
+    if (!out.first) out.first = src;
     (0, _endOfStream.default)(src, err => done(src, err));
     src.once('data', () => {
       src._gotData = true;
