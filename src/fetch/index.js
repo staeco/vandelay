@@ -101,6 +101,7 @@ const fetchStream = (source, opt={}, raw=false) => {
     setupFn(src, { context: opt.context })
       .then((setupResult) => {
         const realStream = runStream(setupResult)
+        outStream.url = realStream.url
         outStream.abort = realStream.abort
         outStream.setPipeline(realStream, through2.obj())
       })

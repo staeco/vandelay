@@ -140,6 +140,7 @@ const fetchStream = (source, opt = {}, raw = false) => {
       context: opt.context
     }).then(setupResult => {
       const realStream = runStream(setupResult);
+      outStream.url = realStream.url;
       outStream.abort = realStream.abort;
       outStream.setPipeline(realStream, _through.default.obj());
     }).catch(err => {

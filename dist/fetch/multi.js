@@ -12,8 +12,16 @@ var _hardClose = _interopRequireDefault(require("../hardClose"));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /* eslint no-loops/no-loops: "off" */
-// merges a bunch of streams, unordered - and has some special error management
+const getURL = stream => stream.first ? getURL(stream.first) : stream.url;
+
+const closeIt = i => {
+  if (!i.readable) return;
+  if (i.abort) return i.abort();
+  (0, _hardClose.default)(i);
+}; // merges a bunch of streams, unordered - and has some special error management
 // so one wont fail the whole bunch
+
+
 var _default = ({
   concurrent = 10,
   onError,
@@ -29,13 +37,11 @@ var _default = ({
 
   out.abort = () => {
     (0, _hardClose.default)(out);
-    inputs.forEach(i => {
-      if (!i.readable) return;
-      if (i.abort) return i.abort();
-      (0, _hardClose.default)(i);
-    });
+    out.running.forEach(closeIt);
+    inputs.forEach(closeIt);
   };
 
+  out.url = getURL.bind(null, out);
   out.on('unpipe', src => done(src));
 
   const done = (src, err) => {
@@ -77,7 +83,7 @@ var _default = ({
   const run = i => {
     const src = typeof i === 'function' ? i() : i;
     out.running.push(src);
-    if (!out.url) out.url = src.url;
+    if (!out.first) out.first = src;
     (0, _endOfStream.default)(src, err => done(src, err));
     src.pipe(out, {
       end: false
