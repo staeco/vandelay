@@ -75,7 +75,9 @@ Returns a stream that fetches the given source and emits the parsed and selected
   - startPage - Optional `Number`, defaults to 0
   - limit - Required `Number`
 - setup - Optional `Function` or `String`
-  - Asynchronous function, runs once before the request starts for each source. Receives `source` as an argument.
+  - Asynchronous function, runs once before the request starts for each source. Receives `source` and `meta` as arguments.
+    - First argument is the source object being set up.
+    - Second arguments is a meta information argument, that contains a context key if provided.
   - If it a string, it will compile it and sandbox it using [vm2](https://github.com/patriksimek/vm2).
   - Returns an object that controls request parameters.
 - oauth - Optional `Object`
@@ -159,6 +161,7 @@ Built in parsers are:
 #### transformer(row, meta)
 
 - Asynchronous function, receives the current row and the meta information object.
+  - Meta information object contains: `row`, `url`, `accessToken`, `context`, `source`, and `header` (if using a JSON parser)
 - If transformer is a string, it will compile it and sandbox it using [vm2](https://github.com/patriksimek/vm2).
 - If transformer is an object, it will use [object-transform-stack](https://github.com/staeco/object-transform-stack) to map objects.
 - Returning an object will pass it on, and null or undefined will remove the item from the stream (skip).
