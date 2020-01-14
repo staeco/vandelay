@@ -37,6 +37,7 @@ describe('autoFormat.infer', () => {
     format.infer('-123').should.equal(-123)
     format.infer('-129,000.9451234567').should.equal(-129000.9451234567)
     format.infer('NaN').should.eql(NaN)
+    format.infer('15947037E095300019').should.equal('15947037E095300019')
   })
   it('should parse JSON', async () => {
     format.infer('["1","2"]').should.eql([ '1', '2' ])

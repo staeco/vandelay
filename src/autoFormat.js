@@ -131,11 +131,12 @@ export const infer = (v) => {
 
   // any json values
   try {
-    return JSON.parse(v)
+    const jv = JSON.parse(v)
+    // for numbers larger than the js max, just turn them into strings
+    if (jv !== Infinity) return jv
   } catch (e) {
     // not json
   }
-
   const lower = v.toLowerCase()
   if (lower === 'null') return null
   if (lower === 'undefined') return
