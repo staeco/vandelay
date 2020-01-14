@@ -143,7 +143,7 @@ export const infer = (v) => {
   if (lower === 'false' || lower === 'no' || lower === 'n') return false
 
   const n = parseNumber(v)
-  if (!isNaN(n)) return n
+  if (!isNaN(n) && n !== Infinity) return n
 
   // conservative
   const d2 = moment(v, strictDateFormats, true)

@@ -130,7 +130,7 @@ const infer = v => {
   if (lower === 'true' || lower === 'yes' || lower === 'y') return true;
   if (lower === 'false' || lower === 'no' || lower === 'n') return false;
   const n = (0, _parseDecimalNumber.default)(v);
-  if (!isNaN(n)) return n; // conservative
+  if (!isNaN(n) && n !== Infinity) return n; // conservative
 
   const d2 = (0, _moment.default)(v, strictDateFormats, true);
   if (d2.isValid()) return d2.toDate(); // looser
