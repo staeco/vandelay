@@ -1,6 +1,6 @@
 {
   "name": "vandelay",
-  "version": "6.4.7",
+  "version": "7.0.0",
   "description": "Imports, exports, and ETL",
   "main": "dist/index.js",
   "keywords": [],
@@ -40,8 +40,8 @@
   "resolutions": {
     "end-of-stream": "github:isaacs/end-of-stream#custom-stream-premature-close-fix"
   },
-  "engines" : {
-    "node" : ">=12"
+  "engines": {
+    "node": ">=12"
   },
   "devDependencies": {
     "@babel/cli": "^7.4.4",

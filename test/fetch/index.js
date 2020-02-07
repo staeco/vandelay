@@ -268,7 +268,7 @@ describe('fetch', () => {
       url: `http://localhost:${port}/file.json`,
       headers: {
         '': 'abc',
-        'yo': '',
+        yo: '',
         ' ': ''
       },
       parser: parse('json', { selector: 'data.*' })
