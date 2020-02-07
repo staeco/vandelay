@@ -40,6 +40,9 @@
   "resolutions": {
     "end-of-stream": "github:isaacs/end-of-stream#custom-stream-premature-close-fix"
   },
+  "engines" : {
+    "node" : ">=12"
+  },
   "devDependencies": {
     "@babel/cli": "^7.4.4",
     "@babel/core": "^7.4.5",
@@ -93,7 +96,7 @@
     "through2-concurrent": "^2.0.0",
     "unzipper": "^0.10.1",
     "url-template": "^2.0.8",
-    "verrazzano": "^1.1.0",
+    "verrazzano": "^2.0.0",
     "vm2": "^3.6.0",
     "wkx": "^0.4.6",
     "xml2js": "^0.4.19"
