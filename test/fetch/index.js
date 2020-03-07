@@ -68,14 +68,18 @@ describe('fetch', () => {
     })
     app.get('/infinite', (req, res) => {
       const close = req.query.close && parseInt(req.query.close)
+      const endIdx = close ? close - 1 : Infinity
+      const end = () => {
+        res.write(JSON.stringify({ a: Math.random() }))
+        res.write(']')
+        res.end()
+      }
+
       res.write('[')
-      for (let i = 0; i < Infinity; ++i) {
-        if (close && i >= close) return res.end()
+      for (let i = 0; i < endIdx; ++i) {
         res.write(`${JSON.stringify({ a: Math.random() })},`)
       }
-      res.write(JSON.stringify({ a: Math.random() }))
-      res.write(']')
-      res.end()
+      end()
     })
     app.get('/ranges', (req, res) => {
       // prep

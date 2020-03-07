@@ -17,7 +17,7 @@ var _pumpify = _interopRequireDefault(require("pumpify"));
 
 var _pump = _interopRequireDefault(require("pump"));
 
-var _JSONStream = _interopRequireDefault(require("JSONStream"));
+var _jsonstreamNext = _interopRequireDefault(require("jsonstream-next"));
 
 var _gtfsStream = _interopRequireDefault(require("gtfs-stream"));
 
@@ -95,7 +95,7 @@ const json = opt => {
     zip: undefined
   })), /\.json$/);
 
-  const head = _JSONStream.default.parse(opt.selector);
+  const head = _jsonstreamNext.default.parse(opt.selector);
 
   let header;
   head.once('header', data => header = data);
