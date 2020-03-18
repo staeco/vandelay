@@ -263,6 +263,7 @@ describe('transform', () => {
     let finished = false
     // demonstrating as many language features as possible in one function
     const stream = streamify.object(data).pipe(transform(`
+      import url from 'url'
       export default async (row) => {
         if (row?.properties?.noExist) return null
         const dummy = Array.from(new Set([ 1, 2, 3, 2, 1 ]))

@@ -9,6 +9,8 @@ var _domain = _interopRequireDefault(require("domain"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+const allowedBuiltins = ['assert', 'buffer', 'crypto', 'dgram', 'dns', 'events', 'http', 'https', 'http2', 'path', 'querystring', 'stream', 'string_decoder', 'timers', 'tls', 'url', 'util', 'zlib'];
+
 var _default = (code, opt = {}) => {
   let fn;
 
@@ -18,12 +20,14 @@ var _default = (code, opt = {}) => {
   const vm = new _vm.NodeVM({
     console: opt.console,
     timeout: opt.timeout,
+    nesting: false,
     require: {
       external: {
         modules: ['core-js', 'core-js/*']
-      }
+      },
+      builtin: allowedBuiltins
     }
-  });
+  }); // custom globals
 
   if (opt.sandbox) {
     Object.keys(opt.sandbox).forEach(k => {

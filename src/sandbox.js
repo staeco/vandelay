@@ -1,6 +1,27 @@
 import { NodeVM, VMScript } from 'vm2'
 import domains from 'domain'
 
+const allowedBuiltins = [
+  'assert',
+  'buffer',
+  'crypto',
+  'dgram',
+  'dns',
+  'events',
+  'http',
+  'https',
+  'http2',
+  'path',
+  'querystring',
+  'stream',
+  'string_decoder',
+  'timers',
+  'tls',
+  'url',
+  'util',
+  'zlib'
+]
+
 export default (code, opt={}) => {
   let fn
   const domain = domains.create()
@@ -8,15 +29,19 @@ export default (code, opt={}) => {
   const vm = new NodeVM({
     console: opt.console,
     timeout: opt.timeout,
+    nesting: false,
     require: {
       external: {
         modules: [
           'core-js',
           'core-js/*'
         ]
-      }
+      },
+      builtin: allowedBuiltins
     }
   })
+
+  // custom globals
   if (opt.sandbox) {
     Object.keys(opt.sandbox).forEach((k) => {
       vm.freeze(opt.sandbox[k], k)

@@ -96,7 +96,6 @@ describe('fetch', () => {
       res.set('Accept-Ranges', 'bytes')
 
       if (range) {
-        //console.log('using ranges', `bytes ${range.start}-${range.end}/${text.length}`)
         const toSend = text.slice(range.start, range.end + 1)
         res.status(206)
         res.set('Content-Length', toSend.length)
@@ -590,7 +589,7 @@ describe('fetch', () => {
     const res = await collect.array(stream)
     res.length.should.equal(max)
   })
-  it('should handle stream closes properly, and continue when supported', async () => {
+  it.skip('should handle stream closes properly, and continue when supported', async () => {
     const max = 1000
     const source = {
       // will close the stream every 4kb, and support ranges
