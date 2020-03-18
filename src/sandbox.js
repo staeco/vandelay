@@ -1,6 +1,11 @@
 import { NodeVM, VMScript } from 'vm2'
 import domains from 'domain'
 
+const defaultSandbox = {
+  URL, URLSearchParams,
+  TextEncoder, TextDecoder
+}
+
 const allowedBuiltins = [
   'assert',
   'buffer',
@@ -22,6 +27,12 @@ const allowedBuiltins = [
   'zlib'
 ]
 
+const addIn = (vm, sandbox) => {
+  Object.keys(sandbox).forEach((k) => {
+    vm.freeze(sandbox[k], k)
+  })
+}
+
 export default (code, opt={}) => {
   let fn
   const domain = domains.create()
@@ -40,13 +51,10 @@ export default (code, opt={}) => {
       builtin: allowedBuiltins
     }
   })
-
   // custom globals
-  if (opt.sandbox) {
-    Object.keys(opt.sandbox).forEach((k) => {
-      vm.freeze(opt.sandbox[k], k)
-    })
-  }
+  addIn(vm, defaultSandbox)
+  if (opt.sandbox) addIn(vm, opt.sandbox)
+
   domain.on('error', () => {}) // swallow async errors
   domain.run(() => {
     fn = vm.run(script, 'compiled-transform.js')

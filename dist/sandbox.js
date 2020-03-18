@@ -9,7 +9,19 @@ var _domain = _interopRequireDefault(require("domain"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+const defaultSandbox = {
+  URL,
+  URLSearchParams,
+  TextEncoder,
+  TextDecoder
+};
 const allowedBuiltins = ['assert', 'buffer', 'crypto', 'dgram', 'dns', 'events', 'http', 'https', 'http2', 'path', 'querystring', 'stream', 'string_decoder', 'timers', 'tls', 'url', 'util', 'zlib'];
+
+const addIn = (vm, sandbox) => {
+  Object.keys(sandbox).forEach(k => {
+    vm.freeze(sandbox[k], k);
+  });
+};
 
 var _default = (code, opt = {}) => {
   let fn;
@@ -29,12 +41,8 @@ var _default = (code, opt = {}) => {
     }
   }); // custom globals
 
-  if (opt.sandbox) {
-    Object.keys(opt.sandbox).forEach(k => {
-      vm.freeze(opt.sandbox[k], k);
-    });
-  }
-
+  addIn(vm, defaultSandbox);
+  if (opt.sandbox) addIn(vm, opt.sandbox);
   domain.on('error', () => {}); // swallow async errors
 
   domain.run(() => {

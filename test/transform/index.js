@@ -287,4 +287,40 @@ describe('transform', () => {
       if (!finished) done()
     }).catch(done)
   })
+  it.only('should provide proper globals', async () => {
+    const map = `
+    const assert = require('assert')
+
+    module.exports = (row) => {
+      assert(URL)
+      assert(setTimeout)
+      assert(Promise)
+      assert(ArrayBuffer)
+      assert(Buffer)
+      assert(TextEncoder)
+      assert(TextDecoder)
+      assert(URLSearchParams)
+      assert(clearTimeout)
+      assert(console)
+      return row
+    }`
+    const fail = (err) => {
+      throw new Error(`Fail! Error escaped: ${err?.message}`)
+    }
+    process.on('uncaughtException', fail)
+    process.on('uncaughtRejection', fail)
+    const stream = streamify.object(data).pipe(transform(map, {
+      onSuccess: (record, old) => {
+        should.exist(record)
+        should.exist(old)
+        should.equal(record, old)
+      },
+      onError: fail
+    }))
+    const res = await collect.array(stream)
+    res.should.eql(data)
+
+    process.removeListener('uncaughtException', fail)
+    process.removeListener('uncaughtRejection', fail)
+  })
 })
