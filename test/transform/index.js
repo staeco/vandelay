@@ -287,7 +287,7 @@ describe('transform', () => {
       if (!finished) done()
     }).catch(done)
   })
-  it.only('should provide proper globals', async () => {
+  it('should provide proper globals', async () => {
     const map = `
     const assert = require('assert')
 
