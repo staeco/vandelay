@@ -1,6 +1,6 @@
 {
   "name": "vandelay",
-  "version": "7.1.1",
+  "version": "7.1.2",
   "description": "Imports, exports, and ETL",
   "main": "dist/index.js",
   "keywords": [],
@@ -34,7 +34,7 @@
     "clean": "rimraf dist",
     "lint": "eslint src test",
     "lint:fix": "eslint src test --fix",
-    "test": "NODE_ENV=testing nyc mocha --require @babel/register --recursive --reporter spec --bail --exit --timeout 60000 && npm run-script lint",
+    "test": "NODE_ENV=testing nyc mocha --require @babel/register --recursive --reporter spec --bail --exit --timeout 60000 -- --trace-deprecation && npm run-script lint",
     "test:debug": "NODE_ENV=testing nyc mocha --inspect-brk=0.0.0.0 --require @babel/register --recursive --reporter spec --bail --timeout 60000"
   },
   "resolutions": {

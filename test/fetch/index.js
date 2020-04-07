@@ -774,19 +774,12 @@ describe('fetch', () => {
       done()
     })
   })
-  it('should work with a shapefile', (done) => {
+  it('should work with a shapefile', async () => {
     const stream = fetch({
       url: shapeFile,
       parser: 'shp'
     })
-    stream.once('data', (c) => {
-      should.exist(c.properties.NAME)
-    })
-    stream.once('error', (err) => {
-      should.not.exist(err)
-    })
-    stream.once('finish', () => {
-      done()
-    })
+    const res = await collect.array(stream)
+    should.exist(res[0].properties.NAME)
   })
 })
