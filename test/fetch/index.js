@@ -19,6 +19,8 @@ const sample = [
   { a: 7, b: 8, c: 9 }
 ]
 
+const shapeFile = 'http://www.longbeach.gov/ti/media-library/documents/gis/data-catalog/bikeways/'
+
 describe('fetch', () => {
   before(async () => {
     port = await getPort()
@@ -769,6 +771,21 @@ describe('fetch', () => {
     })
     stream.once('error', (err) => {
       should.exist(err)
+      done()
+    })
+  })
+  it('should work with a shapefile', (done) => {
+    const stream = fetch({
+      url: shapeFile,
+      parser: 'shp'
+    })
+    stream.once('data', (c) => {
+      should.exist(c.properties.NAME)
+    })
+    stream.once('error', (err) => {
+      should.not.exist(err)
+    })
+    stream.once('finish', () => {
       done()
     })
   })
