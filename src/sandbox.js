@@ -1,5 +1,6 @@
 import { NodeVM, VMScript } from 'vm2'
 import domains from 'domain'
+import { TextEncoder, TextDecoder } from 'text-encoding'
 
 const defaultSandbox = {
   URL, URLSearchParams,
