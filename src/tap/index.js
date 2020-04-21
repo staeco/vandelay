@@ -1,5 +1,5 @@
 import through from 'through2-concurrent'
-import clone from 'lodash.clone'
+import { clone } from 'lodash'
 
 export default (fn, opt={}) => {
   if (typeof fn !== 'function') throw new Error('Invalid function!')

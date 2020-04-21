@@ -13,7 +13,7 @@ var _pump = _interopRequireDefault(require("pump"));
 
 var _urlTemplate = _interopRequireDefault(require("url-template"));
 
-var _lodash = _interopRequireDefault(require("lodash.pickby"));
+var _lodash = require("lodash");
 
 var _httpError = _interopRequireDefault(require("./httpError"));
 
@@ -63,7 +63,7 @@ var _default = (url, {
   let fullURL = context && decoded.includes('{') ? _urlTemplate.default.parse(decoded).expand(context) : url;
   const out = (0, _through.default)();
   let isCollectingError = false;
-  const actualHeaders = (0, _lodash.default)(_objectSpread({
+  const actualHeaders = (0, _lodash.pickBy)(_objectSpread({
     'User-Agent': _userAgent.default
   }, headers), (v, k) => !!k && !!v);
   if (accessToken) actualHeaders.Authorization = `Bearer ${accessToken}`;

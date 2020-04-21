@@ -4,7 +4,8 @@ import { TextEncoder, TextDecoder } from 'text-encoding'
 
 const defaultSandbox = {
   URL, URLSearchParams,
-  TextEncoder, TextDecoder
+  TextEncoder: global.TextEncoder || TextEncoder,
+  TextDecoder: global.TextDecoder || TextDecoder
 }
 
 const allowedBuiltins = [

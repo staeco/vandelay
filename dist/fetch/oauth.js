@@ -5,9 +5,7 @@ exports.getToken = void 0;
 
 var _superagent = _interopRequireDefault(require("superagent"));
 
-var _lodash = _interopRequireDefault(require("lodash.omit"));
-
-var _lodash2 = _interopRequireDefault(require("lodash.pickby"));
+var _lodash = require("lodash");
 
 var _userAgent = _interopRequireDefault(require("./userAgent"));
 
@@ -22,8 +20,8 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 const getToken = async oauth => {
-  const rest = (0, _lodash.default)(oauth.grant, ['url', 'type']);
-  const res = await _superagent.default.post(oauth.grant.url).type('form').accept('json').send((0, _lodash2.default)(_objectSpread({
+  const rest = (0, _lodash.omit)(oauth.grant, ['url', 'type']);
+  const res = await _superagent.default.post(oauth.grant.url).type('form').accept('json').send((0, _lodash.pickBy)(_objectSpread({
     grant_type: oauth.grant.type
   }, rest), (v, k) => !!k && !!v)).set({
     'Cache-Control': 'no-cache',

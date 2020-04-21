@@ -7,7 +7,7 @@ var _through = _interopRequireDefault(require("through2"));
 
 var _pumpify = _interopRequireDefault(require("pumpify"));
 
-var _lodash = _interopRequireDefault(require("lodash.omit"));
+var _lodash = require("lodash");
 
 var _isPlainObj = _interopRequireDefault(require("is-plain-obj"));
 
@@ -34,7 +34,7 @@ var _default = (format, opt = {}) => {
 
     const tail = _through.default.obj((row, _, cb) => {
       // fun dance to retain the json header field needed for our metadata
-      const nrow = (0, _isPlainObj.default)(row) ? (0, _lodash.default)(row, '___header') : row;
+      const nrow = (0, _isPlainObj.default)(row) ? (0, _lodash.omit)(row, '___header') : row;
       const out = autoFormat[opt.autoFormat](nrow);
       if (row.___header) out.___header = row.___header;
       cb(null, out);

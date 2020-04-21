@@ -7,7 +7,7 @@ var _through = _interopRequireDefault(require("through2"));
 
 var _pumpify = _interopRequireDefault(require("pumpify"));
 
-var _lodash = _interopRequireDefault(require("lodash.pickby"));
+var _lodash = require("lodash");
 
 var _fetchURL = _interopRequireDefault(require("./fetchURL"));
 
@@ -31,7 +31,7 @@ var _default = ({
   const map = (row, _, cb) => {
     // create the meta and put it on objects passing through
     if (row && typeof row === 'object') {
-      row.___meta = (0, _lodash.default)({
+      row.___meta = (0, _lodash.pickBy)({
         row: ++rows,
         url: req.url,
         accessToken: opt === null || opt === void 0 ? void 0 : opt.accessToken,

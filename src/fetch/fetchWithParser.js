@@ -1,6 +1,6 @@
 import through2 from 'through2'
 import pumpify from 'pumpify'
-import pickBy from 'lodash.pickby'
+import { pickBy } from 'lodash'
 import fetchURLPlain from './fetchURL'
 import hardClose from '../hardClose'
 

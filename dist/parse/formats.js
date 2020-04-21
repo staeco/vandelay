@@ -21,7 +21,7 @@ var _jsonstreamNext = _interopRequireDefault(require("jsonstream-next"));
 
 var _gtfsStream = _interopRequireDefault(require("gtfs-stream"));
 
-var _lodash = _interopRequireDefault(require("lodash.omit"));
+var _lodash = require("lodash");
 
 var _ndjson = require("ndjson");
 
@@ -50,7 +50,7 @@ const csv = opt => {
   }); // convert into normal objects
 
   const tail = _through.default.obj((row, _, cb) => {
-    cb(null, (0, _lodash.default)(row, 'headers'));
+    cb(null, (0, _lodash.omit)(row, 'headers'));
   });
 
   return _pumpify.default.obj(head, tail);

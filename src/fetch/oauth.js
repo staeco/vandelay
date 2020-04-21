@@ -1,6 +1,5 @@
 import request from 'superagent'
-import omit from 'lodash.omit'
-import pickBy from 'lodash.pickby'
+import { pickBy, omit } from 'lodash'
 import userAgent from './userAgent'
 import httpError from './httpError'
 

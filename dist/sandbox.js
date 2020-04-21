@@ -7,13 +7,15 @@ var _vm = require("vm2");
 
 var _domain = _interopRequireDefault(require("domain"));
 
+var _textEncoding = require("text-encoding");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const defaultSandbox = {
   URL,
   URLSearchParams,
-  TextEncoder,
-  TextDecoder
+  TextEncoder: global.TextEncoder || _textEncoding.TextEncoder,
+  TextDecoder: global.TextDecoder || _textEncoding.TextDecoder
 };
 const allowedBuiltins = ['assert', 'buffer', 'crypto', 'dgram', 'dns', 'events', 'http', 'https', 'http2', 'path', 'querystring', 'stream', 'string_decoder', 'timers', 'tls', 'url', 'util', 'zlib'];
 

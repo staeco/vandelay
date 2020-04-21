@@ -5,7 +5,7 @@ exports.default = void 0;
 
 var _through2Concurrent = _interopRequireDefault(require("through2-concurrent"));
 
-var _lodash = _interopRequireDefault(require("lodash.clone"));
+var _lodash = require("lodash");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -25,7 +25,7 @@ var _default = (fn, opt = {}) => {
       if (res == null) return cb();
 
       if (meta) {
-        res = (0, _lodash.default)(res);
+        res = (0, _lodash.clone)(res);
         res.___meta = meta;
       }
 
