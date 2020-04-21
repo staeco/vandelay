@@ -92,6 +92,7 @@
     "qs": "^6.6.0",
     "remove-bom-stream": "^1.2.0",
     "superagent": "^5.0.0",
+    "text-encoding": "^0.7.0",
     "through2": "^3.0.0",
     "through2-concurrent": "^2.0.0",
     "unzipper": "^0.10.1",
