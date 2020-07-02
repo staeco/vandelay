@@ -43,7 +43,7 @@ describe('parse json', () => {
     res.should.eql([ 2, 1, 3 ])
   })
   it('should error on invalid object', async () => {
-    const sample = '{ "a": [ { "b": 1 }, { zzzzz: 123 } ] } }'
+    const sample = [ '{ "a": [ { "b": 1 },', ' { zzzzz: 123 } ] } }' ]
     const parser = parse('json', { selector: 'a.*.b' })
     const stream = streamify(sample).pipe(parser())
     let theError

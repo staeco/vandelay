@@ -115,8 +115,8 @@ const infer = v => {
 
   try {
     return _wkx.default.Geometry.parse(v).toGeoJSON();
-  } catch (e) {} // not wkx
-  // any json values
+  } catch (e) {// not wkx
+  } // any json values
 
 
   try {

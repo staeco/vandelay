@@ -28,6 +28,8 @@ var _default = (format, opt = {}) => {
   const fmt = formats[format];
   if (!fmt) throw new Error(`${format} is not a support parser format`);
   if (opt.autoFormat && !autoFormat[opt.autoFormat]) throw new Error('Invalid autoFormat option');
+  fmt(opt); // just to validate!
+
   if (!opt.autoFormat) return () => fmt(opt);
   return () => {
     const head = fmt(opt);

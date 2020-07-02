@@ -38,8 +38,8 @@ const getFetchOptions = (src, opt, setupResult = {}) => ({
   connectTimeout: opt.connectTimeout,
   attempts: opt.attempts,
   context: opt.context,
-  headers: _objectSpread({}, src.headers || {}, {}, setupResult.headers || {}),
-  query: _objectSpread({}, src.query || {}, {}, setupResult.query || {}),
+  headers: _objectSpread(_objectSpread({}, src.headers || {}), setupResult.headers || {}),
+  query: _objectSpread(_objectSpread({}, src.query || {}), setupResult.query || {}),
   accessToken: setupResult.accessToken
 }); // default behavior is to fail on first error
 

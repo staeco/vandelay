@@ -34,7 +34,7 @@ describe('parse html', () => {
     should.throws(() => parse('html', { selector: null }))
   })
   it('should throw on bad options', async () => {
-    should.throws(() => parse('csv', { autoFormat: 'yes' }))
+    should.throws(() => parse('html', { autoFormat: 'yes' }))
   })
   it('should parse an array', async () => {
     const parser = parse('html', { selector: 'html.item.*' })

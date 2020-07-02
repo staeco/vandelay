@@ -40,7 +40,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 // these formatters receive one argument, "data source" object
 // and return a stream that maps strings to items
 const csv = opt => {
-  if (opt.zip) return (0, _unzip.default)(csv.bind(void 0, _objectSpread({}, opt, {
+  if (opt.zip) return (0, _unzip.default)(csv.bind(void 0, _objectSpread(_objectSpread({}, opt), {}, {
     zip: undefined
   })), /\.csv$/);
   const head = (0, _csvParser.default)({
@@ -59,7 +59,7 @@ const csv = opt => {
 exports.csv = csv;
 
 const excel = opt => {
-  if (opt.zip) return (0, _unzip.default)(excel.bind(void 0, _objectSpread({}, opt, {
+  if (opt.zip) return (0, _unzip.default)(excel.bind(void 0, _objectSpread(_objectSpread({}, opt), {}, {
     zip: undefined
   })), /\.xlsx$/);
   return (0, _exceljsTransformStream.default)({
@@ -70,7 +70,7 @@ const excel = opt => {
 exports.excel = excel;
 
 const ndjson = opt => {
-  if (opt.zip) return (0, _unzip.default)(ndjson.bind(void 0, _objectSpread({}, opt, {
+  if (opt.zip) return (0, _unzip.default)(ndjson.bind(void 0, _objectSpread(_objectSpread({}, opt), {}, {
     zip: undefined
   })), /\.ndjson$/);
   return (0, _ndjson.parse)();
@@ -84,14 +84,14 @@ const json = opt => {
 
     const outStream = _through.default.obj();
 
-    opt.selector.forEach(selector => (0, _pump.default)(inStream, json(_objectSpread({}, opt, {
+    opt.selector.forEach(selector => (0, _pump.default)(inStream, json(_objectSpread(_objectSpread({}, opt), {}, {
       selector
     })), outStream));
     return _duplexify.default.obj(inStream, outStream);
   }
 
   if (typeof opt.selector !== 'string') throw new Error('Missing selector for JSON parser!');
-  if (opt.zip) return (0, _unzip.default)(json.bind(void 0, _objectSpread({}, opt, {
+  if (opt.zip) return (0, _unzip.default)(json.bind(void 0, _objectSpread(_objectSpread({}, opt), {}, {
     zip: undefined
   })), /\.json$/);
 
@@ -112,7 +112,7 @@ const json = opt => {
 exports.json = json;
 
 const xml = opt => {
-  if (opt.zip) return (0, _unzip.default)(xml.bind(void 0, _objectSpread({}, opt, {
+  if (opt.zip) return (0, _unzip.default)(xml.bind(void 0, _objectSpread(_objectSpread({}, opt), {}, {
     zip: undefined
   })), /\.xml$/);
   return _pumpify.default.obj((0, _xml2json.default)(opt), json(opt));
@@ -121,10 +121,10 @@ const xml = opt => {
 exports.xml = xml;
 
 const html = opt => {
-  if (opt.zip) return (0, _unzip.default)(html.bind(void 0, _objectSpread({}, opt, {
+  if (opt.zip) return (0, _unzip.default)(html.bind(void 0, _objectSpread(_objectSpread({}, opt), {}, {
     zip: undefined
   })), /\.xml$/);
-  return _pumpify.default.obj((0, _xml2json.default)(_objectSpread({}, opt, {
+  return _pumpify.default.obj((0, _xml2json.default)(_objectSpread(_objectSpread({}, opt), {}, {
     strict: false
   })), json(opt));
 };

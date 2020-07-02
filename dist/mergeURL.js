@@ -18,11 +18,11 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 var _default = (origUrl, newQuery) => {
   const sourceUrl = _url.default.parse(origUrl);
 
-  const query = _qs.default.stringify(_objectSpread({}, _qs.default.parse(sourceUrl.query), {}, newQuery), {
+  const query = _qs.default.stringify(_objectSpread(_objectSpread({}, _qs.default.parse(sourceUrl.query)), newQuery), {
     strictNullHandling: true
   });
 
-  return _url.default.format(_objectSpread({}, sourceUrl, {
+  return _url.default.format(_objectSpread(_objectSpread({}, sourceUrl), {}, {
     search: query
   }));
 };
