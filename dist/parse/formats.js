@@ -1,7 +1,7 @@
 "use strict";
 
 exports.__esModule = true;
-exports.gtfs = exports.gtfsrt = exports.shp = exports.kmz = exports.kml = exports.gpx = exports.gdb = exports.html = exports.xml = exports.json = exports.ndjson = exports.excel = exports.csv = void 0;
+exports.gtfs = exports.gtfsrt = exports.shp = exports.kmz = exports.kml = exports.gpx = exports.gdb = exports.html = exports.xml = exports.json = exports.ndjson = exports.excel = exports.tsv = exports.csv = void 0;
 
 var _csvParser = _interopRequireDefault(require("csv-parser"));
 
@@ -57,6 +57,26 @@ const csv = opt => {
 };
 
 exports.csv = csv;
+
+const tsv = opt => {
+  if (opt.zip) return (0, _unzip.default)(csv.bind(void 0, _objectSpread(_objectSpread({}, opt), {}, {
+    zip: undefined
+  })), /\.tsv$/);
+  const head = (0, _csvParser.default)({
+    separator: '\t',
+    mapHeaders: ({
+      header
+    }) => header.trim()
+  }); // convert into normal objects
+
+  const tail = _through.default.obj((row, _, cb) => {
+    cb(null, (0, _lodash.omit)(row, 'headers'));
+  });
+
+  return _pumpify.default.obj(head, tail);
+};
+
+exports.tsv = tsv;
 
 const excel = opt => {
   if (opt.zip) return (0, _unzip.default)(excel.bind(void 0, _objectSpread(_objectSpread({}, opt), {}, {

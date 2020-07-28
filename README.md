@@ -125,6 +125,10 @@ Built in parsers are:
   - Optional `autoFormat` option, to automatically infer types of values and convert them.
   - Optional `camelcase` option, to camelcase and normalize header keys.
   - Optional `zip` option, if the content is a zip file it will parse each CSV file in the zip.
+- tsv
+  - Optional `autoFormat` option, to automatically infer types of values and convert them.
+  - Optional `camelcase` option, to camelcase and normalize header keys.
+  - Optional `zip` option, if the content is a zip file it will parse each TSV file in the zip.
 - excel
   - Optional `autoFormat` option, to automatically infer types of values and convert them.
   - Optional `camelcase` option, to camelcase and normalize header keys.

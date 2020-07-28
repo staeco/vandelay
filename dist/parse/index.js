@@ -26,7 +26,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var _default = (format, opt = {}) => {
   if (typeof format !== 'string') throw new Error('Invalid format argument');
   const fmt = formats[format];
-  if (!fmt) throw new Error(`${format} is not a support parser format`);
+  if (!fmt) throw new Error(`${format} is not a supported parser format`);
   if (opt.autoFormat && !autoFormat[opt.autoFormat]) throw new Error('Invalid autoFormat option');
   fmt(opt); // just to validate!
 
