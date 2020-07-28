@@ -26,6 +26,19 @@ export const csv = (opt) => {
   })
   return pumpify.obj(head, tail)
 }
+export const tsv = (opt) => {
+  if (opt.zip) return unzip(csv.bind(this, { ...opt, zip: undefined }), /\.tsv$/)
+
+  const head = csvStream({
+    separator: '\t',
+    mapHeaders: ({ header }) => header.trim()
+  })
+  // convert into normal objects
+  const tail = through2.obj((row, _, cb) => {
+    cb(null, omit(row, 'headers'))
+  })
+  return pumpify.obj(head, tail)
+}
 export const excel = (opt) => {
   if (opt.zip) return unzip(excel.bind(this, { ...opt, zip: undefined }), /\.xlsx$/)
   return excelStream({
