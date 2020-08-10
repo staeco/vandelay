@@ -3,7 +3,7 @@ import merge from 'merge2'
 import duplexify from 'duplexify'
 import through2 from 'through2'
 import zip from 'unzipper'
-import eos from 'end-of-stream'
+import { finished } from 'stream'
 
 export default (parser, regex) => {
   const out = merge({ end: false })
@@ -17,9 +17,9 @@ export default (parser, regex) => {
       }
       const file = pumpify.obj(entry, parser())
       out.add(file)
-      eos(file, cb)
+      finished(file, cb)
     }))
 
-  eos(dataStream, () => out.push(null))
+  finished(dataStream, () => out.push(null))
   return duplexify.obj(dataStream, out)
 }

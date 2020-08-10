@@ -1,6 +1,6 @@
 /* eslint no-loops/no-loops: "off" */
 import through2 from 'through2'
-import eos from 'end-of-stream'
+import { finished } from 'stream'
 import hardClose from '../hardClose'
 
 const getURL = (stream) =>
@@ -66,7 +66,7 @@ export default ({ concurrent=10, onError, inputs=[] }={}) => {
     const src = typeof i === 'function' ? i() : i
     out.running.push(src)
     if (!out.first) out.first = src
-    eos(src, (err) => done(src, err))
+    finished(src, (err) => done(src, err))
     src.pipe(out, { end: false })
   }
 

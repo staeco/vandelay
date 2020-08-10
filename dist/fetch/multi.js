@@ -5,7 +5,7 @@ exports.default = void 0;
 
 var _through = _interopRequireDefault(require("through2"));
 
-var _endOfStream = _interopRequireDefault(require("end-of-stream"));
+var _stream = require("stream");
 
 var _hardClose = _interopRequireDefault(require("../hardClose"));
 
@@ -84,7 +84,7 @@ var _default = ({
     const src = typeof i === 'function' ? i() : i;
     out.running.push(src);
     if (!out.first) out.first = src;
-    (0, _endOfStream.default)(src, err => done(src, err));
+    (0, _stream.finished)(src, err => done(src, err));
     src.pipe(out, {
       end: false
     });

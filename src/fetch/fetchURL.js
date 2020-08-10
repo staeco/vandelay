@@ -1,7 +1,7 @@
 import got from 'got-resume'
 import through2 from 'through2'
 import collect from 'get-stream'
-import pump from 'pump'
+import { pipeline } from 'stream'
 import template from 'url-template'
 import { pickBy } from 'lodash'
 import httpError from './httpError'
@@ -81,7 +81,9 @@ export default (url, { attempts=10, headers={}, query, timeout, connectTimeout, 
       .once('response', () => {
         if (isCollectingError) return
         if (debug) debug('Got a response')
-        pump(req, out)
+        pipeline(req, out, (err) => {
+          if (err) out.emit('error', err)
+        })
       })
   } catch (err) {
     process.nextTick(() => {

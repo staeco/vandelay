@@ -15,7 +15,7 @@ var _duplexify = _interopRequireDefault(require("duplexify"));
 
 var _pumpify = _interopRequireDefault(require("pumpify"));
 
-var _pump = _interopRequireDefault(require("pump"));
+var _stream = require("stream");
 
 var _jsonstreamNext = _interopRequireDefault(require("jsonstream-next"));
 
@@ -104,9 +104,11 @@ const json = opt => {
 
     const outStream = _through.default.obj();
 
-    opt.selector.forEach(selector => (0, _pump.default)(inStream, json(_objectSpread(_objectSpread({}, opt), {}, {
+    opt.selector.forEach(selector => (0, _stream.pipeline)(inStream, json(_objectSpread(_objectSpread({}, opt), {}, {
       selector
-    })), outStream));
+    })), outStream, err => {
+      if (err) outStream.emit('error', err);
+    }));
     return _duplexify.default.obj(inStream, outStream);
   }
 

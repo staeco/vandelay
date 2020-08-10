@@ -4,7 +4,7 @@ import through2 from 'through2'
 import { from } from 'verrazzano'
 import duplexify from 'duplexify'
 import pumpify from 'pumpify'
-import pump from 'pump'
+import { pipeline } from 'stream'
 import JSONStream from 'jsonstream-next'
 import parseGTFS from 'gtfs-stream'
 import { omit } from 'lodash'
@@ -56,7 +56,9 @@ export const json = (opt) => {
     const inStream = through2()
     const outStream = through2.obj()
     opt.selector.forEach((selector) =>
-      pump(inStream, json({ ...opt, selector }), outStream)
+      pipeline(inStream, json({ ...opt, selector }), outStream, (err) => {
+        if (err) outStream.emit('error', err)
+      })
     )
     return duplexify.obj(inStream, outStream)
   }

@@ -1,6 +1,6 @@
 {
   "name": "vandelay",
-  "version": "7.2.1",
+  "version": "7.2.2",
   "description": "Imports, exports, and ETL",
   "main": "dist/index.js",
   "keywords": [],
@@ -37,9 +37,6 @@
     "test": "NODE_ENV=testing nyc mocha --require @babel/register --recursive --reporter spec --bail --exit --timeout 60000 -- --trace-deprecation && npm run-script lint",
     "test:debug": "NODE_ENV=testing nyc mocha --inspect-brk=0.0.0.0 --require @babel/register --recursive --reporter spec --bail --timeout 60000"
   },
-  "resolutions": {
-    "end-of-stream": "github:isaacs/end-of-stream#custom-stream-premature-close-fix"
-  },
   "engines": {
     "node": ">=10"
   },
@@ -72,9 +69,8 @@
     "core-js": "3.0.0",
     "csv-parser": "^2.0.0",
     "duplexify": "^4.0.0",
-    "end-of-stream": "github:isaacs/end-of-stream#custom-stream-premature-close-fix",
     "exceljs-transform-stream": "^1.0.0",
-    "get-stream": "^5.0.0",
+    "get-stream": "^6.0.0",
     "got-resume": "github:contra/got-resume",
     "gtfs-stream": "^2.1.0",
     "is-plain-obj": "^2.0.0",
@@ -85,11 +81,10 @@
     "ndjson": "^1.5.0",
     "object-transform-stack": "^3.0.0",
     "parse-decimal-number": "^1.0.0",
-    "pump": "^3.0.0",
     "pumpify": "^2.0.0",
     "qs": "^6.6.0",
     "remove-bom-stream": "^1.2.0",
-    "superagent": "^5.0.0",
+    "superagent": "^6.0.0",
     "text-encoding": "^0.7.0",
     "through2": "^4.0.0",
     "through2-concurrent": "^2.0.0",

@@ -13,7 +13,7 @@ var _through = _interopRequireDefault(require("through2"));
 
 var _unzipper = _interopRequireDefault(require("unzipper"));
 
-var _endOfStream = _interopRequireDefault(require("end-of-stream"));
+var _stream = require("stream");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -31,10 +31,10 @@ var _default = (parser, regex) => {
     const file = _pumpify.default.obj(entry, parser());
 
     out.add(file);
-    (0, _endOfStream.default)(file, cb);
+    (0, _stream.finished)(file, cb);
   }));
 
-  (0, _endOfStream.default)(dataStream, () => out.push(null));
+  (0, _stream.finished)(dataStream, () => out.push(null));
   return _duplexify.default.obj(dataStream, out);
 };
 
