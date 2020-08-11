@@ -23,14 +23,14 @@ const closeIt = i => {
 
 
 var _default = ({
-  concurrent = 10,
+  concurrent = 8,
   onError,
   inputs = []
 } = {}) => {
   if (inputs.length === 0) throw new Error('No inputs specified!');
-  const out = (0, _through.default)({
-    objectMode: true
-  });
+
+  const out = _through.default.obj();
+
   out.remaining = inputs.slice(0);
   out.running = [];
   out.setMaxListeners(0);

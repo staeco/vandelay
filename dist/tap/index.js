@@ -11,7 +11,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 var _default = (fn, opt = {}) => {
   if (typeof fn !== 'function') throw new Error('Invalid function!');
-  const maxConcurrency = opt.concurrency != null ? opt.concurrency : 10;
+  const maxConcurrency = opt.concurrency != null ? opt.concurrency : 8;
 
   const tap = (row, _, cb) => {
     let meta; // pluck the ___meta attr we attached in fetch
@@ -34,8 +34,7 @@ var _default = (fn, opt = {}) => {
   };
 
   return _through2Concurrent.default.obj({
-    maxConcurrency,
-    highWaterMark: Math.max(maxConcurrency * 2, 32)
+    maxConcurrency
   }, tap);
 };
 

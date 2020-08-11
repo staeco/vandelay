@@ -23,7 +23,7 @@ var _gtfsStream = _interopRequireDefault(require("gtfs-stream"));
 
 var _lodash = require("lodash");
 
-var _ndjson = require("ndjson");
+var _ndjsonNext = require("ndjson-next");
 
 var _unzip = _interopRequireDefault(require("./unzip"));
 
@@ -93,7 +93,7 @@ const ndjson = opt => {
   if (opt.zip) return (0, _unzip.default)(ndjson.bind(void 0, _objectSpread(_objectSpread({}, opt), {}, {
     zip: undefined
   })), /\.ndjson$/);
-  return (0, _ndjson.parse)();
+  return (0, _ndjsonNext.parse)();
 };
 
 exports.ndjson = ndjson;

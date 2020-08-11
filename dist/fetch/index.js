@@ -60,7 +60,7 @@ const getQuery = (pageOpt, page) => {
 };
 
 const fetchStream = (source, opt = {}, raw = false) => {
-  const concurrent = opt.concurrency != null ? opt.concurrency : 10;
+  const concurrent = opt.concurrency != null ? opt.concurrency : 8;
 
   if (Array.isArray(source)) {
     // zips eat memory, do not run more than one at a time

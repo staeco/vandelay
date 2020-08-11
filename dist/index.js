@@ -18,8 +18,4 @@ var _transform = _interopRequireDefault(require("./transform"));
 
 exports.transform = _transform.default;
 
-var _normalize = _interopRequireDefault(require("./normalize"));
-
-exports.normalize = _normalize.default;
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
