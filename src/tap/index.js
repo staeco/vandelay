@@ -3,7 +3,7 @@ import { clone } from 'lodash'
 
 export default (fn, opt={}) => {
   if (typeof fn !== 'function') throw new Error('Invalid function!')
-  const maxConcurrency = opt.concurrency != null ? opt.concurrency : 10
+  const maxConcurrency = opt.concurrency != null ? opt.concurrency : 8
 
   const tap = (row, _, cb) => {
     let meta
@@ -23,8 +23,5 @@ export default (fn, opt={}) => {
       })
       .catch(cb)
   }
-  return through.obj({
-    maxConcurrency,
-    highWaterMark: Math.max(maxConcurrency * 2, 32)
-  }, tap)
+  return through.obj({ maxConcurrency }, tap)
 }

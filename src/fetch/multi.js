@@ -18,10 +18,10 @@ const closeIt = (i) => {
 
 // merges a bunch of streams, unordered - and has some special error management
 // so one wont fail the whole bunch
-export default ({ concurrent=10, onError, inputs=[] }={}) => {
+export default ({ concurrent=8, onError, inputs=[] }={}) => {
   if (inputs.length === 0) throw new Error('No inputs specified!')
 
-  const out = through2({ objectMode: true })
+  const out = through2.obj()
   out.remaining = inputs.slice(0)
   out.running = []
   out.setMaxListeners(0)
