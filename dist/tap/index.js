@@ -34,7 +34,8 @@ var _default = (fn, opt = {}) => {
   };
 
   return _through2Concurrent.default.obj({
-    maxConcurrency
+    maxConcurrency,
+    highWaterMark: Math.min(16, maxConcurrency * 2)
   }, tap);
 };
 

@@ -23,5 +23,8 @@ export default (fn, opt={}) => {
       })
       .catch(cb)
   }
-  return through.obj({ maxConcurrency }, tap)
+  return through.obj({
+    maxConcurrency,
+    highWaterMark: Math.min(16, maxConcurrency * 2)
+  }, tap)
 }
