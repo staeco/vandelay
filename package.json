@@ -87,6 +87,7 @@
     "superagent": "^6.0.0",
     "text-encoding": "^0.7.0",
     "through2": "^4.0.0",
+    "through2-concurrent": "github:contra/through2-concurrent#patch-1",
     "unzipper": "^0.10.1",
     "url-template": "^2.0.8",
     "verrazzano": "^2.0.1",

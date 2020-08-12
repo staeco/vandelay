@@ -1,4 +1,4 @@
-import through from 'through2'
+import through from 'through2-concurrent'
 import { clone } from 'lodash'
 
 export default (fn, opt={}) => {
@@ -23,8 +23,8 @@ export default (fn, opt={}) => {
       })
       .catch(cb)
   }
-  return through({
-    objectMode: true,
-    highWaterMark: Math.min(16, maxConcurrency * 2)
+  return through.obj({
+    maxConcurrency,
+    highWaterMark: Math.max(16, maxConcurrency * 2)
   }, tap)
 }
