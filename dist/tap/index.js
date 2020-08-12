@@ -3,7 +3,7 @@
 exports.__esModule = true;
 exports.default = void 0;
 
-var _through2Concurrent = _interopRequireDefault(require("through2-concurrent"));
+var _through = _interopRequireDefault(require("through2"));
 
 var _lodash = require("lodash");
 
@@ -33,8 +33,8 @@ var _default = (fn, opt = {}) => {
     }).catch(cb);
   };
 
-  return _through2Concurrent.default.obj({
-    maxConcurrency,
+  return (0, _through.default)({
+    objectMode: true,
     highWaterMark: Math.min(16, maxConcurrency * 2)
   }, tap);
 };
