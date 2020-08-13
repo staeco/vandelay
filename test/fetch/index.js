@@ -555,7 +555,7 @@ describe('fetch', () => {
     const res = await collect.array(stream)
     res.length.should.equal(max)
   })
-  it.skip('should end stream as needed with real data', async () => {
+  it('should end stream as needed with real data', async () => {
     const max = 100000
     let curr = 0
     const source = {
@@ -591,7 +591,7 @@ describe('fetch', () => {
     const res = await collect.array(stream)
     res.length.should.equal(max)
   })
-  it.skip('should handle stream closes properly, and continue when supported', async () => {
+  it('should handle stream closes properly, and continue when supported', async () => {
     const max = 1000
     const source = {
       // will close the stream every 4kb, and support ranges

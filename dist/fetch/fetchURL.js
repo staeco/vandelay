@@ -3,7 +3,7 @@
 exports.__esModule = true;
 exports.default = void 0;
 
-var _gotResume = _interopRequireDefault(require("got-resume"));
+var _gotResumeNext = _interopRequireDefault(require("got-resume-next"));
 
 var _through = _interopRequireDefault(require("through2"));
 
@@ -39,7 +39,7 @@ const retryWorthy = [420, 444, 408, 429, 449, 499];
 
 const shouldRetry = (_, original) => {
   const code = original && original.code;
-  const res = original && original.res; // their server having issues, give it another go
+  const res = original && original.response; // their server having issues, give it another go
 
   if (res && res.statusCode >= 500) return true; // no point retry anything over 400 that will keep happening
 
@@ -73,7 +73,7 @@ var _default = (url, {
     attempts,
     shouldRetry,
     got: {
-      followRedirects: true,
+      followRedirect: true,
       timeout: {
         request: timeout || oneDay,
         connect: connectTimeout || fiveMinutes,
@@ -86,18 +86,20 @@ var _default = (url, {
   let req; // got throws errors on invalid headers or other invalid args, so handle them instead of throwing
 
   try {
-    req = (0, _gotResume.default)(fullURL, options) // handle errors
+    req = (0, _gotResumeNext.default)(fullURL, options) // handle errors
     .once('error', async err => {
       isCollectingError = true;
-      const original = err.original || err;
-      const {
-        res
-      } = original;
-      if (debug) debug('Got error while fetching', original);
-      if (res) res.text = await (0, _getStream.default)(res, {
-        maxBuffer: sizeLimit
-      });
-      out.emit('error', (0, _httpError.default)(original, res));
+      const orig = err.original || err;
+      if (debug) debug('Got error while fetching', orig);
+
+      if (orig === null || orig === void 0 ? void 0 : orig.response) {
+        orig.response.text = orig.response.rawBody ? orig.response.rawBody.toString('utf8') // for whatever reason, got buffered the response
+        : await (0, _getStream.default)(orig.response, {
+          maxBuffer: sizeLimit
+        }); // nothing buffered - keep reading
+      }
+
+      out.emit('error', (0, _httpError.default)(orig, orig === null || orig === void 0 ? void 0 : orig.response));
       out.abort();
     }).once('response', () => {
       if (isCollectingError) return;

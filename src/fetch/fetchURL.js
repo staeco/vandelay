@@ -1,4 +1,4 @@
-import got from 'got-resume'
+import got from 'got-resume-next'
 import through2 from 'through2'
 import collect from 'get-stream'
 import { pipeline } from 'stream'
@@ -18,7 +18,7 @@ const retryWorthy = [
 ]
 const shouldRetry = (_, original) => {
   const code = original && original.code
-  const res = original && original.res
+  const res = original && original.response
 
   // their server having issues, give it another go
   if (res && res.statusCode >= 500) return true
@@ -52,7 +52,7 @@ export default (url, { attempts=10, headers={}, query, timeout, connectTimeout, 
     attempts,
     shouldRetry,
     got: {
-      followRedirects: true,
+      followRedirect: true,
       timeout: {
         request: timeout || oneDay,
         connect: connectTimeout || fiveMinutes,
@@ -71,11 +71,14 @@ export default (url, { attempts=10, headers={}, query, timeout, connectTimeout, 
       // handle errors
       .once('error', async (err) => {
         isCollectingError = true
-        const original = err.original || err
-        const { res } = original
-        if (debug) debug('Got error while fetching', original)
-        if (res) res.text = await collect(res, { maxBuffer: sizeLimit })
-        out.emit('error', httpError(original, res))
+        const orig = err.original || err
+        if (debug) debug('Got error while fetching', orig)
+        if (orig?.response) {
+          orig.response.text = orig.response.rawBody
+            ? orig.response.rawBody.toString('utf8') // for whatever reason, got buffered the response
+            : await collect(orig.response, { maxBuffer: sizeLimit }) // nothing buffered - keep reading
+        }
+        out.emit('error', httpError(orig, orig?.response))
         out.abort()
       })
       .once('response', () => {
