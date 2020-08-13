@@ -9,6 +9,7 @@ import parseRange from 'range-parser'
 import parseBody from 'body-parser'
 import through2 from 'through2'
 import compile from 'vandelay-es6'
+import tap from '../../src/tap'
 import fetch from '../../src/fetch'
 import parse from '../../src/parse'
 
@@ -133,6 +134,69 @@ describe('fetch', () => {
       { a: 4, b: 5, c: 6, ___meta: { row: 1, url: source.url, source } },
       { a: 7, b: 8, c: 9, ___meta: { row: 2, url: source.url, source } }
     ])
+  })
+  it.skip('should request a flat remote big json file that gets interrupted', async () => {
+    const source = {
+      url: 'https://opendata.arcgis.com/datasets/f36b2c8164714b258840dce66909ba9a_1.geojson',
+      parser: parse('json', { selector: 'features.*' })
+    }
+    const stream = fetch(source)
+    stream.url().should.equal(source.url)
+    setTimeout(() => {
+      // simulate a failure at a low level about 1s into the request
+      stream.running[0].req.transfer.res.emit('error', new Error('Fake!'))
+    }, 1000)
+    const res = await collect.array(stream)
+    res.length.should.eql(34252)
+    res[0].___meta.should.eql({
+      header: {
+        name: 'Jefferson_County_KY_Street_Centerlines',
+        type: 'FeatureCollection',
+        crs: {
+          type: 'name',
+          properties: {
+            name: 'urn:ogc:def:crs:OGC:1.3:CRS84'
+          }
+        }
+      },
+      row: 0,
+      url: source.url,
+      source
+    })
+    should.exist(res[0].geometry)
+  })
+  it('should request a flat remote big json file with light backpressure', async () => {
+    const source = {
+      url: 'https://opendata.arcgis.com/datasets/f36b2c8164714b258840dce66909ba9a_1.geojson',
+      parser: parse('json', { selector: 'features.*' })
+    }
+    const stream = fetch(source)
+    stream.url().should.equal(source.url)
+
+    // create a slow stream that takes 100ms per item
+    const pressure = tap(async (data) => {
+      await new Promise((resolve) => setTimeout(resolve, 10))
+      return data
+    }, { concurrency: 64 })
+
+    const res = await collect.array(stream.pipe(pressure))
+    res.length.should.eql(34252)
+    res[0].___meta.should.eql({
+      header: {
+        name: 'Jefferson_County_KY_Street_Centerlines',
+        type: 'FeatureCollection',
+        crs: {
+          type: 'name',
+          properties: {
+            name: 'urn:ogc:def:crs:OGC:1.3:CRS84'
+          }
+        }
+      },
+      row: 0,
+      url: source.url,
+      source
+    })
+    should.exist(res[0].geometry)
   })
   it('should request a flat json file with context', async () => {
     const expectedURL = `http://localhost:${port}/file.json`

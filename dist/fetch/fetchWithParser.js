@@ -56,7 +56,7 @@ var _default = ({
     objectMode: true
   }, map));
 
-  out.raw = req.req;
+  out.req = req.req;
   out.url = req.url;
 
   out.abort = () => {

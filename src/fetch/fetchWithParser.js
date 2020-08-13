@@ -41,7 +41,7 @@ export default ({ url, parser, source }, opt) => {
     parser(),
     through2({ objectMode: true }, map)
   )
-  out.raw = req.req
+  out.req = req.req
   out.url = req.url
   out.abort = () => {
     req.abort()
