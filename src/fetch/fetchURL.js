@@ -83,7 +83,7 @@ export default (url, { attempts=10, headers={}, query, timeout, connectTimeout, 
       })
       .once('response', () => {
         if (isCollectingError) return
-        if (debug) debug('Got a response')
+        if (debug) debug('Got a first response, starting stream')
         pipeline(req, out, (err) => {
           if (err) out.emit('error', err)
         })

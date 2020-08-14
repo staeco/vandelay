@@ -103,7 +103,7 @@ var _default = (url, {
       out.abort();
     }).once('response', () => {
       if (isCollectingError) return;
-      if (debug) debug('Got a response');
+      if (debug) debug('Got a first response, starting stream');
       (0, _readableStream.pipeline)(req, out, err => {
         if (err) out.emit('error', err);
       });

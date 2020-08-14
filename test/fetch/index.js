@@ -142,10 +142,15 @@ describe('fetch', () => {
     }
     const stream = fetch(source)
     stream.url().should.equal(source.url)
-    setTimeout(() => {
-      // simulate a failure at a low level about 1s into the request
-      stream.running[0].req.transfer.res.emit('error', new Error('Fake!'))
-    }, 1000)
+    let gotRes = false
+    stream.running[0].req.once('response', (res) => {
+      should.exist(res)
+      gotRes = true
+      setTimeout(() => {
+        // simulate a failure at a low level about 1s into the request
+        res.emit('error', new Error('Fake!'))
+      }, 1000)
+    })
     const res = await collect.array(stream)
     res.length.should.eql(34252)
     res[0].___meta.should.eql({
@@ -164,6 +169,7 @@ describe('fetch', () => {
       source
     })
     should.exist(res[0].geometry)
+    should(gotRes).equal(true)
   })
   it('should request a flat remote big json file with light backpressure', async () => {
     const source = {

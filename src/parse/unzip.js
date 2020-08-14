@@ -3,7 +3,7 @@ import merge from 'merge2'
 import duplexify from 'duplexify'
 import through2 from 'through2'
 import zip from 'unzipper'
-import { finished } from 'readable-stream'
+import { finished, pipeline } from 'readable-stream'
 
 export default (parser, regex) => {
   const out = merge({ end: false })
@@ -15,9 +15,7 @@ export default (parser, regex) => {
         entry.autodrain()
         return cb()
       }
-      const file = pumpify.obj(entry, parser())
-      out.add(file)
-      finished(file, cb)
+      out.add(pipeline(entry, parser(), cb))
     }))
 
   finished(dataStream, () => out.push(null))

@@ -28,10 +28,7 @@ var _default = (parser, regex) => {
       return cb();
     }
 
-    const file = _pumpify.default.obj(entry, parser());
-
-    out.add(file);
-    (0, _readableStream.finished)(file, cb);
+    out.add((0, _readableStream.pipeline)(entry, parser(), cb));
   }));
 
   (0, _readableStream.finished)(dataStream, () => out.push(null));

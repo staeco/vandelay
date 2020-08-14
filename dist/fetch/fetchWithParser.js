@@ -5,7 +5,7 @@ exports.default = void 0;
 
 var _through = _interopRequireDefault(require("through2"));
 
-var _pumpify = _interopRequireDefault(require("pumpify"));
+var _readableStream = require("readable-stream");
 
 var _lodash = require("lodash");
 
@@ -48,13 +48,11 @@ var _default = ({
     cb(null, row);
   };
 
-  const out = _pumpify.default.ctor({
-    autoDestroy: false,
-    destroy: false,
+  const out = (0, _readableStream.pipeline)(req, parser(), (0, _through.default)({
     objectMode: true
-  })(req, parser(), (0, _through.default)({
-    objectMode: true
-  }, map));
+  }, map), err => {
+    if (err) out.emit('error', err);
+  }); // forward some props
 
   out.req = req.req;
   out.url = req.url;

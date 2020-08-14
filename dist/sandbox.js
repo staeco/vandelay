@@ -28,7 +28,7 @@ const addIn = (vm, sandbox) => {
 var _default = (code, opt = {}) => {
   let fn;
 
-  const domain = _domain.default.create();
+  const topDomain = _domain.default.create();
 
   const script = new _vm.VMScript(opt.compiler ? opt.compiler(code) : code);
   const vm = new _vm.NodeVM({
@@ -44,14 +44,18 @@ var _default = (code, opt = {}) => {
   }); // custom globals
 
   addIn(vm, defaultSandbox);
-  if (opt.sandbox) addIn(vm, opt.sandbox);
-  domain.on('error', () => {}); // swallow async errors
+  if (opt.sandbox) addIn(vm, opt.sandbox); // topDomain is for evaluating the script
+  // any errors thrown outside the transform fn are caught here
 
-  domain.run(() => {
+  topDomain.on('error', () => {}); // swallow async errors
+
+  topDomain.run(() => {
     fn = vm.run(script, 'compiled-transform.js');
   });
   if (fn == null) throw new Error('Failed to export something!');
   return (...args) => {
+    // internalDomain is for evaluating the transform function
+    // any errors thrown inside the transform fn are caught here
     const internalDomain = _domain.default.create();
 
     return new Promise((resolve, reject) => {

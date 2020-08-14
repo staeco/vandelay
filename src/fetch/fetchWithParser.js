@@ -1,5 +1,5 @@
 import through2 from 'through2'
-import pumpify from 'pumpify'
+import { pipeline } from 'readable-stream'
 import { pickBy } from 'lodash'
 import fetchURLPlain from './fetchURL'
 import hardClose from '../hardClose'
@@ -32,15 +32,16 @@ export default ({ url, parser, source }, opt) => {
     cb(null, row)
   }
 
-  const out = pumpify.ctor({
-    autoDestroy: false,
-    destroy: false,
-    objectMode: true
-  })(
+  const out = pipeline(
     req,
     parser(),
-    through2({ objectMode: true }, map)
+    through2({ objectMode: true }, map),
+    (err) => {
+      if (err) out.emit('error', err)
+    }
   )
+
+  // forward some props
   out.req = req.req
   out.url = req.url
   out.abort = () => {
