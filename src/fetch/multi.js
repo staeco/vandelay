@@ -1,6 +1,6 @@
 /* eslint no-loops/no-loops: "off" */
 import through2 from 'through2'
-import { finished } from 'stream'
+import { finished } from 'readable-stream'
 import hardClose from '../hardClose'
 
 const getURL = (stream) =>

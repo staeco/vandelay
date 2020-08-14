@@ -9,7 +9,7 @@ var _through = _interopRequireDefault(require("through2"));
 
 var _getStream = _interopRequireDefault(require("get-stream"));
 
-var _stream = require("stream");
+var _readableStream = require("readable-stream");
 
 var _urlTemplate = _interopRequireDefault(require("url-template"));
 
@@ -104,7 +104,7 @@ var _default = (url, {
     }).once('response', () => {
       if (isCollectingError) return;
       if (debug) debug('Got a response');
-      (0, _stream.pipeline)(req, out, err => {
+      (0, _readableStream.pipeline)(req, out, err => {
         if (err) out.emit('error', err);
       });
     });

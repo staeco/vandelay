@@ -1,7 +1,7 @@
 import got from 'got-resume-next'
 import through2 from 'through2'
 import collect from 'get-stream'
-import { pipeline } from 'stream'
+import { pipeline } from 'readable-stream'
 import template from 'url-template'
 import { pickBy } from 'lodash'
 import httpError from './httpError'

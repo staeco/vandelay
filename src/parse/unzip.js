@@ -3,7 +3,7 @@ import merge from 'merge2'
 import duplexify from 'duplexify'
 import through2 from 'through2'
 import zip from 'unzipper'
-import { finished } from 'stream'
+import { finished } from 'readable-stream'
 
 export default (parser, regex) => {
   const out = merge({ end: false })

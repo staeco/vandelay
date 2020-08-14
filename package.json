@@ -1,6 +1,6 @@
 {
   "name": "vandelay",
-  "version": "7.5.0",
+  "version": "7.5.1",
   "description": "Imports, exports, and ETL",
   "main": "dist/index.js",
   "keywords": [],
@@ -83,6 +83,7 @@
     "parse-decimal-number": "^1.0.0",
     "pumpify": "^2.0.0",
     "qs": "^6.6.0",
+    "readable-stream": "^3.6.0",
     "remove-bom-stream": "^1.2.0",
     "superagent": "^6.0.0",
     "text-encoding": "^0.7.0",
