@@ -8,7 +8,7 @@ import { pipeline } from 'readable-stream'
 import JSONStream from 'jsonstream-next'
 import parseGTFS from 'gtfs-stream'
 import { omit } from 'lodash'
-import { parse as ndParse } from 'ndjson-next'
+import { parse as ndParse } from 'ndjson'
 import unzip from './unzip'
 import xml2json from './xml2json'
 
