@@ -17,17 +17,20 @@ const retryWorthy = [
   420, 444, 408, 429, 449, 499
 ]
 const shouldRetry = (_, original) => {
-  const code = original && original.code
-  const res = original && original.response
+  // no point retrying on domains that dont exist
+  if (original?.code === 'ENOTFOUND') return false
+
+  const res = original && original?.response
+  if (!res) return false // we ended the request before we got a response
 
   // their server having issues, give it another go
-  if (res && res.statusCode >= 500) return true
+  if (res.statusCode >= 500) return true
 
-  // no point retry anything over 400 that will keep happening
-  if (res && res.statusCode >= 400 && !retryWorthy.includes(res.statusCode)) return false
+  // they don't like the rate we are sending at
+  if (retryWorthy.includes(res.statusCode)) return true
 
-  // no point retrying on domains that dont exists
-  if (code === 'ENOTFOUND') return false
+  // they don't like what we're sending, no point retrying
+  if (res.statusCode >= 400) return false
 
   return true
 }

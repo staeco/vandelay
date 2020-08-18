@@ -25,7 +25,8 @@ var _default = (startPage, getNext, {
   concurrent = 2,
   onError
 } = {}) => {
-  const actualConcurrency = Math.max(1, concurrent); // limit concurrency to a minimum of 1
+  // concurrency can either be 1 or 2, 2 will start loading the next page once it reads a first datum from the current page
+  const actualConcurrency = Math.min(2, concurrent);
 
   const out = _through.default.obj();
 
