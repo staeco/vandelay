@@ -22,16 +22,14 @@ export default ({ concurrent=8, onError, inputs=[] }={}) => {
   if (inputs.length === 0) throw new Error('No inputs specified!')
 
   const out = through2.obj()
-  out.remaining = inputs.slice(0)
+  out.remaining = Array.from(inputs)
   out.running = []
-  out.setMaxListeners(0)
   out.abort = () => {
     hardClose(out)
     out.running.forEach(closeIt)
     inputs.forEach(closeIt)
   }
   out.url = getURL.bind(null, out)
-  out.on('unpipe', (src) => done(src))
 
   const done = (src, err) => {
     const idx = out.running.indexOf(src)
@@ -41,17 +39,16 @@ export default ({ concurrent=8, onError, inputs=[] }={}) => {
     const finished = out.running.length === 0 && out.remaining.length === 0
 
     // let the consumer figure out how they want to handle errors
-    const canContinue = !finished && out.readable
     if (err && onError) {
       onError({
-        canContinue,
-        fatal: !canContinue && inputs.length === 1,
+        canContinue: !finished,
+        fatal: finished && inputs.length === 1,
         error: err,
         output: out,
         input: src
       })
     }
-    if (!canContinue) hardClose(out)
+    if (finished) hardClose(out)
   }
   const schedule = () => {
     if (out._closed) return
@@ -66,8 +63,8 @@ export default ({ concurrent=8, onError, inputs=[] }={}) => {
     const src = typeof i === 'function' ? i() : i
     out.running.push(src)
     if (!out.first) out.first = src
-    finished(src, (err) => done(src, err))
     src.pipe(out, { end: false })
+    finished(src, (err) => done(src, err))
   }
 
   schedule() // kick it all off

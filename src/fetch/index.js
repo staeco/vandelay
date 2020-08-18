@@ -1,6 +1,7 @@
 import pumpify from 'pumpify'
 import through2 from 'through2'
-import { getToken } from './oauth'
+import pSeries from 'p-series'
+import { getToken as getOAuthToken } from './oauth'
 import fetch from './fetchWithParser'
 import multi from './multi'
 import sandbox from '../sandbox'
@@ -76,28 +77,37 @@ const fetchStream = (source, opt={}, raw=false) => {
       }, {
         concurrent,
         onError: defaultErrorHandler
-      }).pause()
+      })
     }
     return fetch({ url: src.url, parser: src.parser, source }, getFetchOptions(src, opt, setupResult))
   }
 
-  // allow simple declarative oauth handling
+  // pre-run context setup
+  const preRun = []
+
   if (src.oauth) {
-    src.setup = async (ourSource) => getToken(ourSource.oauth).then((accessToken) => ({ accessToken }))
+    preRun.push(async (ourSource) => {
+      const accessToken = await getOAuthToken(ourSource.oauth)
+      return { accessToken }
+    })
   }
 
-  let outStream
   if (src.setup) {
     if (typeof src.setup === 'string') {
       src.setup = sandbox(src.setup, opt.setup)
     }
     const setupFn = src.setup?.default || src.setup
     if (typeof setupFn !== 'function') throw new Error('Invalid setup function!')
+    preRun.push(setupFn)
+  }
 
-    // if oauth enabled, grab a token first and then set the pipeline
+  let outStream
+  if (preRun.length !== 0) {
+    const preRunBound = preRun.map((fn) => fn.bind(null, src, { context: opt.context }))
     outStream = pumpify.obj()
-    setupFn(src, { context: opt.context })
-      .then((setupResult) => {
+    pSeries(preRunBound)
+      .then((results) => {
+        const setupResult = Object.assign({}, ...results)
         const realStream = runStream(setupResult)
         outStream.url = realStream.url
         outStream.abort = realStream.abort

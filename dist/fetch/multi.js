@@ -31,9 +31,8 @@ var _default = ({
 
   const out = _through.default.obj();
 
-  out.remaining = inputs.slice(0);
+  out.remaining = Array.from(inputs);
   out.running = [];
-  out.setMaxListeners(0);
 
   out.abort = () => {
     (0, _hardClose.default)(out);
@@ -42,7 +41,6 @@ var _default = ({
   };
 
   out.url = getURL.bind(null, out);
-  out.on('unpipe', src => done(src));
 
   const done = (src, err) => {
     const idx = out.running.indexOf(src);
@@ -54,19 +52,17 @@ var _default = ({
 
     const finished = out.running.length === 0 && out.remaining.length === 0; // let the consumer figure out how they want to handle errors
 
-    const canContinue = !finished && out.readable;
-
     if (err && onError) {
       onError({
-        canContinue,
-        fatal: !canContinue && inputs.length === 1,
+        canContinue: !finished,
+        fatal: finished && inputs.length === 1,
         error: err,
         output: out,
         input: src
       });
     }
 
-    if (!canContinue) (0, _hardClose.default)(out);
+    if (finished) (0, _hardClose.default)(out);
   };
 
   const schedule = () => {
@@ -84,10 +80,10 @@ var _default = ({
     const src = typeof i === 'function' ? i() : i;
     out.running.push(src);
     if (!out.first) out.first = src;
-    (0, _readableStream.finished)(src, err => done(src, err));
     src.pipe(out, {
       end: false
     });
+    (0, _readableStream.finished)(src, err => done(src, err));
   };
 
   schedule(); // kick it all off

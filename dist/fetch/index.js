@@ -7,6 +7,8 @@ var _pumpify = _interopRequireDefault(require("pumpify"));
 
 var _through = _interopRequireDefault(require("through2"));
 
+var _pSeries = _interopRequireDefault(require("p-series"));
+
 var _oauth = require("./oauth");
 
 var _fetchWithParser = _interopRequireDefault(require("./fetchWithParser"));
@@ -104,7 +106,7 @@ const fetchStream = (source, opt = {}, raw = false) => {
       }, {
         concurrent,
         onError: defaultErrorHandler
-      }).pause();
+      });
     }
 
     return (0, _fetchWithParser.default)({
@@ -112,16 +114,19 @@ const fetchStream = (source, opt = {}, raw = false) => {
       parser: src.parser,
       source
     }, getFetchOptions(src, opt, setupResult));
-  }; // allow simple declarative oauth handling
+  }; // pre-run context setup
 
+
+  const preRun = [];
 
   if (src.oauth) {
-    src.setup = async ourSource => (0, _oauth.getToken)(ourSource.oauth).then(accessToken => ({
-      accessToken
-    }));
+    preRun.push(async ourSource => {
+      const accessToken = await (0, _oauth.getToken)(ourSource.oauth);
+      return {
+        accessToken
+      };
+    });
   }
-
-  let outStream;
 
   if (src.setup) {
     var _src$setup;
@@ -131,12 +136,19 @@ const fetchStream = (source, opt = {}, raw = false) => {
     }
 
     const setupFn = ((_src$setup = src.setup) === null || _src$setup === void 0 ? void 0 : _src$setup.default) || src.setup;
-    if (typeof setupFn !== 'function') throw new Error('Invalid setup function!'); // if oauth enabled, grab a token first and then set the pipeline
+    if (typeof setupFn !== 'function') throw new Error('Invalid setup function!');
+    preRun.push(setupFn);
+  }
 
-    outStream = _pumpify.default.obj();
-    setupFn(src, {
+  let outStream;
+
+  if (preRun.length !== 0) {
+    const preRunBound = preRun.map(fn => fn.bind(null, src, {
       context: opt.context
-    }).then(setupResult => {
+    }));
+    outStream = _pumpify.default.obj();
+    (0, _pSeries.default)(preRunBound).then(results => {
+      const setupResult = Object.assign({}, ...results);
       const realStream = runStream(setupResult);
       outStream.url = realStream.url;
       outStream.abort = realStream.abort;

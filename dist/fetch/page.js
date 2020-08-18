@@ -25,14 +25,12 @@ var _default = (startPage, getNext, {
   concurrent = 2,
   onError
 } = {}) => {
-  const actualConcurrency = Math.min(2, concurrent); // limit concurrency to either 1 or 2
+  const actualConcurrency = Math.max(1, concurrent); // limit concurrency to a minimum of 1
 
-  const out = (0, _through.default)({
-    objectMode: true
-  });
+  const out = _through.default.obj();
+
   out.currentPage = startPage;
   out.running = [];
-  out.setMaxListeners(0);
 
   out.abort = () => {
     (0, _hardClose.default)(out);
@@ -40,29 +38,27 @@ var _default = (startPage, getNext, {
   };
 
   out.url = getURL.bind(null, out);
-  out.on('unpipe', src => done(src));
 
   const done = (src, err) => {
     const idx = out.running.indexOf(src);
     if (idx === -1) return; // already finished
 
     out.running.splice(idx, 1); // remove it from the run list
+    // if this stream is the first in the concurrent queue and got no data, abort
+    // we hit the end of the road paging through data
 
-    const finished = out.running.length === 0 && !src._gotData; // let the consumer figure out how they want to handle errors
-
-    const canContinue = !finished && out.readable;
+    const finished = idx === 0 && !src._gotData; // let the consumer figure out how they want to handle errors
 
     if (err && onError) {
       onError({
-        canContinue,
+        canContinue: !finished,
         error: err,
         output: out,
         input: src
       });
     }
 
-    if (!canContinue) return (0, _hardClose.default)(out);
-    if (src._gotData) schedule(); // schedule any additional work
+    finished ? out.abort() : schedule();
   };
 
   const schedule = () => {
@@ -77,13 +73,14 @@ var _default = (startPage, getNext, {
   const run = src => {
     out.running.push(src);
     if (!out.first) out.first = src;
-    (0, _readableStream.finished)(src, err => done(src, err));
-    src.once('data', () => {
+    const thisStream = (0, _readableStream.pipeline)(src, _through.default.obj((chunk, _, cb) => {
       src._gotData = true;
       schedule();
-    }).pause(); // since the data handler will put it in a flowing state
-
-    src.pipe(out, {
+      cb(null, chunk);
+    }), err => {
+      done(src, err);
+    });
+    thisStream.pipe(out, {
       end: false
     });
   }; // kick it all off
