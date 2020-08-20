@@ -65,7 +65,7 @@ var _default = (startPage, getNext, {
   const schedule = () => {
     if (out._closed) return;
     const remainingSlots = actualConcurrency - out.running.length;
-    if (remainingSlots === 0) return;
+    if (remainingSlots < 1) return;
     const nextPage = out.currentPage;
     out.currentPage = nextPage + 1;
     run(getNext(nextPage));
