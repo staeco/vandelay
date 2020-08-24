@@ -1,4 +1,10 @@
 language: node_js
+os:
+  - linux
+  - osx
+jobs:
+  allow_failures:
+    - os: linux
 node_js:
   - "10"
   - "12"
