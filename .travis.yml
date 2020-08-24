@@ -6,7 +6,5 @@ jobs:
   allow_failures:
     - os: linux
 node_js:
-  - "10"
-  - "12"
   - "13"
   - "14"

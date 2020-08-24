@@ -37,7 +37,7 @@
     "test:debug": "NODE_ENV=testing nyc mocha --inspect-brk=0.0.0.0 --require @babel/register --recursive --reporter spec --bail --timeout 30000"
   },
   "engines": {
-    "node": ">=10"
+    "node": ">=13"
   },
   "devDependencies": {
     "@babel/cli": "^7.4.4",
