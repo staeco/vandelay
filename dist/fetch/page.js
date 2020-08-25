@@ -17,6 +17,10 @@ const closeIt = i => {
   if (!i.readable) return;
   if (i.abort) return i.abort();
   (0, _hardClose.default)(i);
+};
+
+const softClose = i => {
+  i.end(null);
 }; // merges a bunch of streams, unordered - and has some special error management
 // so one wont fail the whole bunch
 
@@ -59,7 +63,7 @@ var _default = (startPage, getNext, {
       });
     }
 
-    finished ? out.abort() : schedule();
+    finished ? softClose(out) : schedule();
   };
 
   const schedule = () => {
