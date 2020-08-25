@@ -18,6 +18,6 @@ export default (parser, regex) => {
       out.add(pipeline(entry, parser(), cb))
     }))
 
-  finished(dataStream, () => out.push(null))
+  finished(dataStream, () => out.end(null))
   return duplexify.obj(dataStream, out)
 }

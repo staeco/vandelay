@@ -31,7 +31,7 @@ var _default = (parser, regex) => {
     out.add((0, _readableStream.pipeline)(entry, parser(), cb));
   }));
 
-  (0, _readableStream.finished)(dataStream, () => out.push(null));
+  (0, _readableStream.finished)(dataStream, () => out.end(null));
   return _duplexify.default.obj(dataStream, out);
 };
 

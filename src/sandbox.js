@@ -1,11 +1,10 @@
 import { NodeVM, VMScript } from 'vm2'
 import domains from 'domain'
-import { TextEncoder, TextDecoder } from 'text-encoding'
+import { TextEncoder, TextDecoder } from 'util'
 
 const defaultSandbox = {
   URL, URLSearchParams,
-  TextEncoder: global.TextEncoder || TextEncoder,
-  TextDecoder: global.TextDecoder || TextDecoder
+  TextEncoder, TextDecoder
 }
 
 const allowedBuiltins = [

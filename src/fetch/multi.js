@@ -16,6 +16,10 @@ const closeIt = (i) => {
   hardClose(i)
 }
 
+const softClose = (i) => {
+  i.end(null)
+}
+
 // merges a bunch of streams, unordered - and has some special error management
 // so one wont fail the whole bunch
 export default ({ concurrent=8, onError, inputs=[] }={}) => {
@@ -48,7 +52,7 @@ export default ({ concurrent=8, onError, inputs=[] }={}) => {
         input: src
       })
     }
-    if (finished) hardClose(out)
+    if (finished) softClose(out)
   }
   const schedule = () => {
     if (out._closed) return

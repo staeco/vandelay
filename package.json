@@ -1,6 +1,6 @@
 {
   "name": "vandelay",
-  "version": "7.5.8",
+  "version": "7.5.9",
   "description": "Imports, exports, and ETL",
   "main": "dist/index.js",
   "keywords": [],
@@ -84,7 +84,6 @@
     "readable-stream": "^3.6.0",
     "remove-bom-stream": "^1.2.0",
     "superagent": "^6.0.0",
-    "text-encoding": "^0.7.0",
     "through2": "^4.0.0",
     "through2-concurrent": "github:contra/through2-concurrent#update",
     "unzipper": "^0.10.1",
