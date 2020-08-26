@@ -34,7 +34,14 @@ const addIn = (vm, sandbox) => {
   })
 }
 
-export default (code, opt={}) => {
+export const getDefaultFunction = (code, opt) => {
+  const out = sandbox(code, opt)
+  const transformFn = out.default || out
+  if (typeof transformFn !== 'function') throw new Error('Invalid transform function!')
+  return transformFn
+}
+
+const sandbox = (code, opt={}) => {
   let fn
   const topDomain = domains.create()
   const script = new VMScript(opt.compiler ? opt.compiler(code) : code)
@@ -77,3 +84,4 @@ export default (code, opt={}) => {
     })
   }
 }
+export default sandbox

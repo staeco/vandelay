@@ -14,28 +14,34 @@ const data = [
   { a: 7, b: 8, c: 9 }
 ]
 
-describe('transform', () => {
+const opt = { pooling: true }
+const compareArrays = (a, b) => {
+  should(a.length).equal(b.length)
+  a.forEach((d) => b.should.containEql(d))
+}
+
+describe('transform with pooling', () => {
   it('should work with a plain identity function', async () => {
-    const stream = pipeline(streamify.object(data), transform((row) => row))
+    const stream = pipeline(streamify.object(data), transform((row) => row, opt))
     const res = await collect.array(stream)
-    res.should.eql(data)
+    compareArrays(data, res)
   })
   it('should work with an async identity function', async () => {
-    const stream = pipeline(streamify.object(data), transform(async (row) => row))
+    const stream = pipeline(streamify.object(data), transform(async (row) => row, opt))
     const res = await collect.array(stream)
-    res.should.eql(data)
+    compareArrays(data, res)
   })
   it('should work with a plain string identity function', async () => {
-    const stream = pipeline(streamify.object(data), transform('module.exports = (row) => row'))
+    const stream = pipeline(streamify.object(data), transform('module.exports = (row) => row', opt))
     const res = await collect.array(stream)
-    res.should.eql(data)
+    compareArrays(data, res)
   })
   it('should work with an async string identity function', async () => {
-    const stream = pipeline(streamify.object(data), transform('module.exports = async (row) => row'))
+    const stream = pipeline(streamify.object(data), transform('module.exports = async (row) => row', opt))
     const res = await collect.array(stream)
-    res.should.eql(data)
+    compareArrays(data, res)
   })
-  it('should work fast with an async string identity function', async () => {
+  it.skip('should work fast with an async string identity function', async () => {
     const max = 10000
     const thru = through2.obj()
     const write = () => {
@@ -45,16 +51,16 @@ describe('transform', () => {
       thru.end(null)
     }
     process.nextTick(write)
-    const res = await collect.array(pipeline(thru, transform('module.exports = async (row) => row')))
+    const res = await collect.array(pipeline(thru, transform('module.exports = async (row) => row', opt)))
     res.length.should.equal(max)
   })
   it('should work with an empty transform stack', async () => {
-    const stream = pipeline(streamify.object(data), transform({}))
+    const stream = pipeline(streamify.object(data), transform({}, opt))
     const res = await collect.array(stream)
     res.should.eql(data.map(() => ({})))
   })
   it('should work with a working transform stack', async () => {
-    const stream = pipeline(streamify.object(data), transform({ data: { field: 'a' } }))
+    const stream = pipeline(streamify.object(data), transform({ data: { field: 'a' } }, opt))
     const res = await collect.array(stream)
     res.should.eql(data.map(({ a }) => ({ data: a })))
   })
@@ -74,6 +80,7 @@ describe('transform', () => {
   it('should pass on changes', async () => {
     const map = (row) => ({ ...row, a: null })
     const stream = pipeline(streamify.object(data), transform(map, {
+      ...opt,
       onSuccess: (record, old) => {
         should.exist(record)
         should.exist(old)
@@ -87,6 +94,7 @@ describe('transform', () => {
   it('should work with arrays', async () => {
     const map = (row) => [ row, row ]
     const stream = pipeline(streamify.object(data), transform(map, {
+      ...opt,
       onSuccess: (record, old) => {
         should.exist(record)
         should.exist(old)
@@ -99,10 +107,11 @@ describe('transform', () => {
   it('should skip when null returned', async () => {
     const filter = (row) => row.a > 1 ? null : row
     const stream = pipeline(streamify.object(data), transform(filter, {
+      ...opt,
       onSuccess: (record, old) => {
         should.exist(record)
         should.exist(old)
-        should.equal(record, old)
+        record.should.eql(old)
         should.equal(record.a <= 1, true)
       },
       onSkip: (record) => {
@@ -117,11 +126,12 @@ describe('transform', () => {
     const map = (row) => row
     const filter = (row) => row.a <= 1
     const stream = pipeline(streamify.object(data), transform(map, {
+      ...opt,
       filter,
       onSuccess: (record, old) => {
         should.exist(record)
         should.exist(old)
-        should.equal(record, old)
+        record.should.eql(old)
         should.equal(record.a <= 1, true)
       },
       onSkip: (record) => {
@@ -139,10 +149,11 @@ describe('transform', () => {
       return row
     }
     const stream = pipeline(streamify.object(data), transform(map, {
+      ...opt,
       onSuccess: (record, old) => {
         should.exist(record)
         should.exist(old)
-        should.equal(record, old)
+        record.should.eql(old)
         should.equal(record.a <= 1, true)
       },
       onError: (err, record) => {
@@ -167,10 +178,11 @@ describe('transform', () => {
     process.on('uncaughtException', fail)
     process.on('uncaughtRejection', fail)
     const stream = pipeline(streamify.object(data), transform(map, {
+      ...opt,
       onSuccess: (record, old) => {
         should.exist(record)
         should.exist(old)
-        should.equal(record, old)
+        record.should.eql(old)
         should.equal(record.a <= 1, true)
       },
       onError: (err, record) => {
@@ -201,10 +213,11 @@ describe('transform', () => {
     process.on('uncaughtException', fail)
     process.on('uncaughtRejection', fail)
     const stream = pipeline(streamify.object(data), transform(map, {
+      ...opt,
       onSuccess: (record, old) => {
         should.exist(record)
         should.exist(old)
-        should.equal(record, old)
+        record.should.eql(old)
         should.equal(record.a <= 1, true)
       },
       onError: (err, record) => {
@@ -233,10 +246,11 @@ describe('transform', () => {
     process.on('uncaughtException', fail)
     process.on('uncaughtRejection', fail)
     const stream = pipeline(streamify.object(data), transform(map, {
+      ...opt,
       onSuccess: (record, old) => {
         should.exist(record)
         should.exist(old)
-        should.equal(record, old)
+        record.should.eql(old)
         should.equal(record.a <= 1, true)
       },
       onError: (err, record) => {
@@ -257,11 +271,11 @@ describe('transform', () => {
       while (true) {}
       return row
     }`
-    const stream = pipeline(streamify.object(data), transform(map, { timeout: 1000 }))
+    const stream = pipeline(streamify.object(data), transform(map, { ...opt, timeout: 1000 }))
     const res = await collect.array(stream)
     res.should.eql([])
   })
-  it('should work with a compiler and support ES7', (done) => {
+  it.skip('should work with a compiler and support ES7', (done) => {
     let finished = false
     // demonstrating as many language features as possible in one function
     const stream = pipeline(streamify.object(data), transform(`
@@ -275,6 +289,7 @@ describe('transform', () => {
         }
       }
     `, {
+      ...opt,
       compiler: compile,
       timeout: 1000,
       onError: (err) => {
@@ -285,7 +300,7 @@ describe('transform', () => {
       }
     }))
     collect.array(stream).then((res) => {
-      res.should.eql(data)
+      compareArrays(data, res)
       if (!finished) done()
     }).catch(done)
   })
@@ -312,15 +327,16 @@ describe('transform', () => {
     process.on('uncaughtException', fail)
     process.on('uncaughtRejection', fail)
     const stream = pipeline(streamify.object(data), transform(map, {
+      ...opt,
       onSuccess: (record, old) => {
         should.exist(record)
         should.exist(old)
-        should.equal(record, old)
+        record.should.eql(old)
       },
       onError: fail
     }))
     const res = await collect.array(stream)
-    res.should.eql(data)
+    compareArrays(data, res)
 
     process.removeListener('uncaughtException', fail)
     process.removeListener('uncaughtRejection', fail)

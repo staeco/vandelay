@@ -91,7 +91,7 @@ Returns a stream that fetches the given source and emits the parsed and selected
 
 #### options
 
-- concurrency - Optional `Number`, defaults to 10
+- concurrency - Optional `Number`, defaults to 8
 - timeout - Optional `Number`
   - Timeout for the entire request, defaults to one day
 - connectTimeout - Optional `Number`
@@ -179,7 +179,10 @@ Built in parsers are:
   - Only applies when using a string transformer
 - compiler - Optional `Function`
   - Only applies when using a string transformer
-- concurrency - Optional `Number`, defaults to 10
+- pooling - Optional `Boolean`
+  - Only applies when using a string transformer
+  - When true, runs a pool of worker threads for your transform functions. This is incompatible with the `compiler` and `sandbox` options, due to issues transferring complex functions between threads.
+- concurrency - Optional `Number`, defaults to 8
 - onBegin(row, meta) - Optional `Function`
 - onError(err, row, meta) - Optional `Function`
 - onSkip(row, meta) - Optional `Function`
@@ -194,7 +197,7 @@ Built in parsers are:
 
 #### options
 
-- concurrency - Optional `Number`, defaults to 10
+- concurrency - Optional `Number`, defaults to 8
 
 ### normalize([options])
 
@@ -202,7 +205,7 @@ Returns the plain objects without any meta fields attached, useful for the end o
 
 #### options
 
-- concurrency - Optional `Number`, defaults to 10
+- concurrency - Optional `Number`, defaults to 8
 
 [downloads-image]: http://img.shields.io/npm/dm/vandelay.svg
 [npm-url]: https://npmjs.org/package/vandelay

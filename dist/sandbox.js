@@ -1,7 +1,7 @@
 "use strict";
 
 exports.__esModule = true;
-exports.default = void 0;
+exports.default = exports.getDefaultFunction = void 0;
 
 var _vm = require("vm2");
 
@@ -25,7 +25,16 @@ const addIn = (vm, sandbox) => {
   });
 };
 
-var _default = (code, opt = {}) => {
+const getDefaultFunction = (code, opt) => {
+  const out = sandbox(code, opt);
+  const transformFn = out.default || out;
+  if (typeof transformFn !== 'function') throw new Error('Invalid transform function!');
+  return transformFn;
+};
+
+exports.getDefaultFunction = getDefaultFunction;
+
+const sandbox = (code, opt = {}) => {
   let fn;
 
   const topDomain = _domain.default.create();
@@ -70,5 +79,5 @@ var _default = (code, opt = {}) => {
   };
 };
 
+var _default = sandbox;
 exports.default = _default;
-module.exports = exports.default;

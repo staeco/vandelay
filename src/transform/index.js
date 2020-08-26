@@ -1,17 +1,45 @@
-import { transform as transformObject } from 'object-transform-stack'
+import { spawn, Pool, Worker } from 'threads'
+import { finished } from 'readable-stream'
 import isObject from 'is-plain-obj'
-import sandbox from '../sandbox'
+import { transform as transformObject } from 'object-transform-stack'
+import memo from 'moize'
+import { getDefaultFunction } from '../sandbox'
 import tap from '../tap'
 
-export default (transformer, opt={}) => {
+// transformer can either be an object, a string, or a function
+const getTransformFunction = memo.deep((transformer, opt={}) => {
+  // object transform - run it as object-transform-stack in thread
   if (isObject(transformer)) {
     const stack = transformer
-    transformer = (v) => transformObject(stack, v, opt)
+    return (v) => transformObject(stack, v, opt)
   }
-  if (typeof transformer === 'string') transformer = sandbox(transformer, opt)
-  const transformFn = transformer.default || transformer
-  if (typeof transformFn !== 'function') throw new Error('Invalid transform function!')
 
+  // custom code importer with pooling enabled - run it in the worker pool
+  if (typeof transformer === 'string' && opt.pooling === true) {
+    const pool = Pool(() => spawn(new Worker('./worker')), opt.concurrency || 8)
+    const transformFn = async (record, meta) =>
+      pool.queue(async (work) =>
+        work(transformer, {
+          timeout: opt.timeout
+        }, record, meta)
+      )
+    transformFn().catch(() => null) // warm up the pool
+    transformFn.pool = pool
+    return transformFn
+  }
+
+  // custom code importer with pooling disabled - run it in our thread
+  if (typeof transformer === 'string') {
+    return getDefaultFunction(transformer, opt)
+  }
+
+  // already was a function - basically do nothing here
+  if (typeof transformer !== 'function') throw new Error('Invalid transform function!')
+  return transformer
+})
+
+export default (transformer, opt={}) => {
+  const transformFn = getTransformFunction(transformer, opt)
   const transform = async (record, meta) => {
     if (opt.onBegin) await opt.onBegin(record, meta)
 
@@ -45,5 +73,11 @@ export default (transformer, opt={}) => {
     if (opt.onSuccess) await opt.onSuccess(transformed, record, meta)
     return transformed
   }
-  return tap(transform, opt)
+  const outStream = tap(transform, opt)
+  if (transformFn.pool) {
+    finished(outStream, () => {
+      transformFn.pool.terminate()
+    })
+  }
+  return outStream
 }
