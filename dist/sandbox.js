@@ -46,14 +46,15 @@ const sandbox = (code, opt = {}) => {
     nesting: false,
     require: {
       external: {
-        modules: ['core-js', 'core-js/*']
+        modules: opt.externalModules
       },
-      builtin: allowedBuiltins
+      builtin: opt.coreModules || allowedBuiltins,
+      mock: opt.mockModules
     }
   }); // custom globals
 
   addIn(vm, defaultSandbox);
-  if (opt.sandbox) addIn(vm, opt.sandbox); // topDomain is for evaluating the script
+  if (opt.globals) addIn(vm, opt.globals); // topDomain is for evaluating the script
   // any errors thrown outside the transform fn are caught here
 
   topDomain.on('error', () => {}); // swallow async errors

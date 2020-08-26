@@ -1,6 +1,6 @@
 {
   "name": "vandelay",
-  "version": "7.6.0",
+  "version": "8.0.0",
   "description": "Imports, exports, and ETL",
   "main": "dist/index.js",
   "keywords": [],
@@ -64,7 +64,6 @@
   },
   "dependencies": {
     "camelcase": "^6.0.0",
-    "core-js": "3.0.0",
     "csv-parser": "^2.0.0",
     "duplexify": "^4.0.0",
     "exceljs-transform-stream": "^1.0.0",

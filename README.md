@@ -158,7 +158,7 @@ Built in parsers are:
   - If `simple` it will only infer types from values and trim keys
   - If `aggressive` it will add camelcasing of keys on top of simple mode
   - If `extreme` it will add more complex mapping on top of aggressive mode
-    - For example, converting `startLat` and `startLon` fields to a GeoJSON Point
+    - For example, converting `lat` and `lon` fields to a GeoJSON Point
 
 ### transform(transformer[, options])
 
@@ -172,21 +172,28 @@ Built in parsers are:
 
 #### options
 
-- sandbox - Optional `Object`
-  - Creates a frozen global context, used for sandboxed transformers
-  - Only applies when using a string transformer
-- timeout - Optional `Number`
-  - Only applies when using a string transformer
-- compiler - Optional `Function`
-  - Only applies when using a string transformer
-- pooling - Optional `Boolean`
-  - Only applies when using a string transformer
-  - When true, runs a pool of worker threads for your transform functions. This is incompatible with the `compiler` and `sandbox` options, due to issues transferring complex functions between threads.
 - concurrency - Optional `Number`, defaults to 8
 - onBegin(row, meta) - Optional `Function`
 - onError(err, row, meta) - Optional `Function`
 - onSkip(row, meta) - Optional `Function`
 - onSuccess(row, meta) - Optional `Function`
+
+The following are also available if the transformer is compiled code:
+
+- timeout - Optional `Number`
+- compiler - Optional `Function`
+  - If you are using babel, make sure you add `[ 'core-js', 'core-js/*' ]` to the `externalModules` option.
+- pooling - Optional `Boolean`
+  - When true, runs a pool of worker threads for your transform functions. This is incompatible with the `compiler` and `sandbox` options, due to issues transferring complex functions between threads.
+- externalModules - Optional `Array<String>`
+  - List of modules the user is allowed to require. You can use asterisks to allow patterns. By default all external modules are disabled for security.
+- coreModules - Optional `Array<String>`
+  - List of built-in node core modules the user is allowed to require. By default this is set to a [safe subset](https://github.com/staeco/vandelay/blob/master/src/sandbox.js#L10) that allows network but not filesystem access.
+- mockModules - Optional `Object`
+  - Allows modules to be required, but substitutes them with the provided mocked values.
+- globals - Optional `Object`
+  - Creates a frozen global context, used for sandboxed transformers
+  - All normal node and JS globals are available - anything you provide in this object will be added in addition to those.
 
 ### tap(fn[, options])
 
