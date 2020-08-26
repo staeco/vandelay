@@ -3,7 +3,9 @@
   "version": "8.0.0",
   "description": "Imports, exports, and ETL",
   "main": "dist/index.js",
-  "keywords": [],
+  "keywords": [
+    "etl", "pipeline", "streaming"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/staeco/vandelay.git"
@@ -33,8 +35,8 @@
     "build": "babel src --out-dir dist",
     "clean": "rimraf dist",
     "lint": "eslint src test --fix",
-    "test": "NODE_ENV=testing nyc mocha --require @babel/register --recursive --reporter spec --bail --exit --timeout 30000 -- --trace-deprecation",
-    "test:debug": "NODE_ENV=testing nyc mocha --inspect-brk=0.0.0.0 --require @babel/register --recursive --reporter spec --bail --timeout 30000"
+    "test": "NODE_ENV=testing nyc mocha --require @babel/register --recursive --reporter spec --bail --exit --timeout 60000 -- --trace-deprecation",
+    "test:debug": "NODE_ENV=testing nyc mocha --inspect-brk=0.0.0.0 --require @babel/register --recursive --reporter spec --bail --timeout 60000"
   },
   "engines": {
     "node": ">=13"
