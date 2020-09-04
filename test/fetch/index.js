@@ -20,7 +20,13 @@ const sample = [
   { a: 7, b: 8, c: 9 }
 ]
 
-const shapeFile = 'http://www.longbeach.gov/ti/media-library/documents/gis/data-catalog/bikeways/'
+const SHP_FILE = 'http://www.longbeach.gov/ti/media-library/documents/gis/data-catalog/bikeways/'
+
+// ArcGIS does not handle range headers, so this is good to test. This is Jefferson County Speed Limits.
+const ARCGIS_URL = 'https://opendata.arcgis.com/datasets/f36b2c8164714b258840dce66909ba9a_1.geojson'
+
+// Socrata does support range but error-prone, so this is good to test. This is NYC BIS Property Data.
+const SOCRATA_URL = 'https://data.cityofnewyork.us/api/views/kmub-vria/rows.csv?accessType=DOWNLOAD'
 
 describe('fetch', () => {
   before(async () => {
@@ -135,12 +141,14 @@ describe('fetch', () => {
       { a: 7, b: 8, c: 9, ___meta: { row: 2, url: source.url, source } }
     ])
   })
-  it.skip('should request a flat remote big json file that gets interrupted', async () => {
+  it.skip('should request a flat arcgis geojson file that gets interrupted', async () => {
     const source = {
-      url: 'https://opendata.arcgis.com/datasets/f36b2c8164714b258840dce66909ba9a_1.geojson',
+      url: ARCGIS_URL,
       parser: parse('json', { selector: 'features.*' })
     }
-    const stream = fetch(source)
+    const stream = fetch(source, {
+      attempts: 2
+    })
     stream.url().should.equal(source.url)
     let gotRes = false
     stream.running[0].req.once('response', (res) => {
@@ -171,9 +179,9 @@ describe('fetch', () => {
     should.exist(res[0].geometry)
     should(gotRes).equal(true)
   })
-  it('should request a flat remote big json file with light backpressure', async () => {
+  it('should request a arcgis geojson file with light backpressure', async () => {
     const source = {
-      url: 'https://opendata.arcgis.com/datasets/f36b2c8164714b258840dce66909ba9a_1.geojson',
+      url: ARCGIS_URL,
       parser: parse('json', { selector: 'features.*' })
     }
     const stream = fetch(source)
@@ -203,6 +211,28 @@ describe('fetch', () => {
       source
     })
     should.exist(res[0].geometry)
+  })
+  it.skip('should request a socrata csv file that gets interrupted', async () => {
+    const source = {
+      url: SOCRATA_URL,
+      parser: parse('csv')
+    }
+    const stream = fetch(source, {
+      attempts: 2
+    })
+    stream.url().should.equal(source.url)
+    let gotRes = false
+    stream.running[0].req.once('response', (res) => {
+      should.exist(res)
+      gotRes = true
+      setTimeout(() => {
+        // simulate a failure at a low level about 1s into the request
+        res.socket.destroy(new Error('Fake!'))
+      }, 100)
+    })
+    const res = await collect.array(stream)
+    res.length.should.eql(77)
+    should(gotRes).equal(true)
   })
   it('should request a flat json file with context', async () => {
     const expectedURL = `http://localhost:${port}/file.json`
@@ -846,7 +876,7 @@ describe('fetch', () => {
   })
   it('should work with a shapefile', async () => {
     const stream = fetch({
-      url: shapeFile,
+      url: SHP_FILE,
       parser: 'shp'
     })
     const res = await collect.array(stream)

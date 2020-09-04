@@ -17,11 +17,10 @@ const retryWorthy = [
   420, 444, 408, 429, 449, 499
 ]
 const shouldRetry = (_, original) => {
-  // no point retrying on domains that dont exist
-  if (original?.code === 'ENOTFOUND') return false
+  if (original?.code === 'ENOTFOUND') return false // no point retrying on domains that dont exist
 
-  const res = original && original?.response
-  if (!res) return false // we ended the request before we got a response
+  const res = original?.response
+  if (!res) return false // non-http error?
 
   // their server having issues, give it another go
   if (res.statusCode >= 500) return true

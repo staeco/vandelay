@@ -38,10 +38,10 @@ const fiveMinutes = 300000;
 const retryWorthy = [420, 444, 408, 429, 449, 499];
 
 const shouldRetry = (_, original) => {
-  // no point retrying on domains that dont exist
-  if ((original === null || original === void 0 ? void 0 : original.code) === 'ENOTFOUND') return false;
-  const res = original && (original === null || original === void 0 ? void 0 : original.response);
-  if (!res) return false; // we ended the request before we got a response
+  if ((original === null || original === void 0 ? void 0 : original.code) === 'ENOTFOUND') return false; // no point retrying on domains that dont exist
+
+  const res = original === null || original === void 0 ? void 0 : original.response;
+  if (!res) return false; // non-http error?
   // their server having issues, give it another go
 
   if (res.statusCode >= 500) return true; // they don't like the rate we are sending at

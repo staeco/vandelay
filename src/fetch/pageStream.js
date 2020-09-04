@@ -22,7 +22,8 @@ const softClose = (i) => {
 
 // merges a bunch of streams, unordered - and has some special error management
 // so one wont fail the whole bunch
-export default (startPage, getNext, { concurrent=2, onError }={}) => {
+// keep this aligned w/ multiStream.js
+export default ({ startPage, getNextPage, concurrent=2, onError }={}) => {
   // concurrency can either be 1 or 2, 2 will start loading the next page once it reads a first datum from the current page
   const actualConcurrency = Math.min(2, concurrent)
   const out = through2.obj()
@@ -61,7 +62,7 @@ export default (startPage, getNext, { concurrent=2, onError }={}) => {
     if (remainingSlots < 1) return
     const nextPage = out.currentPage
     out.currentPage = nextPage + 1
-    run(getNext(nextPage))
+    run(getNextPage(nextPage))
   }
 
   const run = (src) => {

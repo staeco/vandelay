@@ -3,10 +3,10 @@ import through2 from 'through2'
 import pSeries from 'p-series'
 import { getToken as getOAuthToken } from './oauth'
 import fetch from './fetchWithParser'
-import multi from './multi'
+import multiStream from './multiStream'
 import sandbox from '../sandbox'
 import mergeURL from '../mergeURL'
-import pageStream from './page'
+import pageStream from './pageStream'
 import hardClose from '../hardClose'
 import parse from '../parse'
 
@@ -47,7 +47,7 @@ const fetchStream = (source, opt={}, raw=false) => {
     // zips eat memory, do not run more than one at a time
     const containsZips = source.some((i) => i.parserOptions && i.parserOptions.zip)
     if (containsZips && opt.debug) opt.debug('Detected zip, running with concurrency=1')
-    return multi({
+    return multiStream({
       concurrent: containsZips ? 1 : concurrent,
       inputs: source.map((i) => fetchStream.bind(null, i, opt, true)),
       onError: opt.onError || defaultErrorHandler
@@ -70,11 +70,12 @@ const fetchStream = (source, opt={}, raw=false) => {
   // actual work time
   const runStream = (setupResult) => {
     if (src.pagination) {
-      const startPage = src.pagination.startPage || 0
-      return pageStream(startPage, (currentPage) => {
-        const newURL = mergeURL(src.url, getQuery(src.pagination, currentPage))
-        return fetch({ url: newURL, parser: src.parser, source }, getFetchOptions(src, opt, setupResult))
-      }, {
+      return pageStream({
+        startPage: src.pagination.startPage || 0,
+        getNextPage: (currentPage) => {
+          const newURL = mergeURL(src.url, getQuery(src.pagination, currentPage))
+          return fetch({ url: newURL, parser: src.parser, source }, getFetchOptions(src, opt, setupResult))
+        },
         concurrent,
         onError: defaultErrorHandler
       })
@@ -122,7 +123,7 @@ const fetchStream = (source, opt={}, raw=false) => {
   }
 
   if (raw) return outStream // child of an array of sources, error mgmt handled already
-  return multi({
+  return multiStream({
     concurrent,
     inputs: [ outStream ],
     onError: opt.onError || defaultErrorHandler

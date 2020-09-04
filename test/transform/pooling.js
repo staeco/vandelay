@@ -20,7 +20,7 @@ const compareArrays = (a, b) => {
   a.forEach((d) => b.should.containEql(d))
 }
 
-describe('transform with pooling', () => {
+describe.skip('transform with pooling', () => {
   it('should work with a plain identity function', async () => {
     const stream = pipeline(streamify.object(data), transform((row) => row, opt))
     const res = await collect.array(stream)

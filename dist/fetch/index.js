@@ -13,13 +13,13 @@ var _oauth = require("./oauth");
 
 var _fetchWithParser = _interopRequireDefault(require("./fetchWithParser"));
 
-var _multi = _interopRequireDefault(require("./multi"));
+var _multiStream = _interopRequireDefault(require("./multiStream"));
 
 var _sandbox = _interopRequireDefault(require("../sandbox"));
 
 var _mergeURL = _interopRequireDefault(require("../mergeURL"));
 
-var _page = _interopRequireDefault(require("./page"));
+var _pageStream = _interopRequireDefault(require("./pageStream"));
 
 var _hardClose = _interopRequireDefault(require("../hardClose"));
 
@@ -68,7 +68,7 @@ const fetchStream = (source, opt = {}, raw = false) => {
     // zips eat memory, do not run more than one at a time
     const containsZips = source.some(i => i.parserOptions && i.parserOptions.zip);
     if (containsZips && opt.debug) opt.debug('Detected zip, running with concurrency=1');
-    return (0, _multi.default)({
+    return (0, _multiStream.default)({
       concurrent: containsZips ? 1 : concurrent,
       inputs: source.map(i => fetchStream.bind(null, i, opt, true)),
       onError: opt.onError || defaultErrorHandler
@@ -95,15 +95,16 @@ const fetchStream = (source, opt = {}, raw = false) => {
 
   const runStream = setupResult => {
     if (src.pagination) {
-      const startPage = src.pagination.startPage || 0;
-      return (0, _page.default)(startPage, currentPage => {
-        const newURL = (0, _mergeURL.default)(src.url, getQuery(src.pagination, currentPage));
-        return (0, _fetchWithParser.default)({
-          url: newURL,
-          parser: src.parser,
-          source
-        }, getFetchOptions(src, opt, setupResult));
-      }, {
+      return (0, _pageStream.default)({
+        startPage: src.pagination.startPage || 0,
+        getNextPage: currentPage => {
+          const newURL = (0, _mergeURL.default)(src.url, getQuery(src.pagination, currentPage));
+          return (0, _fetchWithParser.default)({
+            url: newURL,
+            parser: src.parser,
+            source
+          }, getFetchOptions(src, opt, setupResult));
+        },
         concurrent,
         onError: defaultErrorHandler
       });
@@ -163,7 +164,7 @@ const fetchStream = (source, opt = {}, raw = false) => {
 
   if (raw) return outStream; // child of an array of sources, error mgmt handled already
 
-  return (0, _multi.default)({
+  return (0, _multiStream.default)({
     concurrent,
     inputs: [outStream],
     onError: opt.onError || defaultErrorHandler
