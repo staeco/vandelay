@@ -13,13 +13,24 @@ var _objectTransformStack = require("object-transform-stack");
 
 var _moize = _interopRequireDefault(require("moize"));
 
+var _pTimeout = _interopRequireDefault(require("p-timeout"));
+
 var _sandbox = require("../sandbox");
 
 var _tap = _interopRequireDefault(require("../tap"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-// transformer can either be an object, a string, or a function
+const asyncTimeout = 120000; // 2 mins
+// this timeout provides helpful context if a pipeline is stalling by signalling which piece is causing the issue
+
+const pWrap = async (p, name) => {
+  if (!p || !p.then) return p; // not a promise, skip the async timeout instrumentation
+
+  return (0, _pTimeout.default)(p, asyncTimeout, `${name} timed out`);
+}; // transformer can either be an object, a string, or a function
+
+
 const getTransformFunction = _moize.default.deep((transformer, opt = {}) => {
   // object transform - run it as object-transform-stack in thread
   if ((0, _isPlainObj.default)(transformer)) {
@@ -55,20 +66,20 @@ var _default = (transformer, opt = {}) => {
   const transformFn = getTransformFunction(transformer, opt);
 
   const transform = async (record, meta) => {
-    if (opt.onBegin) await opt.onBegin(record, meta); // filter
+    if (opt.onBegin) await pWrap(opt.onBegin(record, meta), 'onBegin'); // filter
 
     if (typeof opt.filter === 'function') {
       let filter;
 
       try {
-        filter = await opt.filter(record, meta);
+        filter = await pWrap(opt.filter(record, meta), 'filter');
       } catch (err) {
-        if (opt.onError) await opt.onError(err, record, meta);
+        if (opt.onError) await pWrap(opt.onError(err, record, meta), 'onError');
         return;
       }
 
       if (filter != true) {
-        if (opt.onSkip) await opt.onSkip(record, meta);
+        if (opt.onSkip) await pWrap(opt.onSkip(record, meta), 'onSkip');
         return;
       }
     } // transform it
@@ -77,18 +88,18 @@ var _default = (transformer, opt = {}) => {
     let transformed;
 
     try {
-      transformed = await transformFn(record, meta);
+      transformed = await pWrap(transformFn(record, meta), 'transform');
     } catch (err) {
-      if (opt.onError) await opt.onError(err, record, meta);
+      if (opt.onError) await pWrap(opt.onError(err, record, meta), 'onError');
       return;
     }
 
     if (!transformed) {
-      if (opt.onSkip) await opt.onSkip(record, meta);
+      if (opt.onSkip) await pWrap(opt.onSkip(record, meta), 'onSkip');
       return;
     }
 
-    if (opt.onSuccess) await opt.onSuccess(transformed, record, meta);
+    if (opt.onSuccess) await pWrap(opt.onSuccess(transformed, record, meta), 'onSuccess');
     return transformed;
   };
 

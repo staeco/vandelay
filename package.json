@@ -1,6 +1,6 @@
 {
   "name": "vandelay",
-  "version": "8.0.2",
+  "version": "8.0.3",
   "description": "Imports, exports, and ETL",
   "main": "dist/index.js",
   "keywords": [
@@ -67,7 +67,6 @@
     "xlsx": "^0.16.3"
   },
   "dependencies": {
-    "bluestream": "^10.3.3",
     "camelcase": "^6.0.0",
     "csv-parser": "^2.0.0",
     "duplexify": "^4.0.0",
@@ -83,6 +82,7 @@
     "ndjson": "^2.0.0",
     "object-transform-stack": "^3.0.0",
     "p-series": "^2.1.0",
+    "p-timeout": "^3.2.0",
     "parse-decimal-number": "^1.0.0",
     "pumpify": "^2.0.0",
     "qs": "^6.6.0",
@@ -91,6 +91,7 @@
     "superagent": "^6.0.0",
     "threads": "^1.6.3",
     "through2": "^4.0.0",
+    "through2-concurrent": "github:contra/through2-concurrent#update",
     "unzipper": "^0.10.1",
     "url-template": "^2.0.8",
     "verrazzano": "^2.0.1",
