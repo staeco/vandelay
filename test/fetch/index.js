@@ -141,7 +141,7 @@ describe('fetch', () => {
       { a: 7, b: 8, c: 9, ___meta: { row: 2, url: source.url, source } }
     ])
   })
-  it.skip('should request a flat arcgis geojson file that gets interrupted', async () => {
+  it('should request a flat arcgis geojson file that gets interrupted', async () => {
     const source = {
       url: ARCGIS_URL,
       parser: parse('json', { selector: 'features.*' })
@@ -212,7 +212,7 @@ describe('fetch', () => {
     })
     should.exist(res[0].geometry)
   })
-  it.skip('should request a socrata csv file that gets interrupted', async () => {
+  it('should request a socrata csv file that gets interrupted', async () => {
     const source = {
       url: SOCRATA_URL,
       parser: parse('csv')
