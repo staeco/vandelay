@@ -81,7 +81,7 @@ export const xml = (opt) => {
 }
 
 export const html = (opt) => {
-  if (opt.zip) return unzip(html.bind(this, { ...opt, zip: undefined }), /\.xml$/)
+  if (opt.zip) return unzip(html.bind(this, { ...opt, zip: undefined }), /\.html$/)
   return pumpify.obj(xml2json({ ...opt, strict: false }), json(opt))
 }
 

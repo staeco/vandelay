@@ -2,7 +2,7 @@ import pumpify from 'pumpify'
 import through2 from 'through2'
 import pSeries from 'p-series'
 import { getToken as getOAuthToken } from './oauth'
-import fetch from './fetchWithParser'
+import fetchWithParser from './fetchWithParser'
 import multiStream from './multiStream'
 import sandbox from '../sandbox'
 import mergeURL from '../mergeURL'
@@ -68,29 +68,30 @@ const fetchStream = (source, opt={}, raw=false) => {
   if (src.oauth && typeof src.oauth.grant !== 'object') throw new Error('Invalid oauth.grant object')
 
   // actual work time
-  const runStream = (setupResult) => {
-    if (src.pagination) {
-      return pageStream({
-        startPage: src.pagination.startPage || 0,
-        getNextPage: (currentPage) => {
-          const newURL = mergeURL(src.url, getQuery(src.pagination, currentPage))
-          return fetch({ url: newURL, parser: src.parser, source }, getFetchOptions(src, opt, setupResult))
-        },
-        concurrent,
-        onError: defaultErrorHandler
-      })
+  const execute = (setupResult) => {
+    if (!src.pagination) {
+      return fetchWithParser({ url: src.url, parser: src.parser, source }, getFetchOptions(src, opt, setupResult))
     }
-    return fetch({ url: src.url, parser: src.parser, source }, getFetchOptions(src, opt, setupResult))
+
+    return pageStream({
+      startPage: src.pagination.startPage,
+      nextPageSelector: src.pagination.nextPageSelector,
+      getNextPage: (currentPage) => {
+        const newURL = mergeURL(src.url, getQuery(src.pagination, currentPage))
+        return fetchWithParser({ url: newURL, parser: src.parser, source }, getFetchOptions(src, opt, setupResult))
+      },
+      concurrent,
+      onError: defaultErrorHandler
+    })
   }
 
   // pre-run context setup
   const preRun = []
 
   if (src.oauth) {
-    preRun.push(async (ourSource) => {
-      const accessToken = await getOAuthToken(ourSource.oauth)
-      return { accessToken }
-    })
+    preRun.push(async (ourSource) => ({
+      accessToken: await getOAuthToken(ourSource.oauth)
+    }))
   }
 
   if (src.setup) {
@@ -109,7 +110,7 @@ const fetchStream = (source, opt={}, raw=false) => {
     pSeries(preRunBound)
       .then((results) => {
         const setupResult = Object.assign({}, ...results)
-        const realStream = runStream(setupResult)
+        const realStream = execute(setupResult)
         outStream.url = realStream.url
         outStream.abort = realStream.abort
         outStream.setPipeline(realStream, through2.obj())
@@ -119,7 +120,7 @@ const fetchStream = (source, opt={}, raw=false) => {
         hardClose(outStream)
       })
   } else {
-    outStream = runStream()
+    outStream = execute()
   }
 
   if (raw) return outStream // child of an array of sources, error mgmt handled already

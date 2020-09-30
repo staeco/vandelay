@@ -20,10 +20,27 @@ const softClose = (i) => {
   i.end(null)
 }
 
+
+const createNextPageSelector = ({ nextPageSelector, onNextPage }) => {
+  if (!nextPageSelector) {
+    return through2.obj((chunk, _, cb) => {
+      onNextPage()
+      cb(null, chunk)
+    })
+  }
+
+  // TODO: merger of src.parser, and nextPageSelector
+  return through2.obj((chunk, _, cb) => {
+    onNextPage()
+    //console.log(chunk)
+    cb(null, chunk)
+  })
+}
+
 // merges a bunch of streams, unordered - and has some special error management
 // so one wont fail the whole bunch
 // keep this aligned w/ multiStream.js
-export default ({ startPage, getNextPage, concurrent=2, onError }={}) => {
+export default ({ startPage=0, nextPageSelector, getNextPage, concurrent=2, onError }={}) => {
   // concurrency can either be 1 or 2, 2 will start loading the next page once it reads a first datum from the current page
   const actualConcurrency = Math.min(2, concurrent)
   const out = through2.obj()
@@ -70,10 +87,12 @@ export default ({ startPage, getNextPage, concurrent=2, onError }={}) => {
     if (!out.first) out.first = src
     const thisStream = pipeline(
       src,
-      through2.obj((chunk, _, cb) => {
-        src._gotData = true
-        schedule()
-        cb(null, chunk)
+      createNextPageSelector({
+        nextPageSelector,
+        onNextPage: () => {
+          src._gotData = true
+          schedule()
+        }
       }),
       (err) => {
         done(src, err)

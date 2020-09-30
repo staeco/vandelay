@@ -9,6 +9,7 @@ import parseRange from 'range-parser'
 import parseBody from 'body-parser'
 import through2 from 'through2'
 import compile from 'vandelay-es6'
+import mergeURL from '../../src/mergeURL'
 import tap from '../../src/tap'
 import fetch from '../../src/fetch'
 import parse from '../../src/parse'
@@ -48,6 +49,18 @@ describe('fetch', () => {
     app.get('/check-headers', (req, res) => {
       if (req.headers.a !== 'abc') return res.status(500).send('500').end()
       res.json({ data: sample })
+    })
+    app.get('/linked-page-api', (req, res) => {
+      if (!req.query.page) return res.status(500).send('Missing page!').end()
+      if (req.query.page > 5) return res.json({ data: [], links: { next: null } }) // end on page 5
+      const nextPage = req.query.page + 1
+      const nextURL = mergeURL(req.url, { page: nextPage })
+      res.json({
+        data: req.query.page === 3 ? [] : sample, // page 3 has no data to emulate real API behavior
+        links: {
+          next: nextURL
+        }
+      })
     })
     app.get('/slow-file.json', (req, res) => {
       setTimeout(() => {
@@ -160,7 +173,7 @@ describe('fetch', () => {
       }, 1000)
     })
     const res = await collect.array(stream)
-    res.length.should.eql(34252)
+    res.length.should.eql(34289)
     res[0].___meta.should.eql({
       header: {
         name: 'Jefferson_County_KY_Street_Centerlines',
@@ -194,7 +207,7 @@ describe('fetch', () => {
     }, { concurrency: 64 })
 
     const res = await collect.array(stream.pipe(pressure))
-    res.length.should.eql(34252)
+    res.length.should.eql(34289)
     res[0].___meta.should.eql({
       header: {
         name: 'Jefferson_County_KY_Street_Centerlines',
@@ -553,6 +566,21 @@ describe('fetch', () => {
       { a: 4, b: 5, c: 6, ___meta: { row: 1, url: source.url, source } },
       { a: 7, b: 8, c: 9, ___meta: { row: 2, url: source.url, source } }
     ])
+  })
+  it('should request with selector pagination', async () => {
+    const source = {
+      url: `http://localhost:${port}/linked-page-api`,
+      parser: parse('json', { selector: 'data.*' }),
+      pagination: {
+        pageParam: 'page',
+        startPage: 1,
+        nextPageSelector: 'links.next'
+      }
+    }
+    const stream = fetch(source)
+    stream.url().should.equal(`${source.url}?page=1`)
+    const res = await collect.array(stream)
+    console.log(res.length, res)
   })
   it('should request with pagination', async () => {
     const source = {
