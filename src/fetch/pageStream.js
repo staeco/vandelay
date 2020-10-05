@@ -20,31 +20,14 @@ const softClose = (i) => {
   i.end(null)
 }
 
-
-const createNextPageSelector = ({ nextPageSelector, onNextPage }) => {
-  if (!nextPageSelector) {
-    return through2.obj((chunk, _, cb) => {
-      onNextPage()
-      cb(null, chunk)
-    })
-  }
-
-  // TODO: merger of src.parser, and nextPageSelector
-  return through2.obj((chunk, _, cb) => {
-    onNextPage()
-    //console.log(chunk)
-    cb(null, chunk)
-  })
-}
-
 // merges a bunch of streams, unordered - and has some special error management
 // so one wont fail the whole bunch
 // keep this aligned w/ multiStream.js
-export default ({ startPage=0, nextPageSelector, getNextPage, concurrent=2, onError }={}) => {
+export default ({ startPage=0, waitForNextPage, fetchNextPage, concurrent=2, onError }={}) => {
   // concurrency can either be 1 or 2, 2 will start loading the next page once it reads a first datum from the current page
   const actualConcurrency = Math.min(2, concurrent)
   const out = through2.obj()
-  out.currentPage = startPage
+  out.nextPage = startPage
   out.running = []
   out.abort = () => {
     hardClose(out)
@@ -73,26 +56,26 @@ export default ({ startPage=0, nextPageSelector, getNextPage, concurrent=2, onEr
     finished ? softClose(out) : schedule()
   }
 
-  const schedule = () => {
+  const schedule = (nextPageURL) => {
+    // any page past the start page, dont allow scheduling without a next URL
+    if (!nextPageURL && waitForNextPage && out.nextPage !== startPage) return
     if (out._closed) return
     const remainingSlots = actualConcurrency - out.running.length
     if (remainingSlots < 1) return
-    const nextPage = out.currentPage
-    out.currentPage = nextPage + 1
-    run(getNextPage(nextPage))
+    run(fetchNextPage({ nextPage: out.nextPage, nextPageURL }))
   }
 
   const run = (src) => {
+    out.nextPage = out.nextPage + 1
     out.running.push(src)
     if (!out.first) out.first = src
+    if (waitForNextPage) src.once('nextPage', schedule)
     const thisStream = pipeline(
       src,
-      createNextPageSelector({
-        nextPageSelector,
-        onNextPage: () => {
-          src._gotData = true
-          schedule()
-        }
+      through2.obj((chunk, _, cb) => {
+        src._gotData = true
+        schedule()
+        cb(null, chunk)
       }),
       (err) => {
         done(src, err)

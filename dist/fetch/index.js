@@ -9,6 +9,12 @@ var _through = _interopRequireDefault(require("through2"));
 
 var _pSeries = _interopRequireDefault(require("p-series"));
 
+var _readableStream = require("readable-stream");
+
+var _duplexify = _interopRequireDefault(require("duplexify"));
+
+var _url = _interopRequireDefault(require("url"));
+
 var _oauth = require("./oauth");
 
 var _fetchWithParser = _interopRequireDefault(require("./fetchWithParser"));
@@ -33,15 +39,15 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-const getFetchOptions = (src, opt, setupResult = {}) => ({
+const getFetchOptions = (source, opt, setupResult = {}) => ({
   fetchURL: opt.fetchURL,
   debug: opt.debug,
   timeout: opt.timeout,
   connectTimeout: opt.connectTimeout,
   attempts: opt.attempts,
   context: opt.context,
-  headers: _objectSpread(_objectSpread({}, src.headers || {}), setupResult.headers || {}),
-  query: _objectSpread(_objectSpread({}, src.query || {}), setupResult.query || {}),
+  headers: _objectSpread(_objectSpread({}, source.headers || {}), setupResult.headers || {}),
+  query: _objectSpread(_objectSpread({}, source.query || {}), setupResult.query || {}),
   accessToken: setupResult.accessToken
 }); // default behavior is to fail on first error
 
@@ -53,12 +59,80 @@ const defaultErrorHandler = ({
   output.emit('error', error);
 };
 
-const getQuery = (pageOpt, page) => {
+const getPageQuery = (pageOpt, page) => {
   const out = {};
   if (pageOpt.pageParam) out[pageOpt.pageParam] = page;
   if (pageOpt.limitParam && pageOpt.limit) out[pageOpt.limitParam] = pageOpt.limit;
   if (pageOpt.offsetParam) out[pageOpt.offsetParam] = page * pageOpt.limit;
   return out;
+};
+
+const setupContext = (source, opt, getStream) => {
+  const preRun = [];
+
+  if (source.oauth) {
+    preRun.push(async ourSource => ({
+      accessToken: await (0, _oauth.getToken)(ourSource.oauth)
+    }));
+  }
+
+  if (source.setup) {
+    var _source$setup;
+
+    if (typeof source.setup === 'string') {
+      source.setup = (0, _sandbox.default)(source.setup, opt.setup);
+    }
+
+    const setupFn = ((_source$setup = source.setup) === null || _source$setup === void 0 ? void 0 : _source$setup.default) || source.setup;
+    if (typeof setupFn !== 'function') throw new Error('Invalid setup function!');
+    preRun.push(setupFn);
+  }
+
+  if (preRun.length === 0) return getStream(source); // nothing to set up, go to next step
+
+  const preRunBound = preRun.map(fn => fn.bind(null, source, {
+    context: opt.context
+  }));
+
+  const out = _pumpify.default.obj();
+
+  (0, _pSeries.default)(preRunBound).then(results => {
+    const setupResult = Object.assign({}, ...results);
+    const realStream = getStream(setupResult);
+    out.url = realStream.url;
+    out.abort = realStream.abort;
+    out.setPipeline(realStream, _through.default.obj());
+  }).catch(err => {
+    out.emit('error', err);
+    (0, _hardClose.default)(out);
+  });
+  return out;
+};
+
+const createParser = (baseParser, nextPageParser) => {
+  if (!nextPageParser) return baseParser;
+  return () => {
+    const base = baseParser();
+    const nextPage = nextPageParser();
+    const read = (0, _through.default)();
+
+    const write = _through.default.obj();
+
+    const out = _duplexify.default.obj(read, write);
+
+    const fail = err => err && out.emit('error', err); // plumbing, read goes to both parsers
+    // we relay data events from the base parser
+    // and a nextPage event from that parser
+
+
+    (0, _readableStream.pipeline)(read, base, fail);
+    (0, _readableStream.pipeline)(read, nextPage, _through.default.obj((nextPage, _, cb) => {
+      out.emit('nextPage', nextPage);
+      cb();
+    }), fail);
+    (0, _readableStream.pipeline)(base, write, fail);
+    return out;
+  };
 };
 
 const fetchStream = (source, opt = {}, raw = false) => {
@@ -77,91 +151,60 @@ const fetchStream = (source, opt = {}, raw = false) => {
 
 
   if (!source) throw new Error('Missing source argument');
+  if (!source.url || typeof source.url !== 'string') throw new Error('Invalid source url');
 
-  const src = _objectSpread({}, source); // clone
-
-
-  if (!src.url || typeof src.url !== 'string') throw new Error('Invalid source url');
-
-  if (typeof src.parser === 'string') {
-    if (src.parserOptions && typeof src.parserOptions !== 'object') throw new Error('Invalid source parserOptions');
-    src.parser = (0, _parse.default)(src.parser, src.parserOptions); // JSON shorthand
+  if (typeof source.parser === 'string') {
+    if (source.parserOptions && typeof source.parserOptions !== 'object') throw new Error('Invalid source parserOptions');
+  } else if (typeof source.parser !== 'function') {
+    throw new Error('Invalid parser function');
   }
 
-  if (typeof src.parser !== 'function') throw new Error('Invalid parser function');
-  if (src.headers && typeof src.headers !== 'object') throw new Error('Invalid headers object');
-  if (src.oauth && typeof src.oauth !== 'object') throw new Error('Invalid oauth object');
-  if (src.oauth && typeof src.oauth.grant !== 'object') throw new Error('Invalid oauth.grant object'); // actual work time
+  if (source.headers && typeof source.headers !== 'object') throw new Error('Invalid headers object');
+  if (source.oauth && typeof source.oauth !== 'object') throw new Error('Invalid oauth object');
+  if (source.oauth && typeof source.oauth.grant !== 'object') throw new Error('Invalid oauth.grant object');
 
-  const runStream = setupResult => {
-    if (src.pagination) {
-      return (0, _pageStream.default)({
-        startPage: src.pagination.startPage || 0,
-        getNextPage: currentPage => {
-          const newURL = (0, _mergeURL.default)(src.url, getQuery(src.pagination, currentPage));
-          return (0, _fetchWithParser.default)({
-            url: newURL,
-            parser: src.parser,
-            source
-          }, getFetchOptions(src, opt, setupResult));
-        },
-        concurrent,
-        onError: defaultErrorHandler
-      });
+  const getStream = setupResult => {
+    const baseParser = typeof source.parser === 'string' ? (0, _parse.default)(source.parser, source.parserOptions) // JSON shorthand
+    : source.parser;
+
+    if (!source.pagination) {
+      return (0, _fetchWithParser.default)({
+        url: source.url,
+        parser: baseParser,
+        source
+      }, getFetchOptions(source, opt, setupResult));
+    } // if nextPageSelector is present, multiplex the parsers
+
+
+    if (source.pagination.nextPageSelector && typeof source.parser !== 'string') {
+      throw new Error(`pagination.nextPageSelector can't be used with custom parser functions!`);
     }
 
-    return (0, _fetchWithParser.default)({
-      url: src.url,
-      parser: src.parser,
-      source
-    }, getFetchOptions(src, opt, setupResult));
-  }; // pre-run context setup
-
-
-  const preRun = [];
-
-  if (src.oauth) {
-    preRun.push(async ourSource => {
-      const accessToken = await (0, _oauth.getToken)(ourSource.oauth);
-      return {
-        accessToken
-      };
+    const nextPageParser = source.pagination.nextPageSelector ? (0, _parse.default)(source.parser, _objectSpread(_objectSpread({}, source.parserOptions), {}, {
+      selector: source.pagination.nextPageSelector
+    })) : null;
+    const parser = createParser(baseParser, nextPageParser);
+    return (0, _pageStream.default)({
+      startPage: source.pagination.startPage,
+      waitForNextPage: !!nextPageParser,
+      fetchNextPage: ({
+        nextPage,
+        nextPageURL
+      }) => {
+        const newURL = nextPageURL ? _url.default.resolve(source.url, nextPageURL) : (0, _mergeURL.default)(source.url, getPageQuery(source.pagination, nextPage));
+        return (0, _fetchWithParser.default)({
+          url: newURL,
+          parser,
+          source
+        }, getFetchOptions(source, opt, setupResult));
+      },
+      concurrent,
+      onError: defaultErrorHandler
     });
-  }
+  }; // actual work time
 
-  if (src.setup) {
-    var _src$setup;
 
-    if (typeof src.setup === 'string') {
-      src.setup = (0, _sandbox.default)(src.setup, opt.setup);
-    }
-
-    const setupFn = ((_src$setup = src.setup) === null || _src$setup === void 0 ? void 0 : _src$setup.default) || src.setup;
-    if (typeof setupFn !== 'function') throw new Error('Invalid setup function!');
-    preRun.push(setupFn);
-  }
-
-  let outStream;
-
-  if (preRun.length !== 0) {
-    const preRunBound = preRun.map(fn => fn.bind(null, src, {
-      context: opt.context
-    }));
-    outStream = _pumpify.default.obj();
-    (0, _pSeries.default)(preRunBound).then(results => {
-      const setupResult = Object.assign({}, ...results);
-      const realStream = runStream(setupResult);
-      outStream.url = realStream.url;
-      outStream.abort = realStream.abort;
-      outStream.setPipeline(realStream, _through.default.obj());
-    }).catch(err => {
-      outStream.emit('error', err);
-      (0, _hardClose.default)(outStream);
-    });
-  } else {
-    outStream = runStream();
-  }
-
+  const outStream = setupContext(source, opt, getStream);
   if (raw) return outStream; // child of an array of sources, error mgmt handled already
 
   return (0, _multiStream.default)({

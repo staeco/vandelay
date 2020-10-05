@@ -48,12 +48,14 @@ var _default = ({
     cb(null, row);
   };
 
-  const out = (0, _readableStream.pipeline)(req, parser(), (0, _through.default)({
+  const parse = parser();
+  const out = (0, _readableStream.pipeline)(req, parse, (0, _through.default)({
     objectMode: true
   }, map), err => {
     if (err) out.emit('error', err);
-  }); // forward some props
+  }); // forward some props and events
 
+  parse.once('nextPage', (...a) => out.emit('nextPage', ...a));
   out.req = req.req;
   out.url = req.url;
 

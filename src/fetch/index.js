@@ -1,6 +1,9 @@
 import pumpify from 'pumpify'
 import through2 from 'through2'
 import pSeries from 'p-series'
+import { pipeline } from 'readable-stream'
+import duplexify from 'duplexify'
+import url from 'url'
 import { getToken as getOAuthToken } from './oauth'
 import fetchWithParser from './fetchWithParser'
 import multiStream from './multiStream'
@@ -10,7 +13,7 @@ import pageStream from './pageStream'
 import hardClose from '../hardClose'
 import parse from '../parse'
 
-const getFetchOptions = (src, opt, setupResult={}) => ({
+const getFetchOptions = (source, opt, setupResult={}) => ({
   fetchURL: opt.fetchURL,
   debug: opt.debug,
   timeout: opt.timeout,
@@ -18,11 +21,11 @@ const getFetchOptions = (src, opt, setupResult={}) => ({
   attempts: opt.attempts,
   context: opt.context,
   headers: {
-    ...src.headers || {},
+    ...source.headers || {},
     ...setupResult.headers || {}
   },
   query: {
-    ...src.query || {},
+    ...source.query || {},
     ...setupResult.query || {}
   },
   accessToken: setupResult.accessToken
@@ -33,12 +36,73 @@ const defaultErrorHandler = ({ error, output }) => {
   output.emit('error', error)
 }
 
-const getQuery = (pageOpt, page) => {
+const getPageQuery = (pageOpt, page) => {
   const out = {}
   if (pageOpt.pageParam) out[pageOpt.pageParam] = page
   if (pageOpt.limitParam && pageOpt.limit) out[pageOpt.limitParam] = pageOpt.limit
   if (pageOpt.offsetParam) out[pageOpt.offsetParam] = page * pageOpt.limit
   return out
+}
+
+const setupContext = (source, opt, getStream) => {
+  const preRun = []
+
+  if (source.oauth) {
+    preRun.push(async (ourSource) => ({
+      accessToken: await getOAuthToken(ourSource.oauth)
+    }))
+  }
+
+  if (source.setup) {
+    if (typeof source.setup === 'string') {
+      source.setup = sandbox(source.setup, opt.setup)
+    }
+    const setupFn = source.setup?.default || source.setup
+    if (typeof setupFn !== 'function') throw new Error('Invalid setup function!')
+    preRun.push(setupFn)
+  }
+
+  if (preRun.length === 0) return getStream(source) // nothing to set up, go to next step
+
+  const preRunBound = preRun.map((fn) => fn.bind(null, source, { context: opt.context }))
+  const out = pumpify.obj()
+  pSeries(preRunBound)
+    .then((results) => {
+      const setupResult = Object.assign({}, ...results)
+      const realStream = getStream(setupResult)
+      out.url = realStream.url
+      out.abort = realStream.abort
+      out.setPipeline(realStream, through2.obj())
+    })
+    .catch((err) => {
+      out.emit('error', err)
+      hardClose(out)
+    })
+  return out
+}
+
+const createParser = (baseParser, nextPageParser) => {
+  if (!nextPageParser) return baseParser
+  return () => {
+    const base = baseParser()
+    const nextPage = nextPageParser()
+
+    const read = through2()
+    const write = through2.obj()
+    const out = duplexify.obj(read, write)
+    const fail = (err) => err && out.emit('error', err)
+
+    // plumbing, read goes to both parsers
+    // we relay data events from the base parser
+    // and a nextPage event from that parser
+    pipeline(read, base, fail)
+    pipeline(read, nextPage, through2.obj((nextPage, _, cb) => {
+      out.emit('nextPage', nextPage)
+      cb()
+    }), fail)
+    pipeline(base, write, fail)
+    return out
+  }
 }
 
 const fetchStream = (source, opt={}, raw=false) => {
@@ -56,73 +120,51 @@ const fetchStream = (source, opt={}, raw=false) => {
 
   // validate params
   if (!source) throw new Error('Missing source argument')
-  const src = { ...source } // clone
-  if (!src.url || typeof src.url !== 'string') throw new Error('Invalid source url')
-  if (typeof src.parser === 'string') {
-    if (src.parserOptions && typeof src.parserOptions !== 'object') throw new Error('Invalid source parserOptions')
-    src.parser = parse(src.parser, src.parserOptions) // JSON shorthand
+  if (!source.url || typeof source.url !== 'string') throw new Error('Invalid source url')
+  if (typeof source.parser === 'string') {
+    if (source.parserOptions && typeof source.parserOptions !== 'object') throw new Error('Invalid source parserOptions')
+  } else if (typeof source.parser !== 'function') {
+    throw new Error('Invalid parser function')
   }
-  if (typeof src.parser !== 'function') throw new Error('Invalid parser function')
-  if (src.headers && typeof src.headers !== 'object') throw new Error('Invalid headers object')
-  if (src.oauth && typeof src.oauth !== 'object') throw new Error('Invalid oauth object')
-  if (src.oauth && typeof src.oauth.grant !== 'object') throw new Error('Invalid oauth.grant object')
+  if (source.headers && typeof source.headers !== 'object') throw new Error('Invalid headers object')
+  if (source.oauth && typeof source.oauth !== 'object') throw new Error('Invalid oauth object')
+  if (source.oauth && typeof source.oauth.grant !== 'object') throw new Error('Invalid oauth.grant object')
 
-  // actual work time
-  const execute = (setupResult) => {
-    if (!src.pagination) {
-      return fetchWithParser({ url: src.url, parser: src.parser, source }, getFetchOptions(src, opt, setupResult))
+  const getStream = (setupResult) => {
+    const baseParser = typeof source.parser === 'string'
+      ? parse(source.parser, source.parserOptions) // JSON shorthand
+      : source.parser
+
+    if (!source.pagination) {
+      return fetchWithParser({ url: source.url, parser: baseParser, source }, getFetchOptions(source, opt, setupResult))
     }
 
+    // if nextPageSelector is present, multiplex the parsers
+    if (source.pagination.nextPageSelector && typeof source.parser !== 'string') {
+      throw new Error(`pagination.nextPageSelector can't be used with custom parser functions!`)
+    }
+    const nextPageParser = source.pagination.nextPageSelector
+      ? parse(source.parser, { ...source.parserOptions, selector: source.pagination.nextPageSelector })
+      : null
+
+    const parser = createParser(baseParser, nextPageParser)
+
     return pageStream({
-      startPage: src.pagination.startPage,
-      nextPageSelector: src.pagination.nextPageSelector,
-      getNextPage: (currentPage) => {
-        const newURL = mergeURL(src.url, getQuery(src.pagination, currentPage))
-        return fetchWithParser({ url: newURL, parser: src.parser, source }, getFetchOptions(src, opt, setupResult))
+      startPage: source.pagination.startPage,
+      waitForNextPage: !!nextPageParser,
+      fetchNextPage: ({ nextPage, nextPageURL }) => {
+        const newURL = nextPageURL
+          ? url.resolve(source.url, nextPageURL)
+          : mergeURL(source.url, getPageQuery(source.pagination, nextPage))
+        return fetchWithParser({ url: newURL, parser, source }, getFetchOptions(source, opt, setupResult))
       },
       concurrent,
       onError: defaultErrorHandler
     })
   }
 
-  // pre-run context setup
-  const preRun = []
-
-  if (src.oauth) {
-    preRun.push(async (ourSource) => ({
-      accessToken: await getOAuthToken(ourSource.oauth)
-    }))
-  }
-
-  if (src.setup) {
-    if (typeof src.setup === 'string') {
-      src.setup = sandbox(src.setup, opt.setup)
-    }
-    const setupFn = src.setup?.default || src.setup
-    if (typeof setupFn !== 'function') throw new Error('Invalid setup function!')
-    preRun.push(setupFn)
-  }
-
-  let outStream
-  if (preRun.length !== 0) {
-    const preRunBound = preRun.map((fn) => fn.bind(null, src, { context: opt.context }))
-    outStream = pumpify.obj()
-    pSeries(preRunBound)
-      .then((results) => {
-        const setupResult = Object.assign({}, ...results)
-        const realStream = execute(setupResult)
-        outStream.url = realStream.url
-        outStream.abort = realStream.abort
-        outStream.setPipeline(realStream, through2.obj())
-      })
-      .catch((err) => {
-        outStream.emit('error', err)
-        hardClose(outStream)
-      })
-  } else {
-    outStream = execute()
-  }
-
+  // actual work time
+  const outStream = setupContext(source, opt, getStream)
   if (raw) return outStream // child of an array of sources, error mgmt handled already
   return multiStream({
     concurrent,
