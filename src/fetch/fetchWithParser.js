@@ -32,16 +32,18 @@ export default ({ url, parser, source }, opt) => {
     cb(null, row)
   }
 
+  const parse = parser()
   const out = pipeline(
     req,
-    parser(),
+    parse,
     through2({ objectMode: true }, map),
     (err) => {
       if (err) out.emit('error', err)
     }
   )
 
-  // forward some props
+  // forward some props and events
+  parse.once('nextPage', (...a) => out.emit('nextPage', ...a))
   out.req = req.req
   out.url = req.url
   out.abort = () => {

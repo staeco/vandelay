@@ -9,6 +9,8 @@ import parseRange from 'range-parser'
 import parseBody from 'body-parser'
 import through2 from 'through2'
 import compile from 'vandelay-es6'
+import { createHash } from 'crypto'
+import mergeURL from '../../src/mergeURL'
 import tap from '../../src/tap'
 import fetch from '../../src/fetch'
 import parse from '../../src/parse'
@@ -27,6 +29,8 @@ const ARCGIS_URL = 'https://opendata.arcgis.com/datasets/f36b2c8164714b258840dce
 
 // Socrata does support range but error-prone, so this is good to test. This is NYC BIS Property Data.
 const SOCRATA_URL = 'https://data.cityofnewyork.us/api/views/kmub-vria/rows.csv?accessType=DOWNLOAD'
+
+const md5 = (txt) => createHash('md5').update(String(txt)).digest('hex')
 
 describe('fetch', () => {
   before(async () => {
@@ -48,6 +52,22 @@ describe('fetch', () => {
     app.get('/check-headers', (req, res) => {
       if (req.headers.a !== 'abc') return res.status(500).send('500').end()
       res.json({ data: sample })
+    })
+    // this endpoint does page 1 - 5, and has a pageKey required for pages above 1
+    app.get('/linked-page-api', (req, res) => {
+      const page = req.query.page && parseInt(req.query.page)
+      if (!page) return res.status(500).send('Missing page!').end()
+      if (page > 5) return res.json({ data: [], links: { next: null } })
+      if (page !== 1 && md5(page) !== req.query.pageKey) return res.status(401).send('Bad page key!').end()
+
+      const nextPage = page + 1
+      const nextURL = mergeURL(req.url, { page: nextPage, pageKey: md5(nextPage) })
+      res.json({
+        data: page === 3 ? [] : sample, // page 3 has no data to emulate real API behavior
+        links: {
+          next: nextURL
+        }
+      })
     })
     app.get('/slow-file.json', (req, res) => {
       setTimeout(() => {
@@ -160,7 +180,7 @@ describe('fetch', () => {
       }, 1000)
     })
     const res = await collect.array(stream)
-    res.length.should.eql(34252)
+    res.length.should.eql(34289)
     res[0].___meta.should.eql({
       header: {
         name: 'Jefferson_County_KY_Street_Centerlines',
@@ -194,7 +214,7 @@ describe('fetch', () => {
     }, { concurrency: 64 })
 
     const res = await collect.array(stream.pipe(pressure))
-    res.length.should.eql(34252)
+    res.length.should.eql(34289)
     res[0].___meta.should.eql({
       header: {
         name: 'Jefferson_County_KY_Street_Centerlines',
@@ -553,6 +573,24 @@ describe('fetch', () => {
       { a: 4, b: 5, c: 6, ___meta: { row: 1, url: source.url, source } },
       { a: 7, b: 8, c: 9, ___meta: { row: 2, url: source.url, source } }
     ])
+  })
+  it('should request with selector pagination', async () => {
+    const source = {
+      url: `http://localhost:${port}/linked-page-api`,
+      parser: 'json',
+      parserOptions: {
+        selector: 'data.*'
+      },
+      pagination: {
+        pageParam: 'page',
+        startPage: 1,
+        nextPageSelector: 'links.next'
+      }
+    }
+    const stream = fetch(source)
+    stream.url().should.equal(`${source.url}?page=1`)
+    const res = await collect.array(stream)
+    should(res.length).equal(6)
   })
   it('should request with pagination', async () => {
     const source = {

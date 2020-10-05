@@ -145,7 +145,7 @@ exports.xml = xml;
 const html = opt => {
   if (opt.zip) return (0, _unzip.default)(html.bind(void 0, _objectSpread(_objectSpread({}, opt), {}, {
     zip: undefined
-  })), /\.xml$/);
+  })), /\.html$/);
   return _pumpify.default.obj((0, _xml2json.default)(_objectSpread(_objectSpread({}, opt), {}, {
     strict: false
   })), json(opt));

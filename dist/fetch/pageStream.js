@@ -27,8 +27,9 @@ const softClose = i => {
 
 
 var _default = ({
-  startPage,
-  getNextPage,
+  startPage = 0,
+  waitForNextPage,
+  fetchNextPage,
   concurrent = 2,
   onError
 } = {}) => {
@@ -37,7 +38,7 @@ var _default = ({
 
   const out = _through.default.obj();
 
-  out.currentPage = startPage;
+  out.nextPage = startPage;
   out.running = [];
 
   out.abort = () => {
@@ -69,18 +70,23 @@ var _default = ({
     finished ? softClose(out) : schedule();
   };
 
-  const schedule = () => {
+  const schedule = nextPageURL => {
+    // any page past the start page, dont allow scheduling without a next URL
+    if (!nextPageURL && waitForNextPage && out.nextPage !== startPage) return;
     if (out._closed) return;
     const remainingSlots = actualConcurrency - out.running.length;
     if (remainingSlots < 1) return;
-    const nextPage = out.currentPage;
-    out.currentPage = nextPage + 1;
-    run(getNextPage(nextPage));
+    run(fetchNextPage({
+      nextPage: out.nextPage,
+      nextPageURL
+    }));
   };
 
   const run = src => {
+    out.nextPage = out.nextPage + 1;
     out.running.push(src);
     if (!out.first) out.first = src;
+    if (waitForNextPage) src.once('nextPage', schedule);
     const thisStream = (0, _readableStream.pipeline)(src, _through.default.obj((chunk, _, cb) => {
       src._gotData = true;
       schedule();

@@ -74,6 +74,9 @@ Returns a stream that fetches the given source and emits the parsed and selected
   - limitParam - Required `String`
   - startPage - Optional `Number`, defaults to 0
   - limit - Required `Number`
+  - nextPageSelector - Optional `String`
+    - If needed, you may provide multiple selectors as an array (`nextPageSelector: [ 'a.*', 'b.*' ]`)
+    - If provided, all other pagination options will only be applied on page 1 and the selector will be used to pluck the next page URL going forward
 - setup - Optional `Function` or `String`
   - Asynchronous function, runs once before the request starts for each source. Receives `source` and `meta` as arguments.
     - First argument is the source object being set up.
