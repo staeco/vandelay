@@ -16,11 +16,17 @@ const getURL = stream => stream.first ? getURL(stream.first) : typeof stream.url
 
 const closeIt = i => {
   if (!i.readable) return;
-  if (i.abort) return i.abort();
+
+  if (i.abort) {
+    i._closed = true;
+    return i.abort();
+  }
+
   (0, _hardClose.default)(i);
 };
 
 const softClose = i => {
+  i._closed = true;
   i.end(null);
 }; // merges a bunch of streams, unordered - and has some special error management
 // so one wont fail the whole bunch
@@ -81,13 +87,14 @@ var _default = ({
   };
 
   const run = i => {
+    if (out._closed) return;
     const src = typeof i === 'function' ? i() : i;
     out.running.push(src);
     if (!out.first) out.first = src;
     src.pipe(out, {
       end: false
     });
-    (0, _readableStream.finished)(src, err => done(src, err));
+    (0, _readableStream.finished)(src, done.bind(null, src));
   };
 
   schedule(); // kick it all off

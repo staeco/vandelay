@@ -15,11 +15,17 @@ const getURL = stream => stream.first ? getURL(stream.first) : typeof stream.url
 
 const closeIt = i => {
   if (!i.readable) return;
-  if (i.abort) return i.abort();
+
+  if (i.abort) {
+    i._closed = true;
+    return i.abort();
+  }
+
   (0, _hardClose.default)(i);
 };
 
 const softClose = i => {
+  i._closed = true;
   i.end(null);
 }; // merges a bunch of streams, unordered - and has some special error management
 // so one wont fail the whole bunch
@@ -40,6 +46,7 @@ var _default = ({
 
   out.nextPage = startPage;
   out.running = [];
+  out.nextPageSelectorQueue = [];
 
   out.abort = () => {
     (0, _hardClose.default)(out);
@@ -53,10 +60,10 @@ var _default = ({
     if (idx === -1) return; // already finished
 
     out.running.splice(idx, 1); // remove it from the run list
-    // if this stream is the first in the concurrent queue and got no data, abort
-    // we hit the end of the road paging through data
 
-    const finished = idx === 0 && !src._gotData; // let the consumer figure out how they want to handle errors
+    const finished = waitForNextPage // if no other pages are running and we didnt get a next page, end
+    ? out.running.length === 0 && out.nextPageSelectorQueue.length === 0 // if we're the most recent stream and we had no data, end
+    : idx === 0 && !src._gotData; // let the consumer figure out how they want to handle errors
 
     if (err && onError) {
       onError({
@@ -71,11 +78,19 @@ var _default = ({
   };
 
   const schedule = nextPageURL => {
-    // any page past the start page, dont allow scheduling without a next URL
-    if (!nextPageURL && waitForNextPage && out.nextPage !== startPage) return;
     if (out._closed) return;
     const remainingSlots = actualConcurrency - out.running.length;
-    if (remainingSlots < 1) return;
+
+    if (remainingSlots < 1) {
+      if (nextPageURL) out.nextPageSelectorQueue.push(nextPageURL);
+      return;
+    }
+
+    if (waitForNextPage && !nextPageURL && out.nextPage !== startPage) {
+      nextPageURL = out.nextPageSelectorQueue.shift();
+      if (!nextPageURL) return; // nothing in queue
+    }
+
     run(fetchNextPage({
       nextPage: out.nextPage,
       nextPageURL
@@ -83,18 +98,30 @@ var _default = ({
   };
 
   const run = src => {
+    if (out._closed) return;
+    const fin = done.bind(null, src);
     out.nextPage = out.nextPage + 1;
     out.running.push(src);
-    if (!out.first) out.first = src;
-    if (waitForNextPage) src.once('nextPage', schedule);
-    const thisStream = (0, _readableStream.pipeline)(src, _through.default.obj((chunk, _, cb) => {
-      src._gotData = true;
-      schedule();
+    if (!out.first) out.first = src; // kick off selector pagination
+
+    if (waitForNextPage) {
+      src.once('nextPage', schedule);
+      (0, _readableStream.finished)(src, fin);
+      src.pipe(out, {
+        end: false
+      });
+      return;
+    } // kick off regular pagination
+
+
+    (0, _readableStream.pipeline)(src, _through.default.obj((chunk, _, cb) => {
+      if (!src._gotData) {
+        src._gotData = true;
+        schedule();
+      }
+
       cb(null, chunk);
-    }), err => {
-      done(src, err);
-    });
-    thisStream.pipe(out, {
+    }), fin).pipe(out, {
       end: false
     });
   }; // kick it all off

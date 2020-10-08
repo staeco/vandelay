@@ -590,7 +590,25 @@ describe('fetch', () => {
     const stream = fetch(source)
     stream.url().should.equal(`${source.url}?page=1`)
     const res = await collect.array(stream)
-    should(res.length).equal(6)
+    should(res.length).equal(12)
+  })
+  it('should request with selector pagination and concurrency 1', async () => {
+    const source = {
+      url: `http://localhost:${port}/linked-page-api`,
+      parser: 'json',
+      parserOptions: {
+        selector: 'data.*'
+      },
+      pagination: {
+        pageParam: 'page',
+        startPage: 1,
+        nextPageSelector: 'links.next'
+      }
+    }
+    const stream = fetch(source, { concurrency: 1 })
+    stream.url().should.equal(`${source.url}?page=1`)
+    const res = await collect.array(stream)
+    should(res.length).equal(12)
   })
   it('should request with pagination', async () => {
     const source = {
@@ -603,6 +621,25 @@ describe('fetch', () => {
       }
     }
     const stream = fetch(source)
+    stream.url().should.equal(`${source.url}?limit=1&offset=0`)
+    const res = await collect.array(stream)
+    res.should.containDeep([
+      { a: 1, b: 2, c: 3, ___meta: { row: 0, url: `${source.url}?limit=1&offset=0`, source } },
+      { a: 4, b: 5, c: 6, ___meta: { row: 0, url: `${source.url}?limit=1&offset=1`, source } },
+      { a: 7, b: 8, c: 9, ___meta: { row: 0, url: `${source.url}?limit=1&offset=2`, source } }
+    ])
+  })
+  it('should request with pagination and concurrency 1', async () => {
+    const source = {
+      url: `http://localhost:${port}/data`,
+      parser: parse('json', { selector: 'data.*' }),
+      pagination: {
+        limitParam: 'limit',
+        offsetParam: 'offset',
+        limit: 1
+      }
+    }
+    const stream = fetch(source, { concurrency: 1 })
     stream.url().should.equal(`${source.url}?limit=1&offset=0`)
     const res = await collect.array(stream)
     res.should.containDeep([

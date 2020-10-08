@@ -12,11 +12,15 @@ const getURL = (stream) =>
 
 const closeIt = (i) => {
   if (!i.readable) return
-  if (i.abort) return i.abort()
+  if (i.abort) {
+    i._closed = true
+    return i.abort()
+  }
   hardClose(i)
 }
 
 const softClose = (i) => {
+  i._closed = true
   i.end(null)
 }
 
@@ -64,11 +68,12 @@ export default ({ concurrent=8, onError, inputs=[] }={}) => {
     }
   }
   const run = (i) => {
+    if (out._closed) return
     const src = typeof i === 'function' ? i() : i
     out.running.push(src)
     if (!out.first) out.first = src
     src.pipe(out, { end: false })
-    finished(src, (err) => done(src, err))
+    finished(src, done.bind(null, src))
   }
 
   schedule() // kick it all off
