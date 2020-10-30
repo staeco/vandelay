@@ -1,6 +1,6 @@
 {
   "name": "vandelay",
-  "version": "8.1.1",
+  "version": "8.1.2",
   "description": "Imports, exports, and ETL",
   "main": "dist/index.js",
   "keywords": [
@@ -70,11 +70,11 @@
     "camelcase": "^6.0.0",
     "csv-parser": "^2.0.0",
     "duplexify": "^4.0.0",
-    "exceljs-transform-stream": "^1.0.0",
+    "exceljs-transform-stream": "^2.0.0",
     "get-stream": "^6.0.0",
     "got-resume-next": "^2.1.0",
     "gtfs-stream": "^2.1.0",
-    "is-plain-obj": "^2.0.0",
+    "is-plain-obj": "^3.0.0",
     "jsonstream-next": "^3.0.0",
     "lodash": "^4.17.15",
     "moize": "^5.4.7",

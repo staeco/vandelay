@@ -9,6 +9,7 @@ import parseRange from 'range-parser'
 import parseBody from 'body-parser'
 import through2 from 'through2'
 import compile from 'vandelay-es6'
+import { pipeline } from 'readable-stream'
 import { createHash } from 'crypto'
 import mergeURL from '../../src/mergeURL'
 import tap from '../../src/tap'
@@ -160,99 +161,6 @@ describe('fetch', () => {
       { a: 4, b: 5, c: 6, ___meta: { row: 1, url: source.url, source } },
       { a: 7, b: 8, c: 9, ___meta: { row: 2, url: source.url, source } }
     ])
-  })
-  it('should request a flat arcgis geojson file that gets interrupted', async () => {
-    const source = {
-      url: ARCGIS_URL,
-      parser: parse('json', { selector: 'features.*' })
-    }
-    const stream = fetch(source, {
-      attempts: 2
-    })
-    stream.url().should.equal(source.url)
-    let gotRes = false
-    stream.running[0].req.once('response', (res) => {
-      should.exist(res)
-      gotRes = true
-      setTimeout(() => {
-        // simulate a failure at a low level about 1s into the request
-        res.emit('error', new Error('Fake!'))
-      }, 1000)
-    })
-    const res = await collect.array(stream)
-    res.length.should.eql(34289)
-    res[0].___meta.should.eql({
-      header: {
-        name: 'Jefferson_County_KY_Street_Centerlines',
-        type: 'FeatureCollection',
-        crs: {
-          type: 'name',
-          properties: {
-            name: 'urn:ogc:def:crs:OGC:1.3:CRS84'
-          }
-        }
-      },
-      row: 0,
-      url: source.url,
-      source
-    })
-    should.exist(res[0].geometry)
-    should(gotRes).equal(true)
-  })
-  it('should request a arcgis geojson file with light backpressure', async () => {
-    const source = {
-      url: ARCGIS_URL,
-      parser: parse('json', { selector: 'features.*' })
-    }
-    const stream = fetch(source)
-    stream.url().should.equal(source.url)
-
-    // create a slow stream that takes 100ms per item
-    const pressure = tap(async (data) => {
-      await new Promise((resolve) => setTimeout(resolve, 10))
-      return data
-    }, { concurrency: 64 })
-
-    const res = await collect.array(stream.pipe(pressure))
-    res.length.should.eql(34289)
-    res[0].___meta.should.eql({
-      header: {
-        name: 'Jefferson_County_KY_Street_Centerlines',
-        type: 'FeatureCollection',
-        crs: {
-          type: 'name',
-          properties: {
-            name: 'urn:ogc:def:crs:OGC:1.3:CRS84'
-          }
-        }
-      },
-      row: 0,
-      url: source.url,
-      source
-    })
-    should.exist(res[0].geometry)
-  })
-  it('should request a socrata csv file that gets interrupted', async () => {
-    const source = {
-      url: SOCRATA_URL,
-      parser: parse('csv')
-    }
-    const stream = fetch(source, {
-      attempts: 2
-    })
-    stream.url().should.equal(source.url)
-    let gotRes = false
-    stream.running[0].req.once('response', (res) => {
-      should.exist(res)
-      gotRes = true
-      setTimeout(() => {
-        // simulate a failure at a low level about 1s into the request
-        res.socket.destroy(new Error('Fake!'))
-      }, 100)
-    })
-    const res = await collect.array(stream)
-    res.length.should.eql(77)
-    should(gotRes).equal(true)
   })
   it('should request a flat json file with context', async () => {
     const expectedURL = `http://localhost:${port}/file.json`
@@ -956,5 +864,142 @@ describe('fetch', () => {
     })
     const res = await collect.array(stream)
     should.exist(res[0].properties.NAME)
+  })
+  it('should request a flat arcgis geojson file that gets interrupted', async () => {
+    const source = {
+      url: ARCGIS_URL,
+      parser: parse('json', { selector: 'features.*' })
+    }
+    const stream = fetch(source, {
+      attempts: 2
+    })
+    stream.url().should.equal(source.url)
+    let gotRes = false
+    stream.running[0].req.once('response', (res) => {
+      should.exist(res)
+      gotRes = true
+      setTimeout(() => {
+        // simulate a failure at a low level about 1s into the request
+        res.emit('error', new Error('Fake!'))
+      }, 1000)
+    })
+    const res = await collect.array(stream)
+    res.length.should.eql(34289)
+    res[0].___meta.should.eql({
+      header: {
+        name: 'Jefferson_County_KY_Street_Centerlines',
+        type: 'FeatureCollection',
+        crs: {
+          type: 'name',
+          properties: {
+            name: 'urn:ogc:def:crs:OGC:1.3:CRS84'
+          }
+        }
+      },
+      row: 0,
+      url: source.url,
+      source
+    })
+    should.exist(res[0].geometry)
+    should(gotRes).equal(true)
+  })
+  it.skip('should request a arcgis geojson file tha gets interrupted, with backpressure', async () => {
+    const source = {
+      url: ARCGIS_URL,
+      parser: parse('json', { selector: 'features.*' })
+    }
+    const stream = fetch(source, {
+      attempts: 2
+    })
+    stream.url().should.equal(source.url)
+    let gotRes = false
+    stream.running[0].req.once('response', (res) => {
+      should.exist(res)
+      gotRes = true
+      setTimeout(() => {
+        // simulate a failure at a low level about 1s into the request
+        res.emit('error', new Error('Fake!'))
+      }, 1000)
+    })
+
+    // create a slow stream that takes 10ms per item
+    const pressure = tap(async (data) => {
+      await new Promise((resolve) => setTimeout(resolve, 10))
+      return data
+    }, { concurrency: 8 })
+
+    const res = await collect.array(pipeline(stream, pressure, (err) => {
+      if (err) stream.emit('error', err)
+    }))
+    res.length.should.eql(34289)
+    res[0].___meta.should.eql({
+      header: {
+        name: 'Jefferson_County_KY_Street_Centerlines',
+        type: 'FeatureCollection',
+        crs: {
+          type: 'name',
+          properties: {
+            name: 'urn:ogc:def:crs:OGC:1.3:CRS84'
+          }
+        }
+      },
+      row: 0,
+      url: source.url,
+      source
+    })
+    should.exist(res[0].geometry)
+    should(gotRes).equal(true)
+  })
+  it('should request a socrata csv file that gets interrupted', async () => {
+    const source = {
+      url: SOCRATA_URL,
+      parser: parse('csv')
+    }
+    const stream = fetch(source, {
+      attempts: 2
+    })
+    stream.url().should.equal(source.url)
+    let gotRes = false
+    stream.running[0].req.once('response', (res) => {
+      should.exist(res)
+      gotRes = true
+      setTimeout(() => {
+        // simulate a failure at a low level about 1s into the request
+        res.socket.destroy(new Error('Fake!'))
+      }, 100)
+    })
+    const res = await collect.array(stream)
+    res.length.should.eql(77)
+    should(gotRes).equal(true)
+  })
+  it('should request a socrata csv file that gets interrupted, with backpressure', async () => {
+    const source = {
+      url: SOCRATA_URL,
+      parser: parse('csv')
+    }
+    const stream = fetch(source, {
+      attempts: 2
+    })
+    stream.url().should.equal(source.url)
+    let gotRes = false
+    stream.running[0].req.once('response', (res) => {
+      should.exist(res)
+      gotRes = true
+      setTimeout(() => {
+        // simulate a failure at a low level about 1s into the request
+        res.socket.destroy(new Error('Fake!'))
+      }, 100)
+    })
+    // create a slow stream that takes 10ms per item
+    const pressure = tap(async (data) => {
+      await new Promise((resolve) => setTimeout(resolve, 10))
+      return data
+    }, { concurrency: 8 })
+
+    const res = await collect.array(pipeline(stream, pressure, (err) => {
+      if (err) stream.emit('error', err)
+    }))
+    res.length.should.eql(77)
+    should(gotRes).equal(true)
   })
 })
