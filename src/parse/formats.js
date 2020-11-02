@@ -18,7 +18,7 @@ export const csv = (opt) => {
   if (opt.zip) return unzip(csv.bind(this, { ...opt, zip: undefined }), /\.csv$/)
 
   const head = csvStream({
-    mapHeaders: ({ header }) => header.trim()
+    mapHeaders: ({ header }) => header?.trim()
   })
   // convert into normal objects
   const tail = through2.obj((row, _, cb) => {
@@ -31,7 +31,7 @@ export const tsv = (opt) => {
 
   const head = csvStream({
     separator: '\t',
-    mapHeaders: ({ header }) => header.trim()
+    mapHeaders: ({ header }) => header?.trim()
   })
   // convert into normal objects
   const tail = through2.obj((row, _, cb) => {
@@ -42,7 +42,7 @@ export const tsv = (opt) => {
 export const excel = (opt) => {
   if (opt.zip) return unzip(excel.bind(this, { ...opt, zip: undefined }), /\.xlsx$/)
   return excelStream({
-    mapHeaders: (header) => header.trim()
+    mapHeaders: (header) => header?.trim()
   })
 }
 

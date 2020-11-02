@@ -159,7 +159,7 @@ export const infer = (v) => {
 }
 
 export const simple = (obj) =>
-  transformObject(obj, (v, k) => [ infer(v), k && k.trim() ])
+  transformObject(obj, (v, k) => [ infer(v), k?.trim() ])
 
 export const aggressive = (obj) =>
   transformObject(obj, (v, k) => [ infer(v), k && camelcase(k) ])

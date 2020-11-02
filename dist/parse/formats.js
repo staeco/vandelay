@@ -46,7 +46,7 @@ const csv = opt => {
   const head = (0, _csvParser.default)({
     mapHeaders: ({
       header
-    }) => header.trim()
+    }) => header === null || header === void 0 ? void 0 : header.trim()
   }); // convert into normal objects
 
   const tail = _through.default.obj((row, _, cb) => {
@@ -66,7 +66,7 @@ const tsv = opt => {
     separator: '\t',
     mapHeaders: ({
       header
-    }) => header.trim()
+    }) => header === null || header === void 0 ? void 0 : header.trim()
   }); // convert into normal objects
 
   const tail = _through.default.obj((row, _, cb) => {
@@ -83,7 +83,7 @@ const excel = opt => {
     zip: undefined
   })), /\.xlsx$/);
   return (0, _exceljsTransformStream.default)({
-    mapHeaders: header => header.trim()
+    mapHeaders: header => header === null || header === void 0 ? void 0 : header.trim()
   });
 };
 

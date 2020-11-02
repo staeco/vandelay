@@ -147,7 +147,7 @@ const infer = v => {
 
 exports.infer = infer;
 
-const simple = obj => transformObject(obj, (v, k) => [infer(v), k && k.trim()]);
+const simple = obj => transformObject(obj, (v, k) => [infer(v), k === null || k === void 0 ? void 0 : k.trim()]);
 
 exports.simple = simple;
 
