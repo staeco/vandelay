@@ -18,4 +18,8 @@ var _transform = _interopRequireDefault(require("./transform"));
 
 exports.transform = _transform.default;
 
+var _getPossibleSelectors = _interopRequireDefault(require("./getPossibleSelectors"));
+
+exports.getPossibleSelectors = _getPossibleSelectors.default;
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }

@@ -7,7 +7,7 @@ import collect from 'get-stream'
 import { createReadStream } from 'graceful-fs'
 import { join } from 'path'
 
-const fixture = join(__dirname, 'sample-feed.zip')
+const fixture = join(__dirname, '../fixtures/sample-feed.zip')
 
 describe('parse gtfs', () => {
   it.skip('should parse a feed', async () => {

@@ -7,7 +7,7 @@ import { join } from 'path'
 import streamify from 'into-stream'
 import collect from 'get-stream'
 
-const googFixture = join(__dirname, 'google-terms.html')
+const googFixture = join(__dirname, '../fixtures/google-terms.html')
 
 const data = `
 <html>

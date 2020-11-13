@@ -15,7 +15,13 @@ var _duplexify = _interopRequireDefault(require("duplexify"));
 
 var _url = _interopRequireDefault(require("url"));
 
+var _fetchURL = _interopRequireDefault(require("./fetchURL"));
+
+exports.fetchURL = _fetchURL.default;
+
 var _oauth = require("./oauth");
+
+exports.getOAuthToken = _oauth.getToken;
 
 var _fetchWithParser = _interopRequireDefault(require("./fetchWithParser"));
 
@@ -216,4 +222,3 @@ const fetchStream = (source, opt = {}, raw = false) => {
 
 var _default = fetchStream;
 exports.default = _default;
-module.exports = exports.default;

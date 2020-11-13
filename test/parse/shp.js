@@ -5,7 +5,7 @@ import collect from 'get-stream'
 import { createReadStream } from 'graceful-fs'
 import { join } from 'path'
 
-const shpFixture = join(__dirname, 'shp-fixture.zip')
+const shpFixture = join(__dirname, '../fixtures/shp-fixture.zip')
 const sample = {
   type: 'FeatureCollection',
   features: [

@@ -8,7 +8,7 @@ import { createReadStream } from 'graceful-fs'
 import tmp from 'tempfile'
 import { join } from 'path'
 
-const xlsFixture = join(__dirname, 'xls-fixture.xls')
+const xlsFixture = join(__dirname, '../fixtures/xls-fixture.xls')
 
 const arrToExcel = (arr) => {
   const headers = Object.keys(arr[0])

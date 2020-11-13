@@ -5,8 +5,8 @@ import collect from 'get-stream'
 import fs, { createReadStream } from 'graceful-fs'
 import { join } from 'path'
 
-const kmzFixture = join(__dirname, 'kmz-farmers-markets.zip')
-const expected = fs.readFileSync(join(__dirname, 'kml-farmers-markets.geojson'))
+const kmzFixture = join(__dirname, '../fixtures/kmz-farmers-markets.zip')
+const expected = fs.readFileSync(join(__dirname, '../fixtures/kml-farmers-markets.geojson'))
 
 describe('parse kmz', () => {
   it('should parse a kmz file', async () => {

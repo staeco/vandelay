@@ -7,8 +7,8 @@ import { join } from 'path'
 import streamify from 'into-stream'
 import collect from 'get-stream'
 
-const zipFixture = join(__dirname, 'csv-test.zip')
-const zipFixtureMulti = join(__dirname, 'csv-test-multi.zip')
+const zipFixture = join(__dirname, '../fixtures/csv-test.zip')
+const zipFixtureMulti = join(__dirname, '../fixtures/csv-test-multi.zip')
 
 describe('parse csv', () => {
   it('should throw on bad options', async () => {

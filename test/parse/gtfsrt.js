@@ -7,7 +7,7 @@ import collect from 'get-stream'
 import { createReadStream } from 'graceful-fs'
 import { join } from 'path'
 
-const rtFixture = join(__dirname, 'gtfsrt.feed')
+const rtFixture = join(__dirname, '../fixtures/gtfsrt.feed')
 
 describe('parse gtfsrt', () => {
   it('should parse a feed', async () => {

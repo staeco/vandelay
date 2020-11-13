@@ -5,8 +5,8 @@ import collect from 'get-stream'
 import fs, { createReadStream } from 'graceful-fs'
 import { join } from 'path'
 
-const gpxFixture = join(__dirname, 'gpx-run.gpx')
-const expected = fs.readFileSync(join(__dirname, 'gpx-run.geojson'))
+const gpxFixture = join(__dirname, '../fixtures/gpx-run.gpx')
+const expected = fs.readFileSync(join(__dirname, '../fixtures/gpx-run.geojson'))
 
 describe('parse gpx', () => {
   it('should parse a gpx file', async () => {

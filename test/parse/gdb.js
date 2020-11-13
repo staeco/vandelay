@@ -5,7 +5,7 @@ import collect from 'get-stream'
 import { createReadStream } from 'graceful-fs'
 import { join } from 'path'
 
-const gdbFixture = join(__dirname, 'gdb-sacramento-crime.zip')
+const gdbFixture = join(__dirname, '../fixtures/gdb-sacramento-crime.zip')
 
 //should(res.length).equal(327284)
 // res[0]).eql(

@@ -4,6 +4,7 @@ import pSeries from 'p-series'
 import { pipeline } from 'readable-stream'
 import duplexify from 'duplexify'
 import url from 'url'
+import fetchURL from './fetchURL'
 import { getToken as getOAuthToken } from './oauth'
 import fetchWithParser from './fetchWithParser'
 import multiStream from './multiStream'
@@ -173,4 +174,5 @@ const fetchStream = (source, opt={}, raw=false) => {
   })
 }
 
+export { fetchURL, getOAuthToken }
 export default fetchStream

@@ -5,8 +5,8 @@ import collect from 'get-stream'
 import fs, { createReadStream } from 'graceful-fs'
 import { join } from 'path'
 
-const kmlFixture = join(__dirname, 'kml-farmers-markets.kml')
-const expected = fs.readFileSync(join(__dirname, 'kml-farmers-markets.geojson'))
+const kmlFixture = join(__dirname, '../fixtures/kml-farmers-markets.kml')
+const expected = fs.readFileSync(join(__dirname, '../fixtures/kml-farmers-markets.geojson'))
 
 describe('parse kml', () => {
   it('should parse a kml file', async () => {
