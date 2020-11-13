@@ -174,5 +174,7 @@ const fetchStream = (source, opt={}, raw=false) => {
   })
 }
 
-export { fetchURL, getOAuthToken }
+fetchStream.fetchURL = fetchURL
+fetchStream.getOAuthToken = getOAuthToken
+
 export default fetchStream
