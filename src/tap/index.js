@@ -1,9 +1,12 @@
 import through from 'through2-concurrent'
 import { clone } from 'lodash'
 
-export default (fn, opt={}) => {
+const defaultConcurrency = 8
+const defaultWaterMark = 16
+
+export default (fn, opt = {}) => {
   if (typeof fn !== 'function') throw new Error('Invalid function!')
-  const maxConcurrency = opt.concurrency != null ? opt.concurrency : 8
+  const concurrency = opt.concurrency != null ? opt.concurrency : defaultConcurrency
 
   const tap = (row, _, cb) => {
     let meta
@@ -24,7 +27,7 @@ export default (fn, opt={}) => {
       .catch(cb)
   }
   return through.obj({
-    maxConcurrency,
-    highWaterMark: Math.max(16, maxConcurrency * 2)
+    maxConcurrency: concurrency,
+    highWaterMark: Math.max(defaultWaterMark, concurrency)
   }, tap)
 }

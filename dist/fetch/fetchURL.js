@@ -38,9 +38,9 @@ const fiveMinutes = 300000;
 const retryWorthy = [420, 444, 408, 429, 449, 499];
 
 const shouldRetry = (_, original) => {
-  if ((original === null || original === void 0 ? void 0 : original.code) === 'ENOTFOUND') return false; // no point retrying on domains that dont exist
+  if (original?.code === 'ENOTFOUND') return false; // no point retrying on domains that dont exist
 
-  const res = original === null || original === void 0 ? void 0 : original.response;
+  const res = original?.response;
   if (!res) return false; // non-http error?
   // their server having issues, give it another go
 
@@ -51,6 +51,10 @@ const shouldRetry = (_, original) => {
   if (res.statusCode >= 400) return false;
   return true;
 };
+
+function _ref(v, k) {
+  return !!k && !!v;
+}
 
 var _default = (url, {
   attempts = 10,
@@ -68,7 +72,7 @@ var _default = (url, {
   let isCollectingError = false;
   const actualHeaders = (0, _lodash.pickBy)(_objectSpread({
     'User-Agent': _userAgent.default
-  }, headers), (v, k) => !!k && !!v);
+  }, headers), _ref);
   if (accessToken) actualHeaders.Authorization = `Bearer ${accessToken}`;
   if (query) fullURL = (0, _mergeURL.default)(fullURL, query);
   const options = {
@@ -88,29 +92,35 @@ var _default = (url, {
   if (debug) debug('Fetching', fullURL);
   let req; // got throws errors on invalid headers or other invalid args, so handle them instead of throwing
 
+  async function _ref2(err) {
+    isCollectingError = true;
+    const orig = err.original || err;
+    if (debug) debug('Got error while fetching', orig);
+
+    if (orig?.response) {
+      orig.response.text = orig.response.rawBody ? orig.response.rawBody.toString('utf8') // for whatever reason, got buffered the response
+      : await (0, _getStream.default)(orig.response, {
+        maxBuffer: sizeLimit
+      }); // nothing buffered - keep reading
+    }
+
+    out.emit('error', (0, _httpError.default)(orig, orig?.response));
+    out.abort();
+  }
+
+  function _ref3(err) {
+    if (err) out.emit('error', err);
+  }
+
+  function _ref4() {
+    if (isCollectingError) return;
+    if (debug) debug('Got a first response, starting stream');
+    (0, _readableStream.pipeline)(req, out, _ref3);
+  }
+
   try {
     req = (0, _gotResumeNext.default)(fullURL, options) // handle errors
-    .once('error', async err => {
-      isCollectingError = true;
-      const orig = err.original || err;
-      if (debug) debug('Got error while fetching', orig);
-
-      if (orig === null || orig === void 0 ? void 0 : orig.response) {
-        orig.response.text = orig.response.rawBody ? orig.response.rawBody.toString('utf8') // for whatever reason, got buffered the response
-        : await (0, _getStream.default)(orig.response, {
-          maxBuffer: sizeLimit
-        }); // nothing buffered - keep reading
-      }
-
-      out.emit('error', (0, _httpError.default)(orig, orig === null || orig === void 0 ? void 0 : orig.response));
-      out.abort();
-    }).once('response', () => {
-      if (isCollectingError) return;
-      if (debug) debug('Got a first response, starting stream');
-      (0, _readableStream.pipeline)(req, out, err => {
-        if (err) out.emit('error', err);
-      });
-    });
+    .once('error', _ref2).once('response', _ref4);
   } catch (err) {
     process.nextTick(() => {
       out.emit('error', err);

@@ -40,12 +40,16 @@ const transformObject = (o, fn) => {
 
   if (!(0, _isPlainObj.default)(o)) return fn(o)[0]; // dive into the object
 
+  function _ref(v) {
+    return transformObject(v, fn);
+  }
+
   return Object.entries(o).reduce((prev, [k, v]) => {
     const res = fn(v, k);
     if (typeof res[0] === 'undefined') return prev; // recurse arrays or objects nested in object
 
     if (Array.isArray(res[0])) {
-      res[0] = res[0].map(v => transformObject(v, fn));
+      res[0] = res[0].map(_ref);
     }
 
     if ((0, _isPlainObj.default)(res[0])) {
@@ -147,11 +151,19 @@ const infer = v => {
 
 exports.infer = infer;
 
-const simple = obj => transformObject(obj, (v, k) => [infer(v), k === null || k === void 0 ? void 0 : k.trim()]);
+function _ref2(v, k) {
+  return [infer(v), k?.trim()];
+}
+
+const simple = obj => transformObject(obj, _ref2);
 
 exports.simple = simple;
 
-const aggressive = obj => transformObject(obj, (v, k) => [infer(v), k && (0, _camelcase.default)(k)]);
+function _ref3(v, k) {
+  return [infer(v), k && (0, _camelcase.default)(k)];
+}
+
+const aggressive = obj => transformObject(obj, _ref3);
 
 exports.aggressive = aggressive;
 

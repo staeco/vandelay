@@ -22,7 +22,8 @@ var _tap = _interopRequireDefault(require("../tap"));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const asyncTimeout = 120000; // 2 mins
-// this timeout provides helpful context if a pipeline is stalling by signalling which piece is causing the issue
+
+const defaultConcurrency = 8; // this timeout provides helpful context if a pipeline is stalling by signalling which piece is causing the issue
 
 const pWrap = async (p, name) => {
   if (!p || !p.then) return p; // not a promise, skip the async timeout instrumentation
@@ -30,6 +31,14 @@ const pWrap = async (p, name) => {
   return (0, _pTimeout.default)(p, asyncTimeout, `${name} timed out`);
 }; // transformer can either be an object, a string, or a function
 
+
+function _ref() {
+  return (0, _threads.spawn)(new _threads.Worker('./worker'));
+}
+
+function _ref2() {
+  return null;
+}
 
 const getTransformFunction = _moize.default.deep((transformer, opt = {}) => {
   // object transform - run it as object-transform-stack in thread
@@ -40,13 +49,13 @@ const getTransformFunction = _moize.default.deep((transformer, opt = {}) => {
 
 
   if (typeof transformer === 'string' && opt.pooling === true) {
-    const pool = (0, _threads.Pool)(() => (0, _threads.spawn)(new _threads.Worker('./worker')), opt.concurrency || 8);
+    const pool = (0, _threads.Pool)(_ref, opt.concurrency || defaultConcurrency);
 
     const transformFn = async (record, meta) => pool.queue(async (work) => work(transformer, {
       timeout: opt.timeout
     }, record, meta));
 
-    transformFn().catch(() => null); // warm up the pool
+    transformFn().catch(_ref2); // warm up the pool
 
     transformFn.pool = pool;
     return transformFn;
@@ -105,10 +114,12 @@ var _default = (transformer, opt = {}) => {
 
   const outStream = (0, _tap.default)(transform, opt);
 
+  function _ref3() {
+    transformFn.pool.terminate();
+  }
+
   if (transformFn.pool) {
-    (0, _readableStream.finished)(outStream, () => {
-      transformFn.pool.terminate();
-    });
+    (0, _readableStream.finished)(outStream, _ref3);
   }
 
   return outStream;

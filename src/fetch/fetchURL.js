@@ -34,7 +34,7 @@ const shouldRetry = (_, original) => {
   return true
 }
 
-export default (url, { attempts=10, headers={}, query, timeout, connectTimeout, accessToken, debug, context }={}) => {
+export default (url, { attempts = 10, headers = {}, query, timeout, connectTimeout, accessToken, debug, context } = {}) => {
   const decoded = unescape(url)
   let fullURL = context && decoded.includes('{')
     ? template.parse(decoded).expand(context)

@@ -34,8 +34,8 @@ var _default = ({
       row.___meta = (0, _lodash.pickBy)({
         row: ++rows,
         url: req.url,
-        accessToken: opt === null || opt === void 0 ? void 0 : opt.accessToken,
-        context: opt === null || opt === void 0 ? void 0 : opt.context,
+        accessToken: opt?.accessToken,
+        context: opt?.context,
         source
       }, notNull); // json header info from the parser
 

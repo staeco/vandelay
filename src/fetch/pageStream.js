@@ -2,6 +2,7 @@ import through2 from 'through2'
 import { pipeline, finished } from 'readable-stream'
 import hardClose from '../hardClose'
 
+const maxConcurrency = 2
 const getURL = (stream) =>
   stream.first
     ? getURL(stream.first)
@@ -26,9 +27,9 @@ const softClose = (i) => {
 // merges a bunch of streams, unordered - and has some special error management
 // so one wont fail the whole bunch
 // keep this aligned w/ multiStream.js
-export default ({ startPage=0, waitForNextPage, fetchNextPage, concurrent=2, onError }={}) => {
+export default ({ startPage = 0, waitForNextPage, fetchNextPage, concurrent = maxConcurrency, onError } = {}) => {
   // concurrency can either be 1 or 2, 2 will start loading the next page once it reads a first datum from the current page
-  const actualConcurrency = Math.min(2, concurrent)
+  const actualConcurrency = Math.min(maxConcurrency, concurrent)
   const out = through2.obj()
   out.nextPage = startPage
   out.running = []

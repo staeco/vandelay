@@ -31,16 +31,19 @@ var _default = (format, opt = {}) => {
   fmt(opt); // just to validate!
 
   if (!opt.autoFormat) return () => fmt(opt);
+
+  function _ref(row, _, cb) {
+    // fun dance to retain the json header field needed for our metadata
+    const nrow = (0, _isPlainObj.default)(row) ? (0, _lodash.omit)(row, '___header') : row;
+    const out = autoFormat[opt.autoFormat](nrow);
+    if (row.___header) out.___header = row.___header;
+    cb(null, out);
+  }
+
   return () => {
     const head = fmt(opt);
 
-    const tail = _through.default.obj((row, _, cb) => {
-      // fun dance to retain the json header field needed for our metadata
-      const nrow = (0, _isPlainObj.default)(row) ? (0, _lodash.omit)(row, '___header') : row;
-      const out = autoFormat[opt.autoFormat](nrow);
-      if (row.___header) out.___header = row.___header;
-      cb(null, out);
-    });
+    const tail = _through.default.obj(_ref);
 
     return _pumpify.default.obj((0, _removeBomStream.default)(), head, tail);
   };

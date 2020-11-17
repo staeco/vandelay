@@ -34,6 +34,8 @@ const getDefaultFunction = (code, opt) => {
 
 exports.getDefaultFunction = getDefaultFunction;
 
+function _ref() {}
+
 const sandbox = (code, opt = {}) => {
   let fn;
 
@@ -57,7 +59,7 @@ const sandbox = (code, opt = {}) => {
   if (opt.globals) addIn(vm, opt.globals); // topDomain is for evaluating the script
   // any errors thrown outside the transform fn are caught here
 
-  topDomain.on('error', () => {}); // swallow async errors
+  topDomain.on('error', _ref); // swallow async errors
 
   topDomain.run(() => {
     fn = vm.run(script, 'compiled-transform.js');

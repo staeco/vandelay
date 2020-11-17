@@ -11,6 +11,8 @@ var _hardClose = _interopRequireDefault(require("../hardClose"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+const maxConcurrency = 2;
+
 const getURL = stream => stream.first ? getURL(stream.first) : typeof stream.url === 'function' ? stream.url() : stream.url;
 
 const closeIt = i => {
@@ -36,11 +38,11 @@ var _default = ({
   startPage = 0,
   waitForNextPage,
   fetchNextPage,
-  concurrent = 2,
+  concurrent = maxConcurrency,
   onError
 } = {}) => {
   // concurrency can either be 1 or 2, 2 will start loading the next page once it reads a first datum from the current page
-  const actualConcurrency = Math.min(2, concurrent);
+  const actualConcurrency = Math.min(maxConcurrency, concurrent);
 
   const out = _through.default.obj();
 

@@ -3,6 +3,9 @@ import { pickBy, omit } from 'lodash'
 import userAgent from './userAgent'
 import httpError from './httpError'
 
+const maxRetries = 10
+const timeout = 30000
+
 export const getToken = async (oauth) => {
   const rest = omit(oauth.grant, [ 'url', 'type' ])
   const res = await request
@@ -17,8 +20,8 @@ export const getToken = async (oauth) => {
       'Cache-Control': 'no-cache',
       'User-Agent': userAgent
     })
-    .retry(10)
-    .timeout(30000)
+    .retry(maxRetries)
+    .timeout(timeout)
     .catch((err) => {
       throw httpError(err, err.response && err.response.res)
     })

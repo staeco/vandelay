@@ -9,9 +9,12 @@ var _lodash = require("lodash");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+const defaultConcurrency = 8;
+const defaultWaterMark = 16;
+
 var _default = (fn, opt = {}) => {
   if (typeof fn !== 'function') throw new Error('Invalid function!');
-  const maxConcurrency = opt.concurrency != null ? opt.concurrency : 8;
+  const concurrency = opt.concurrency != null ? opt.concurrency : defaultConcurrency;
 
   const tap = (row, _, cb) => {
     let meta; // pluck the ___meta attr we attached in fetch
@@ -34,8 +37,8 @@ var _default = (fn, opt = {}) => {
   };
 
   return _through2Concurrent.default.obj({
-    maxConcurrency,
-    highWaterMark: Math.max(16, maxConcurrency * 2)
+    maxConcurrency: concurrency,
+    highWaterMark: Math.max(defaultWaterMark, concurrency)
   }, tap);
 };
 

@@ -14,7 +14,8 @@ import pageStream from './pageStream'
 import hardClose from '../hardClose'
 import parse from '../parse'
 
-const getFetchOptions = (source, opt, setupResult={}) => ({
+const defaultConcurrency = 8
+const getFetchOptions = (source, opt, setupResult = {}) => ({
   fetchURL: opt.fetchURL,
   debug: opt.debug,
   timeout: opt.timeout,
@@ -106,8 +107,8 @@ const createParser = (baseParser, nextPageParser) => {
   }
 }
 
-const fetchStream = (source, opt={}, raw=false) => {
-  const concurrent = opt.concurrency != null ? opt.concurrency : 8
+const fetchStream = (source, opt = {}, raw = false) => {
+  const concurrent = opt.concurrency != null ? opt.concurrency : defaultConcurrency
   if (Array.isArray(source)) {
     // zips eat memory, do not run more than one at a time
     const containsZips = source.some((i) => i.parserOptions && i.parserOptions.zip)

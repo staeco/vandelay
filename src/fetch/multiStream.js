@@ -26,7 +26,7 @@ const softClose = (i) => {
 
 // merges a bunch of streams, unordered - and has some special error management
 // so one wont fail the whole bunch
-export default ({ concurrent=8, onError, inputs=[] }={}) => {
+export default ({ concurrent = 8, onError, inputs = [] } = {}) => {
   if (inputs.length === 0) throw new Error('No inputs specified!')
 
   const out = through2.obj()

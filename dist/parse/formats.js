@@ -37,6 +37,16 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
+function _ref({
+  header
+}) {
+  return header?.trim();
+}
+
+function _ref2(row, _, cb) {
+  cb(null, (0, _lodash.omit)(row, 'headers'));
+}
+
 // these formatters receive one argument, "data source" object
 // and return a stream that maps strings to items
 const csv = opt => {
@@ -44,19 +54,25 @@ const csv = opt => {
     zip: undefined
   })), /\.csv$/);
   const head = (0, _csvParser.default)({
-    mapHeaders: ({
-      header
-    }) => header === null || header === void 0 ? void 0 : header.trim()
+    mapHeaders: _ref
   }); // convert into normal objects
 
-  const tail = _through.default.obj((row, _, cb) => {
-    cb(null, (0, _lodash.omit)(row, 'headers'));
-  });
+  const tail = _through.default.obj(_ref2);
 
   return _pumpify.default.obj(head, tail);
 };
 
 exports.csv = csv;
+
+function _ref3({
+  header
+}) {
+  return header?.trim();
+}
+
+function _ref4(row, _, cb) {
+  cb(null, (0, _lodash.omit)(row, 'headers'));
+}
 
 const tsv = opt => {
   if (opt.zip) return (0, _unzip.default)(csv.bind(void 0, _objectSpread(_objectSpread({}, opt), {}, {
@@ -64,27 +80,27 @@ const tsv = opt => {
   })), /\.tsv$/);
   const head = (0, _csvParser.default)({
     separator: '\t',
-    mapHeaders: ({
-      header
-    }) => header === null || header === void 0 ? void 0 : header.trim()
+    mapHeaders: _ref3
   }); // convert into normal objects
 
-  const tail = _through.default.obj((row, _, cb) => {
-    cb(null, (0, _lodash.omit)(row, 'headers'));
-  });
+  const tail = _through.default.obj(_ref4);
 
   return _pumpify.default.obj(head, tail);
 };
 
 exports.tsv = tsv;
 
+function _ref5(header) {
+  return header?.trim();
+}
+
 const excel = opt => {
   if (opt.zip) return (0, _unzip.default)(excel.bind(void 0, _objectSpread(_objectSpread({}, opt), {}, {
     zip: undefined
   })), /\.xlsx$/);
-  return (0, _exceljsTransformStream.default)({
-    mapHeaders: header => header === null || header === void 0 ? void 0 : header.trim()
-  });
+  return (0, _exceljsTransformStream.default)(_objectSpread(_objectSpread({}, opt), {}, {
+    mapHeaders: _ref5
+  }));
 };
 
 exports.excel = excel;
@@ -104,11 +120,13 @@ const json = opt => {
 
     const outStream = _through.default.obj();
 
+    function _ref6(err) {
+      if (err) outStream.emit('error', err);
+    }
+
     opt.selector.forEach(selector => (0, _readableStream.pipeline)(inStream, json(_objectSpread(_objectSpread({}, opt), {}, {
       selector
-    })), outStream, err => {
-      if (err) outStream.emit('error', err);
-    }));
+    })), outStream, _ref6));
     return _duplexify.default.obj(inStream, outStream);
   }
 

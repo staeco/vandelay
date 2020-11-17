@@ -19,16 +19,25 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
+const maxRetries = 10;
+const timeout = 30000;
+
+function _ref(v, k) {
+  return !!k && !!v;
+}
+
+function _ref2(err) {
+  throw (0, _httpError.default)(err, err.response && err.response.res);
+}
+
 const getToken = async oauth => {
   const rest = (0, _lodash.omit)(oauth.grant, ['url', 'type']);
   const res = await _superagent.default.post(oauth.grant.url).type('form').accept('json').send((0, _lodash.pickBy)(_objectSpread({
     grant_type: oauth.grant.type
-  }, rest), (v, k) => !!k && !!v)).set({
+  }, rest), _ref)).set({
     'Cache-Control': 'no-cache',
     'User-Agent': _userAgent.default
-  }).retry(10).timeout(30000).catch(err => {
-    throw (0, _httpError.default)(err, err.response && err.response.res);
-  });
+  }).retry(maxRetries).timeout(timeout).catch(_ref2);
   return res.body.access_token;
 };
 

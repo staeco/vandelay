@@ -8,6 +8,7 @@ import { getDefaultFunction } from '../sandbox'
 import tap from '../tap'
 
 const asyncTimeout = 120000 // 2 mins
+const defaultConcurrency = 8
 
 // this timeout provides helpful context if a pipeline is stalling by signalling which piece is causing the issue
 const pWrap = async (p, name) => {
@@ -16,7 +17,7 @@ const pWrap = async (p, name) => {
 }
 
 // transformer can either be an object, a string, or a function
-const getTransformFunction = memo.deep((transformer, opt={}) => {
+const getTransformFunction = memo.deep((transformer, opt = {}) => {
   // object transform - run it as object-transform-stack in thread
   if (isObject(transformer)) {
     const stack = transformer
@@ -25,7 +26,7 @@ const getTransformFunction = memo.deep((transformer, opt={}) => {
 
   // custom code importer with pooling enabled - run it in the worker pool
   if (typeof transformer === 'string' && opt.pooling === true) {
-    const pool = Pool(() => spawn(new Worker('./worker')), opt.concurrency || 8)
+    const pool = Pool(() => spawn(new Worker('./worker')), opt.concurrency || defaultConcurrency)
     const transformFn = async (record, meta) =>
       pool.queue(async (work) =>
         work(transformer, {
@@ -47,7 +48,7 @@ const getTransformFunction = memo.deep((transformer, opt={}) => {
   return transformer
 })
 
-export default (transformer, opt={}) => {
+export default (transformer, opt = {}) => {
   const transformFn = getTransformFunction(transformer, opt)
   const transform = async (record, meta) => {
     if (opt.onBegin) await pWrap(opt.onBegin(record, meta), 'onBegin')

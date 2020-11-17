@@ -6,7 +6,7 @@ import bom from 'remove-bom-stream'
 import * as formats from './formats'
 import * as autoFormat from '../autoFormat'
 
-export default (format, opt={}) => {
+export default (format, opt = {}) => {
   if (typeof format !== 'string') throw new Error('Invalid format argument')
   const fmt = formats[format]
   if (!fmt) throw new Error(`${format} is not a supported parser format`)

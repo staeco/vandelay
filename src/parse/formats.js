@@ -42,6 +42,7 @@ export const tsv = (opt) => {
 export const excel = (opt) => {
   if (opt.zip) return unzip(excel.bind(this, { ...opt, zip: undefined }), /\.xlsx$/)
   return excelStream({
+    ...opt,
     mapHeaders: (header) => header?.trim()
   })
 }

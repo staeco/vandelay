@@ -41,7 +41,7 @@ export const getDefaultFunction = (code, opt) => {
   return transformFn
 }
 
-const sandbox = (code, opt={}) => {
+const sandbox = (code, opt = {}) => {
   let fn
   const topDomain = domains.create()
   const script = new VMScript(opt.compiler ? opt.compiler(code) : code)

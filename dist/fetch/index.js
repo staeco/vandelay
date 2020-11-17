@@ -41,6 +41,8 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
+const defaultConcurrency = 8;
+
 const getFetchOptions = (source, opt, setupResult = {}) => ({
   fetchURL: opt.fetchURL,
   debug: opt.debug,
@@ -69,23 +71,25 @@ const getPageQuery = (pageOpt, page) => {
   return out;
 };
 
+async function _ref(ourSource) {
+  return {
+    accessToken: await (0, _oauth.getToken)(ourSource.oauth)
+  };
+}
+
 const setupContext = (source, opt, getStream) => {
   const preRun = [];
 
   if (source.oauth) {
-    preRun.push(async ourSource => ({
-      accessToken: await (0, _oauth.getToken)(ourSource.oauth)
-    }));
+    preRun.push(_ref);
   }
 
   if (source.setup) {
-    var _source$setup;
-
     if (typeof source.setup === 'string') {
       source.setup = (0, _sandbox.default)(source.setup, opt.setup);
     }
 
-    const setupFn = ((_source$setup = source.setup) === null || _source$setup === void 0 ? void 0 : _source$setup.default) || source.setup;
+    const setupFn = source.setup?.default || source.setup;
     if (typeof setupFn !== 'function') throw new Error('Invalid setup function!');
     preRun.push(setupFn);
   }
@@ -137,16 +141,24 @@ const createParser = (baseParser, nextPageParser) => {
   };
 };
 
+function _ref2(i) {
+  return i.parserOptions && i.parserOptions.zip;
+}
+
 const fetchStream = (source, opt = {}, raw = false) => {
-  const concurrent = opt.concurrency != null ? opt.concurrency : 8;
+  const concurrent = opt.concurrency != null ? opt.concurrency : defaultConcurrency;
+
+  function _ref3(i) {
+    return fetchStream.bind(null, i, opt, true);
+  }
 
   if (Array.isArray(source)) {
     // zips eat memory, do not run more than one at a time
-    const containsZips = source.some(i => i.parserOptions && i.parserOptions.zip);
+    const containsZips = source.some(_ref2);
     if (containsZips && opt.debug) opt.debug('Detected zip, running with concurrency=1');
     return (0, _multiStream.default)({
       concurrent: containsZips ? 1 : concurrent,
-      inputs: source.map(i => fetchStream.bind(null, i, opt, true)),
+      inputs: source.map(_ref3),
       onError: opt.onError || defaultErrorHandler
     });
   } // validate params
