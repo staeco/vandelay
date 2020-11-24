@@ -54,7 +54,7 @@ export default (url, { attempts = 10, headers = {}, query, timeout, connectTimeo
     'User-Agent': userAgent,
     ...headers
   }, (v, k) => !!k && !!v))
-  if (accessToken) actualHeaders.Authorization = `Bearer ${accessToken}`
+  if (accessToken) actualHeaders.authorization = `Bearer ${accessToken}`
   if (query) fullURL = mergeURL(fullURL, query)
   if (actualHeaders.cookie) cookieJar.setCookieSync(actualHeaders.cookie, fullURL)
   const options = {

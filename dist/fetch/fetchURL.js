@@ -84,7 +84,7 @@ var _default = (url, {
   const actualHeaders = lowerObj((0, _lodash.pickBy)(_objectSpread({
     'User-Agent': _userAgent.default
   }, headers), _ref2));
-  if (accessToken) actualHeaders.Authorization = `Bearer ${accessToken}`;
+  if (accessToken) actualHeaders.authorization = `Bearer ${accessToken}`;
   if (query) fullURL = (0, _mergeURL.default)(fullURL, query);
   if (actualHeaders.cookie) cookieJar.setCookieSync(actualHeaders.cookie, fullURL);
   const options = {
