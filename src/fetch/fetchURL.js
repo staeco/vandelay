@@ -3,6 +3,7 @@ import through2 from 'through2'
 import collect from 'get-stream'
 import { pipeline } from 'readable-stream'
 import template from 'url-template'
+import { CookieJar } from 'tough-cookie'
 import { pickBy } from 'lodash'
 import httpError from './httpError'
 import userAgent from './userAgent'
@@ -12,6 +13,12 @@ import mergeURL from '../mergeURL'
 const sizeLimit = 512000 // 512kb
 const oneDay = 86400000
 const fiveMinutes = 300000
+
+const lowerObj = (o) =>
+  Object.entries(o).reduce((acc, [ k, v ]) => {
+    acc[k.toLowerCase()] = v
+    return acc
+  }, {})
 
 const retryWorthy = [
   420, 444, 408, 429, 449, 499
@@ -34,7 +41,7 @@ const shouldRetry = (_, original) => {
   return true
 }
 
-export default (url, { attempts = 10, headers = {}, query, timeout, connectTimeout, accessToken, debug, context } = {}) => {
+export default (url, { attempts = 10, headers = {}, query, timeout, connectTimeout, accessToken, cookieJar = new CookieJar(), debug, context } = {}) => {
   const decoded = unescape(url)
   let fullURL = context && decoded.includes('{')
     ? template.parse(decoded).expand(context)
@@ -43,12 +50,13 @@ export default (url, { attempts = 10, headers = {}, query, timeout, connectTimeo
   const out = through2()
   let isCollectingError = false
 
-  const actualHeaders = pickBy({
+  const actualHeaders = lowerObj(pickBy({
     'User-Agent': userAgent,
     ...headers
-  }, (v, k) => !!k && !!v)
+  }, (v, k) => !!k && !!v))
   if (accessToken) actualHeaders.Authorization = `Bearer ${accessToken}`
   if (query) fullURL = mergeURL(fullURL, query)
+  if (actualHeaders.cookie) cookieJar.setCookieSync(actualHeaders.cookie, fullURL)
   const options = {
     log: debug,
     attempts,
@@ -60,7 +68,8 @@ export default (url, { attempts = 10, headers = {}, query, timeout, connectTimeo
         connect: connectTimeout || fiveMinutes,
         socket: oneDay
       },
-      headers: actualHeaders
+      headers: actualHeaders,
+      cookieJar
     }
   }
 

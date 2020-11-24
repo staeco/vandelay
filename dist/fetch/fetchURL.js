@@ -13,6 +13,8 @@ var _readableStream = require("readable-stream");
 
 var _urlTemplate = _interopRequireDefault(require("url-template"));
 
+var _toughCookie = require("tough-cookie");
+
 var _lodash = require("lodash");
 
 var _httpError = _interopRequireDefault(require("./httpError"));
@@ -35,6 +37,14 @@ const sizeLimit = 512000; // 512kb
 
 const oneDay = 86400000;
 const fiveMinutes = 300000;
+
+function _ref(acc, [k, v]) {
+  acc[k.toLowerCase()] = v;
+  return acc;
+}
+
+const lowerObj = o => Object.entries(o).reduce(_ref, {});
+
 const retryWorthy = [420, 444, 408, 429, 449, 499];
 
 const shouldRetry = (_, original) => {
@@ -52,7 +62,7 @@ const shouldRetry = (_, original) => {
   return true;
 };
 
-function _ref(v, k) {
+function _ref2(v, k) {
   return !!k && !!v;
 }
 
@@ -63,6 +73,7 @@ var _default = (url, {
   timeout,
   connectTimeout,
   accessToken,
+  cookieJar = new _toughCookie.CookieJar(),
   debug,
   context
 } = {}) => {
@@ -70,11 +81,12 @@ var _default = (url, {
   let fullURL = context && decoded.includes('{') ? _urlTemplate.default.parse(decoded).expand(context) : url;
   const out = (0, _through.default)();
   let isCollectingError = false;
-  const actualHeaders = (0, _lodash.pickBy)(_objectSpread({
+  const actualHeaders = lowerObj((0, _lodash.pickBy)(_objectSpread({
     'User-Agent': _userAgent.default
-  }, headers), _ref);
+  }, headers), _ref2));
   if (accessToken) actualHeaders.Authorization = `Bearer ${accessToken}`;
   if (query) fullURL = (0, _mergeURL.default)(fullURL, query);
+  if (actualHeaders.cookie) cookieJar.setCookieSync(actualHeaders.cookie, fullURL);
   const options = {
     log: debug,
     attempts,
@@ -86,13 +98,14 @@ var _default = (url, {
         connect: connectTimeout || fiveMinutes,
         socket: oneDay
       },
-      headers: actualHeaders
+      headers: actualHeaders,
+      cookieJar
     }
   };
   if (debug) debug('Fetching', fullURL);
   let req; // got throws errors on invalid headers or other invalid args, so handle them instead of throwing
 
-  async function _ref2(err) {
+  async function _ref3(err) {
     isCollectingError = true;
     const orig = err.original || err;
     if (debug) debug('Got error while fetching', orig);
@@ -108,19 +121,19 @@ var _default = (url, {
     out.abort();
   }
 
-  function _ref3(err) {
+  function _ref4(err) {
     if (err) out.emit('error', err);
   }
 
-  function _ref4() {
+  function _ref5() {
     if (isCollectingError) return;
     if (debug) debug('Got a first response, starting stream');
-    (0, _readableStream.pipeline)(req, out, _ref3);
+    (0, _readableStream.pipeline)(req, out, _ref4);
   }
 
   try {
     req = (0, _gotResumeNext.default)(fullURL, options) // handle errors
-    .once('error', _ref2).once('response', _ref4);
+    .once('error', _ref3).once('response', _ref5);
   } catch (err) {
     process.nextTick(() => {
       out.emit('error', err);
