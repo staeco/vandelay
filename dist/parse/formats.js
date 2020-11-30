@@ -54,7 +54,8 @@ const csv = opt => {
     zip: undefined
   })), /\.csv$/);
   const head = (0, _csvParser.default)({
-    mapHeaders: _ref
+    mapHeaders: _ref,
+    skipComments: true
   }); // convert into normal objects
 
   const tail = _through.default.obj(_ref2);
@@ -80,7 +81,8 @@ const tsv = opt => {
   })), /\.tsv$/);
   const head = (0, _csvParser.default)({
     separator: '\t',
-    mapHeaders: _ref3
+    mapHeaders: _ref3,
+    skipComments: true
   }); // convert into normal objects
 
   const tail = _through.default.obj(_ref4);
