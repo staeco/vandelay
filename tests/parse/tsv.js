@@ -93,4 +93,24 @@ describe('parse tsv', () => {
       { receivedAt: 7, performedAt: 8, calledAt: 9, location: { type: 'LineString', coordinates: [ [ 1, 1 ], [ 1, 1 ] ] } }
     ])
   })
+  it('should parse a tsv with comments', async () => {
+    const data = `# 
+# Reporting Frequency: Hourly; Date Range: 2020-11-27 14:00 to 2020-11-30 13:00
+#
+# As of: Nov 30, 2020 1:55:12 PM GMT-08:00
+#
+Station Id\tStation Name\tSnow Depth\tSWE
+356\tBlue Lakes\t11.2\t3.4
+357\tEbbets Pass\t11.4\t3.5
+358\tEcho Summit\t11.8\t3.7`
+
+    const parser = parse('tsv', { autoFormat: 'simple' })
+    const stream = streamify(data).pipe(parser())
+    const res = await collect.array(stream)
+    res.should.eql([
+      { 'Station Id': 356, 'Station Name': 'Blue Lakes', 'Snow Depth': 11.2, SWE: 3.4 },
+      { 'Station Id': 357, 'Station Name': 'Ebbets Pass', 'Snow Depth': 11.4, SWE: 3.5 },
+      { 'Station Id': 358, 'Station Name': 'Echo Summit', 'Snow Depth': 11.8, SWE: 3.7 }
+    ])
+  })
 })
