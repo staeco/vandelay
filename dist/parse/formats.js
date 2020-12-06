@@ -31,12 +31,6 @@ var _xml2json = _interopRequireDefault(require("./xml2json"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
-
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
 function _ref({
   header
 }) {
@@ -50,9 +44,9 @@ function _ref2(row, _, cb) {
 // these formatters receive one argument, "data source" object
 // and return a stream that maps strings to items
 const csv = opt => {
-  if (opt.zip) return (0, _unzip.default)(csv.bind(void 0, _objectSpread(_objectSpread({}, opt), {}, {
+  if (opt.zip) return (0, _unzip.default)(csv.bind(void 0, { ...opt,
     zip: undefined
-  })), /\.csv$/);
+  }), /\.csv$/);
   const head = (0, _csvParser.default)({
     mapHeaders: _ref,
     skipComments: true
@@ -76,9 +70,9 @@ function _ref4(row, _, cb) {
 }
 
 const tsv = opt => {
-  if (opt.zip) return (0, _unzip.default)(csv.bind(void 0, _objectSpread(_objectSpread({}, opt), {}, {
+  if (opt.zip) return (0, _unzip.default)(csv.bind(void 0, { ...opt,
     zip: undefined
-  })), /\.tsv$/);
+  }), /\.tsv$/);
   const head = (0, _csvParser.default)({
     separator: '\t',
     mapHeaders: _ref3,
@@ -97,20 +91,20 @@ function _ref5(header) {
 }
 
 const excel = opt => {
-  if (opt.zip) return (0, _unzip.default)(excel.bind(void 0, _objectSpread(_objectSpread({}, opt), {}, {
+  if (opt.zip) return (0, _unzip.default)(excel.bind(void 0, { ...opt,
     zip: undefined
-  })), /\.xlsx$/);
-  return (0, _exceljsTransformStream.default)(_objectSpread(_objectSpread({}, opt), {}, {
+  }), /\.xlsx$/);
+  return (0, _exceljsTransformStream.default)({ ...opt,
     mapHeaders: _ref5
-  }));
+  });
 };
 
 exports.excel = excel;
 
 const ndjson = opt => {
-  if (opt.zip) return (0, _unzip.default)(ndjson.bind(void 0, _objectSpread(_objectSpread({}, opt), {}, {
+  if (opt.zip) return (0, _unzip.default)(ndjson.bind(void 0, { ...opt,
     zip: undefined
-  })), /\.ndjson$/);
+  }), /\.ndjson$/);
   return (0, _ndjson.parse)();
 };
 
@@ -126,16 +120,16 @@ const json = opt => {
       if (err) outStream.emit('error', err);
     }
 
-    opt.selector.forEach(selector => (0, _readableStream.pipeline)(inStream, json(_objectSpread(_objectSpread({}, opt), {}, {
+    opt.selector.forEach(selector => (0, _readableStream.pipeline)(inStream, json({ ...opt,
       selector
-    })), outStream, _ref6));
+    }), outStream, _ref6));
     return _duplexify.default.obj(inStream, outStream);
   }
 
   if (typeof opt.selector !== 'string') throw new Error('Missing selector for JSON parser!');
-  if (opt.zip) return (0, _unzip.default)(json.bind(void 0, _objectSpread(_objectSpread({}, opt), {}, {
+  if (opt.zip) return (0, _unzip.default)(json.bind(void 0, { ...opt,
     zip: undefined
-  })), /\.json$/);
+  }), /\.json$/);
 
   const head = _jsonstreamNext.default.parse(opt.selector);
 
@@ -154,21 +148,21 @@ const json = opt => {
 exports.json = json;
 
 const xml = opt => {
-  if (opt.zip) return (0, _unzip.default)(xml.bind(void 0, _objectSpread(_objectSpread({}, opt), {}, {
+  if (opt.zip) return (0, _unzip.default)(xml.bind(void 0, { ...opt,
     zip: undefined
-  })), /\.xml$/);
+  }), /\.xml$/);
   return _pumpify.default.obj((0, _xml2json.default)(opt), json(opt));
 };
 
 exports.xml = xml;
 
 const html = opt => {
-  if (opt.zip) return (0, _unzip.default)(html.bind(void 0, _objectSpread(_objectSpread({}, opt), {}, {
+  if (opt.zip) return (0, _unzip.default)(html.bind(void 0, { ...opt,
     zip: undefined
-  })), /\.html$/);
-  return _pumpify.default.obj((0, _xml2json.default)(_objectSpread(_objectSpread({}, opt), {}, {
+  }), /\.html$/);
+  return _pumpify.default.obj((0, _xml2json.default)({ ...opt,
     strict: false
-  })), json(opt));
+  }), json(opt));
 };
 
 exports.html = html;

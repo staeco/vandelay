@@ -35,12 +35,6 @@ var _parse = _interopRequireDefault(require("../parse"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
-
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
 const defaultConcurrency = 8;
 
 const getFetchOptions = (source, opt, setupResult = {}) => ({
@@ -50,8 +44,12 @@ const getFetchOptions = (source, opt, setupResult = {}) => ({
   connectTimeout: opt.connectTimeout,
   attempts: opt.attempts,
   context: opt.context,
-  headers: _objectSpread(_objectSpread({}, source.headers || {}), setupResult.headers || {}),
-  query: _objectSpread(_objectSpread({}, source.query || {}), setupResult.query || {}),
+  headers: { ...(source.headers || {}),
+    ...(setupResult.headers || {})
+  },
+  query: { ...(source.query || {}),
+    ...(setupResult.query || {})
+  },
   accessToken: setupResult.accessToken
 }); // default behavior is to fail on first error
 
@@ -194,9 +192,9 @@ const fetchStream = (source, opt = {}, raw = false) => {
       throw new Error(`pagination.nextPageSelector can't be used with custom parser functions!`);
     }
 
-    const nextPageParser = source.pagination.nextPageSelector ? (0, _parse.default)(source.parser, _objectSpread(_objectSpread({}, source.parserOptions), {}, {
+    const nextPageParser = source.pagination.nextPageSelector ? (0, _parse.default)(source.parser, { ...source.parserOptions,
       selector: source.pagination.nextPageSelector
-    })) : null;
+    }) : null;
     const parser = createParser(baseParser, nextPageParser);
     return (0, _pageStream.default)({
       startPage: source.pagination.startPage,
