@@ -9,6 +9,8 @@ import tmp from 'tempfile'
 import { join } from 'path'
 
 const xlsFixture = join(__dirname, '../fixtures/xls-fixture.xls')
+const xlsxFixture = join(__dirname, '../fixtures/xlsx-fixture.xlsx')
+const xlsxFixture2 = join(__dirname, '../fixtures/xlsx-fixture-2.xlsx')
 
 const arrToExcel = (arr) => {
   const headers = Object.keys(arr[0])
@@ -90,6 +92,43 @@ describe('parse excel', () => {
       { receivedAt: 4, performedAt: 5, calledAt: 6 },
       { receivedAt: 7, performedAt: 8, calledAt: 9 }
     ])
+  })
+  it('should parse a basic file', async () => {
+    const parser = parse('excel')
+    const stream = createReadStream(xlsxFixture).pipe(parser())
+    const res = await collect.array(stream)
+    res.should.eql([
+      {
+        row: 'row1',
+        date: new Date('2017-02-08T00:00:00.000Z'),
+        cost: 100,
+        notes: 111
+      },
+      {
+        row: 'row2',
+        date: new Date('2017-02-08T00:00:00.000Z'),
+        cost: 300,
+        notes: 222
+      },
+      {
+        row: 'row3',
+        date: new Date('2017-02-08T00:00:00.000Z'),
+        cost: 4,
+        notes: 333
+      },
+      {
+        row: 'row4',
+        date: new Date('2017-02-08T00:00:00.000Z'),
+        cost: 53,
+        notes: 444
+      }
+    ])
+  })
+  it('should parse another basic file', async () => {
+    const parser = parse('excel')
+    const stream = createReadStream(xlsxFixture2).pipe(parser())
+    const res = await collect.array(stream)
+    should.exist(res[0])
   })
   it('should return a friendly error when unsupported XLS file is used', (done) => {
     const parser = parse('excel', { autoFormat: 'simple' })

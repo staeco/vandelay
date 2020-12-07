@@ -31,6 +31,10 @@ const ARCGIS_URL = 'https://opendata.arcgis.com/datasets/f36b2c8164714b258840dce
 // Socrata does support range but error-prone, so this is good to test. This is NYC BIS Property Data.
 const SOCRATA_URL = 'https://data.cityofnewyork.us/api/views/kmub-vria/rows.csv?accessType=DOWNLOAD'
 
+// Google cloud should handle range headers just fine, so test that out
+const GCLOUD_URL = 'https://storage.googleapis.com/staeco-data-files/test-files/xlsx-fixture-2.xlsx'
+const GCLOUD_URL_2 = 'https://storage.googleapis.com/staeco-data-files/citibike/2018-01-through-10.csv'
+
 const md5 = (txt) => createHash('md5').update(String(txt)).digest('hex')
 
 describe('fetch', () => {
@@ -642,7 +646,7 @@ describe('fetch', () => {
     const max = 100000
     let curr = 0
     const source = {
-      url: 'https://storage.googleapis.com/staeco-data-files/citibike/2018-01-through-10.csv',
+      url: GCLOUD_URL_2,
       parser: 'csv'
     }
     const stream = fetch(source)
@@ -903,7 +907,7 @@ describe('fetch', () => {
     should.exist(res[0].geometry)
     should(gotRes).equal(true)
   })
-  it.skip('should request a arcgis geojson file tha gets interrupted, with backpressure', async () => {
+  it.skip('should request a arcgis geojson file that gets interrupted, with backpressure', async () => {
     const source = {
       url: ARCGIS_URL,
       parser: parse('json', { selector: 'features.*' })
@@ -1000,6 +1004,71 @@ describe('fetch', () => {
       if (err) stream.emit('error', err)
     }))
     res.length.should.eql(77)
+    should(gotRes).equal(true)
+  })
+  it('should request a gcloud excel file, testing for race conditions', async () => {
+    const source = {
+      url: GCLOUD_URL,
+      parser: parse('excel')
+    }
+    const sources = [
+      source, source, source, source
+    ]
+    const stream = fetch(sources)
+    stream.url().should.equal(source.url)
+    const res = await collect.array(stream)
+    res.length.should.eql(32767 * sources.length)
+  })
+  it('should request a gcloud excel file that gets interrupted', async () => {
+    const source = {
+      url: GCLOUD_URL,
+      parser: parse('excel')
+    }
+    const stream = fetch(source, {
+      attempts: 2
+    })
+    stream.url().should.equal(source.url)
+    let gotRes = false
+    stream.running[0].req.once('response', (res) => {
+      should.exist(res)
+      gotRes = true
+      setTimeout(() => {
+        // simulate a failure at a low level about 1s into the request
+        res.socket.destroy(new Error('Fake!'))
+      }, 100)
+    })
+    const res = await collect.array(stream)
+    res.length.should.eql(32767)
+    should(gotRes).equal(true)
+  })
+  it('should request a gcloud excel file that gets interrupted, with backpressure', async () => {
+    const source = {
+      url: GCLOUD_URL,
+      parser: parse('excel')
+    }
+    const stream = fetch(source, {
+      attempts: 2
+    })
+    stream.url().should.equal(source.url)
+    let gotRes = false
+    stream.running[0].req.once('response', (res) => {
+      should.exist(res)
+      gotRes = true
+      setTimeout(() => {
+        // simulate a failure at a low level about 1s into the request
+        res.socket.destroy(new Error('Fake!'))
+      }, 100)
+    })
+    // create a slow stream that takes 10ms per item
+    const pressure = tap(async (data) => {
+      await new Promise((resolve) => setTimeout(resolve, 1))
+      return data
+    }, { concurrency: 8 })
+
+    const res = await collect.array(pipeline(stream, pressure, (err) => {
+      if (err) stream.emit('error', err)
+    }))
+    res.length.should.eql(32767)
     should(gotRes).equal(true)
   })
 })
