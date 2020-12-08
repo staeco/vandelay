@@ -30,6 +30,7 @@ export default ({ concurrent = 8, onError, inputs = [] } = {}) => {
   if (inputs.length === 0) throw new Error('No inputs specified!')
 
   const out = through2.obj()
+  out.setMaxListeners(0)
   out.remaining = Array.from(inputs)
   out.running = []
   out.abort = () => {

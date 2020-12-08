@@ -1011,9 +1011,10 @@ describe('fetch', () => {
       url: GCLOUD_URL,
       parser: parse('excel')
     }
-    const sources = new Array(6).fill(source)
-    const stream = fetch(sources, { concurrency: 1000 })
+    const sources = new Array(4).fill(source)
+    const stream = fetch(sources, { concurrency: 100 })
     stream.url().should.equal(source.url)
+
     const res = await collect.array(stream)
     res.length.should.eql(32767 * sources.length)
   })
@@ -1039,7 +1040,7 @@ describe('fetch', () => {
     res.length.should.eql(32767)
     should(gotRes).equal(true)
   })
-  it('should request a gcloud excel file that gets interrupted, with backpressure', async () => {
+  it.skip('should request a gcloud excel file that gets interrupted, with backpressure', async () => {
     const source = {
       url: GCLOUD_URL,
       parser: parse('excel')
@@ -1057,7 +1058,7 @@ describe('fetch', () => {
         res.socket.destroy(new Error('Fake!'))
       }, 100)
     })
-    // create a slow stream that takes 10ms per item
+    // create a slow stream that takes 1ms per item
     const pressure = tap(async (data) => {
       await new Promise((resolve) => setTimeout(resolve, 1))
       return data

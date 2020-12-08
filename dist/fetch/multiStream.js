@@ -41,6 +41,7 @@ var _default = ({
 
   const out = _through.default.obj();
 
+  out.setMaxListeners(0);
   out.remaining = Array.from(inputs);
   out.running = [];
 
