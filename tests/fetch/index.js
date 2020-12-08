@@ -1011,10 +1011,8 @@ describe('fetch', () => {
       url: GCLOUD_URL,
       parser: parse('excel')
     }
-    const sources = [
-      source, source, source, source
-    ]
-    const stream = fetch(sources)
+    const sources = new Array(6).fill(source)
+    const stream = fetch(sources, { concurrency: 1000 })
     stream.url().should.equal(source.url)
     const res = await collect.array(stream)
     res.length.should.eql(32767 * sources.length)
