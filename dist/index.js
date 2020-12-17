@@ -10,6 +10,10 @@ var _parse = _interopRequireDefault(require("./parse"));
 
 exports.parse = _parse.default;
 
+var _pipeline = _interopRequireDefault(require("./pipeline"));
+
+exports.pipeline = _pipeline.default;
+
 var _tap = _interopRequireDefault(require("./tap"));
 
 exports.tap = _tap.default;
