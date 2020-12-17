@@ -2,7 +2,7 @@
 import { pipeline } from 'readable-stream'
 import ex from 'stream-exhaust'
 
-export const exhaust = (...s) =>
-  ex(pipeline(...s))
+const pipe = (...s) => pipeline(...s)
+pipe.exhaust = (...s) => ex(pipe(...s))
 
-export default pipeline
+export default pipe
