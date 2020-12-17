@@ -1,5 +1,5 @@
 import csvStream from 'csv-parser'
-import excelStream from 'exceljs-transform-stream'
+import excelStream from 'xlsx-parse-stream'
 import through2 from 'through2'
 import { from } from 'verrazzano'
 import duplexify from 'duplexify'

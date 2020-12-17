@@ -1,6 +1,6 @@
 {
   "name": "vandelay",
-  "version": "8.4.5",
+  "version": "8.4.6",
   "description": "Imports, exports, and ETL",
   "main": "dist/index.js",
   "keywords": [
@@ -71,7 +71,6 @@
     "camelcase": "^6.0.0",
     "csv-parser": "^3.0.0",
     "duplexify": "^4.0.0",
-    "exceljs-transform-stream": "^2.1.7",
     "get-stream": "^6.0.0",
     "got-resume-next": "^2.1.1",
     "gtfs-stream": "^2.1.0",
@@ -100,6 +99,7 @@
     "verrazzano": "^2.0.1",
     "vm2": "^3.6.0",
     "wkx": "^0.5.0",
+    "xlsx-parse-stream": "^1.0.0",
     "xml2js": "^0.4.19"
   },
   "babel": {

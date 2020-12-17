@@ -5,7 +5,7 @@ exports.gtfs = exports.gtfsrt = exports.shp = exports.kmz = exports.kml = export
 
 var _csvParser = _interopRequireDefault(require("csv-parser"));
 
-var _exceljsTransformStream = _interopRequireDefault(require("exceljs-transform-stream"));
+var _xlsxParseStream = _interopRequireDefault(require("xlsx-parse-stream"));
 
 var _through = _interopRequireDefault(require("through2"));
 
@@ -94,7 +94,7 @@ const excel = opt => {
   if (opt.zip) return (0, _unzip.default)(excel.bind(void 0, { ...opt,
     zip: undefined
   }), /\.xlsx$/);
-  return (0, _exceljsTransformStream.default)({ ...opt,
+  return (0, _xlsxParseStream.default)({ ...opt,
     mapHeaders: _ref5
   });
 };

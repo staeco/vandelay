@@ -1,7 +1,7 @@
 import pumpify from 'pumpify'
 import paths from 'jsonstream-paths'
 import isObject from 'is-plain-obj'
-import { getSelectors as getExcelSelectors } from 'exceljs-transform-stream'
+import { getSelectors as getExcelSelectors } from 'xlsx-parse-stream'
 import xml2json from './parse/xml2json'
 
 // only return paths where there are objects

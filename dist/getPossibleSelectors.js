@@ -9,7 +9,7 @@ var _jsonstreamPaths = _interopRequireDefault(require("jsonstream-paths"));
 
 var _isPlainObj = _interopRequireDefault(require("is-plain-obj"));
 
-var _exceljsTransformStream = require("exceljs-transform-stream");
+var _xlsxParseStream = require("xlsx-parse-stream");
 
 var _xml2json = _interopRequireDefault(require("./parse/xml2json"));
 
@@ -33,7 +33,7 @@ const selectorParsers = {
   json: jsonParser,
   xml: jsonParser,
   html: jsonParser,
-  excel: _exceljsTransformStream.getSelectors
+  excel: _xlsxParseStream.getSelectors
 };
 const serializers = {
   xml: _xml2json.default,
