@@ -3,87 +3,103 @@
 exports.__esModule = true;
 exports.default = void 0;
 
-const {
-  Transform,
-  PassThrough
-} = require('readable-stream');
+var _readableStream = require("readable-stream");
 
-const concurrent = (transform, options = {}) => {
-  if (!transform) return new PassThrough(options);
+const mapStream = (work, options = {}) => {
+  if (!work) return new _readableStream.PassThrough(options);
   const concurrency = options.concurrency || 1;
 
   if (concurrency <= 1) {
     // no concurrency needed
-    const stream = new Transform(options);
-    stream._transform = transform;
+    const stream = new _readableStream.Transform(options);
+    stream._transform = work;
     return stream;
   }
 
-  let pendingFinish;
-  const stream = new Transform(options);
-
-  stream._transform = (chunk, enc, cb) => {
-    const work = cb => {
-      ++queueState.inProgress;
-      queueState.maxReached = Math.max(queueState.maxReached, queueState.inProgress);
-      transform(chunk, enc, (err, data) => {
-        if (cb) {
-          cb(err, data); // eslint-disable-line
-        } else {
-          if (err) stream.emit('error', err);
-          if (data) stream.push(data);
-        }
-
-        --queueState.inProgress;
-        stream.emit('free');
-        if (pendingFinish && isQueueFinished()) process.nextTick(pendingFinish);
-      });
-    }; // got space, run it
-
-
-    if (queueState.inProgress < concurrency) {
-      work();
-      cb();
-      return;
-    } // no space, add to queue
-
-
-    queueState.queue.push(work.bind(null, cb));
-    queueState.maxQueue = Math.max(queueState.maxQueue, queueState.queue.length);
-  };
-
-  stream._flush = cb => {
-    if (isQueueFinished()) {
-      cb();
-      return;
-    }
-
-    pendingFinish = cb;
-  }; // basic queue
-
-
+  const stream = new _readableStream.Transform(options);
   const queueState = stream.queueState = {
     inProgress: 0,
+    inQueue: 0,
     maxReached: 0,
-    maxQueue: 0,
-    queue: []
+    maxQueue: 0
   };
 
-  const isQueueFinished = () => queueState.inProgress === 0 && queueState.queue.length === 0;
+  function fail(err) {
+    if (!stream._writableState.errorEmitted) {
+      stream._writableState.errorEmitted = true;
+      stream.emit('error', err);
+    }
+  }
 
-  stream.on('free', () => {
-    const nextWork = queueState.queue.shift();
-    if (nextWork) nextWork();
-  });
+  function _ref2(err, data) {
+    --queueState.inProgress;
+    if (err) fail(err);else if (data) stream.push(data);
+    stream.emit('free');
+  }
+
+  stream._transform = function (chunk, enc, callback) {
+    function _ref() {
+      --queueState.inQueue;
+
+      stream._transform(chunk, enc, callback);
+    }
+
+    if (queueState.inProgress >= concurrency) {
+      ++queueState.inQueue;
+      queueState.maxQueue = Math.max(queueState.maxQueue, queueState.inQueue);
+      return stream.once('free', _ref);
+    }
+
+    ++queueState.inProgress;
+    queueState.maxReached = Math.max(queueState.maxReached, queueState.inProgress);
+    work.call(stream, chunk, enc, _ref2);
+    callback();
+  };
+
+  const end = stream.end.bind(stream);
+
+  stream.end = function (chunk, enc, callback) {
+    function _ref3() {
+      stream.end(chunk, enc, callback);
+    }
+
+    if (queueState.inProgress) {
+      return stream.once('free', _ref3);
+    }
+
+    if (typeof chunk === 'function') {
+      callback = chunk;
+      chunk = null;
+    }
+
+    if (typeof enc === 'function') {
+      callback = enc;
+      enc = null;
+    }
+
+    function _ref4() {
+      stream.end(callback);
+    }
+
+    if (chunk) {
+      stream.write(chunk, enc);
+      return stream.once('free', _ref4);
+    }
+
+    if (callback) stream.on('finish', callback);
+    if (stream._writableState.errorEmitted) return;
+    end();
+  };
+
   return stream;
 };
 
-concurrent.obj = (transform, options = {}) => concurrent(transform, {
+mapStream.obj = (work, options = {}) => mapStream(work, {
   objectMode: true,
   highWaterMark: 16,
   ...options
 });
 
-var _default = concurrent;
+var _default = mapStream;
 exports.default = _default;
 module.exports = exports.default;

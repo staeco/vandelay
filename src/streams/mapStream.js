@@ -1,73 +1,92 @@
-const { Transform, PassThrough } = require('readable-stream')
+import { Transform, PassThrough } from 'readable-stream'
 
-const concurrent = (transform, options = {}) => {
-  if (!transform) return new PassThrough(options)
+const mapStream = (work, options = {}) => {
+  if (!work) return new PassThrough(options)
   const concurrency = options.concurrency || 1
   if (concurrency <= 1) {
     // no concurrency needed
     const stream = new Transform(options)
-    stream._transform = transform
+    stream._transform = work
     return stream
   }
 
-  let pendingFinish
   const stream = new Transform(options)
-  stream._transform = (chunk, enc, cb) => {
-    const work = (cb) => {
-      ++queueState.inProgress
-      queueState.maxReached = Math.max(queueState.maxReached, queueState.inProgress)
-      transform(chunk, enc, (err, data) => {
-        if (cb) {
-          cb(err, data) // eslint-disable-line
-        } else {
-          if (err) stream.emit('error', err)
-          if (data) stream.push(data)
-        }
-        --queueState.inProgress
-        stream.emit('free')
-        if (pendingFinish && isQueueFinished()) process.nextTick(pendingFinish)
+  const queueState = stream.queueState = {
+    inProgress: 0,
+    inQueue: 0,
+    maxReached: 0,
+    maxQueue: 0
+  }
+
+  function fail(err) {
+    if (!stream._writableState.errorEmitted) {
+      stream._writableState.errorEmitted = true
+      stream.emit('error', err)
+    }
+  }
+
+  stream._transform = function (chunk, enc, callback) {
+    if (queueState.inProgress >= concurrency) {
+      ++queueState.inQueue
+      queueState.maxQueue = Math.max(queueState.maxQueue, queueState.inQueue)
+      return stream.once('free', () => {
+        --queueState.inQueue
+        stream._transform(chunk, enc, callback)
       })
     }
 
-    // got space, run it
-    if (queueState.inProgress < concurrency) {
-      work()
-      cb()
-      return
-    }
+    ++queueState.inProgress
+    queueState.maxReached = Math.max(queueState.maxReached, queueState.inProgress)
+    work.call(stream, chunk, enc, (err, data) => {
+      --queueState.inProgress
+      if (err) fail(err)
+      else if (data) stream.push(data)
+      stream.emit('free')
+    })
 
-    // no space, add to queue
-    queueState.queue.push(work.bind(null, cb))
-    queueState.maxQueue = Math.max(queueState.maxQueue, queueState.queue.length)
-  }
-  stream._flush = (cb) => {
-    if (isQueueFinished()) {
-      cb()
-      return
-    }
-    pendingFinish = cb
+    callback()
   }
 
-  // basic queue
-  const queueState = stream.queueState = {
-    inProgress: 0,
-    maxReached: 0,
-    maxQueue: 0,
-    queue: []
+  const end = stream.end.bind(stream)
+
+  stream.end = function (chunk, enc, callback) {
+    if (queueState.inProgress) {
+      return stream.once('free', () => {
+        stream.end(chunk, enc, callback)
+      })
+    }
+
+    if (typeof chunk === 'function') {
+      callback = chunk
+      chunk = null
+    }
+
+    if (typeof enc === 'function') {
+      callback = enc
+      enc = null
+    }
+
+    if (chunk) {
+      stream.write(chunk, enc)
+      return stream.once('free', () => {
+        stream.end(callback)
+      })
+    }
+
+    if (callback) stream.on('finish', callback)
+    if (stream._writableState.errorEmitted) return
+
+    end()
   }
-  const isQueueFinished = () =>
-    queueState.inProgress === 0 && queueState.queue.length === 0
-  stream.on('free', () => {
-    const nextWork = queueState.queue.shift()
-    if (nextWork) nextWork()
-  })
+
   return stream
 }
-concurrent.obj = (transform, options = {}) =>
-  concurrent(transform, {
+
+mapStream.obj = (work, options = {}) =>
+  mapStream(work, {
     objectMode: true,
     highWaterMark: 16,
     ...options
   })
 
-export default concurrent
+export default mapStream
