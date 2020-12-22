@@ -1,6 +1,6 @@
 {
   "name": "vandelay",
-  "version": "8.6.3",
+  "version": "8.6.4",
   "description": "Imports, exports, and ETL",
   "main": "dist/index.js",
   "keywords": [
@@ -85,7 +85,6 @@
     "p-series": "^2.1.0",
     "p-timeout": "^4.0.0",
     "parse-decimal-number": "^1.0.0",
-    "pipeline-pipe": "^0.1.4",
     "pumpify": "^2.0.0",
     "qs": "^6.6.0",
     "readable-stream": "^3.6.0",
@@ -94,7 +93,6 @@
     "superagent": "^6.0.0",
     "threads": "^1.6.3",
     "tough-cookie": "^4.0.0",
-    "unzipper": "github:kinolaev/node-unzipper#patch-1",
     "url-template": "^2.0.8",
     "verrazzano": "^2.0.1",
     "vm2": "^3.6.0",
