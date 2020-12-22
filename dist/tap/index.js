@@ -15,7 +15,7 @@ var _default = (fn, opt = {}) => {
   if (typeof fn !== 'function') throw new Error('Invalid function!');
   const concurrency = opt.concurrency != null ? opt.concurrency : defaultConcurrency;
 
-  const tap = (row, _, cb) => {
+  const tap = (row, cb) => {
     let meta; // pluck the ___meta attr we attached in fetch
 
     if (row?.___meta) {

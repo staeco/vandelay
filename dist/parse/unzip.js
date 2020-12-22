@@ -22,7 +22,7 @@ var _default = (parser, regex) => {
     end: false
   });
 
-  const dataStream = _pumpify.default.obj(_unzipper.default.Parse(), _mapStream.default.obj((entry, _, cb) => {
+  const dataStream = _pumpify.default.obj(_unzipper.default.Parse(), _mapStream.default.obj((entry, cb) => {
     if (entry.type !== 'File' || !regex.test(entry.path)) {
       entry.autodrain();
       return cb();

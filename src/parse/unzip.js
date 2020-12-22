@@ -10,7 +10,7 @@ export default (parser, regex) => {
 
   const dataStream = pumpify.obj(
     zip.Parse(),
-    mapStream.obj((entry, _, cb) => {
+    mapStream.obj((entry, cb) => {
       if (entry.type !== 'File' || !regex.test(entry.path)) {
         entry.autodrain()
         return cb()

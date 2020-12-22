@@ -96,7 +96,7 @@ export default ({ startPage = 0, waitForNextPage, fetchNextPage, concurrent = ma
     // kick off regular pagination
     pipeline(
       src,
-      mapStream.obj((chunk, _, cb) => {
+      mapStream.obj((chunk, cb) => {
         if (!src._gotData) {
           src._gotData = true
           schedule()

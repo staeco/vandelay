@@ -1,6 +1,6 @@
 {
   "name": "vandelay",
-  "version": "8.6.2",
+  "version": "8.6.3",
   "description": "Imports, exports, and ETL",
   "main": "dist/index.js",
   "keywords": [
@@ -85,6 +85,7 @@
     "p-series": "^2.1.0",
     "p-timeout": "^4.0.0",
     "parse-decimal-number": "^1.0.0",
+    "pipeline-pipe": "^0.1.4",
     "pumpify": "^2.0.0",
     "qs": "^6.6.0",
     "readable-stream": "^3.6.0",

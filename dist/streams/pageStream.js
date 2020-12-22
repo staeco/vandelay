@@ -116,7 +116,7 @@ var _default = ({
     } // kick off regular pagination
 
 
-    (0, _readableStream.pipeline)(src, _mapStream.default.obj((chunk, _, cb) => {
+    (0, _readableStream.pipeline)(src, _mapStream.default.obj((chunk, cb) => {
       if (!src._gotData) {
         src._gotData = true;
         schedule();

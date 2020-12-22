@@ -133,7 +133,7 @@ const createParser = (baseParser, nextPageParser) => {
 
 
     (0, _readableStream.pipeline)(read, base, fail);
-    (0, _readableStream.pipeline)(read, nextPage, _mapStream.default.obj((nextPage, _, cb) => {
+    (0, _readableStream.pipeline)(read, nextPage, _mapStream.default.obj((nextPage, cb) => {
       out.emit('nextPage', nextPage);
       cb();
     }), fail);

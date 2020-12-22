@@ -15,7 +15,7 @@ var _default = opt => {
     explicitArray: false
   };
 
-  const xml2JsonStream = _mapStream.default.obj((row, _, cb) => {
+  const xml2JsonStream = _mapStream.default.obj((row, cb) => {
     const str = row.toString();
     (0, _xml2js.parseString)(str, xmlOpt, (err, js) => {
       cb(err, JSON.stringify(js));

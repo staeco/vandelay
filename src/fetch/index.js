@@ -98,7 +98,7 @@ const createParser = (baseParser, nextPageParser) => {
     // we relay data events from the base parser
     // and a nextPage event from that parser
     pipeline(read, base, fail)
-    pipeline(read, nextPage, mapStream.obj((nextPage, _, cb) => {
+    pipeline(read, nextPage, mapStream.obj((nextPage, cb) => {
       out.emit('nextPage', nextPage)
       cb()
     }), fail)

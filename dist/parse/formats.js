@@ -37,7 +37,7 @@ function _ref({
   return header?.trim();
 }
 
-function _ref2(row, _, cb) {
+function _ref2(row, cb) {
   cb(null, (0, _lodash.omit)(row, 'headers'));
 }
 
@@ -65,7 +65,7 @@ function _ref3({
   return header?.trim();
 }
 
-function _ref4(row, _, cb) {
+function _ref4(row, cb) {
   cb(null, (0, _lodash.omit)(row, 'headers'));
 }
 
@@ -136,7 +136,7 @@ const json = opt => {
   let header;
   head.once('header', data => header = data);
 
-  const tail = _mapStream.default.obj((row, _, cb) => {
+  const tail = _mapStream.default.obj((row, cb) => {
     if (header && typeof row === 'object') row.___header = header; // internal attr, json header info for fetch stream
 
     cb(null, row);

@@ -28,7 +28,7 @@ var _default = ({
   const req = fetchURL(url, opt);
   if (opt.onFetch) opt.onFetch(req.url);
 
-  const map = (row, _, cb) => {
+  const map = (row, cb) => {
     // create the meta and put it on objects passing through
     if (row && typeof row === 'object') {
       row.___meta = (0, _lodash.pickBy)({

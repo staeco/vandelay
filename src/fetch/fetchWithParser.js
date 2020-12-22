@@ -12,7 +12,7 @@ export default ({ url, parser, source }, opt) => {
   let rows = -1
   const req = fetchURL(url, opt)
   if (opt.onFetch) opt.onFetch(req.url)
-  const map = (row, _, cb) => {
+  const map = (row, cb) => {
     // create the meta and put it on objects passing through
     if (row && typeof row === 'object') {
       row.___meta = pickBy({

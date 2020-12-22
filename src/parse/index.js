@@ -15,7 +15,7 @@ export default (format, opt = {}) => {
   if (!opt.autoFormat) return () => fmt(opt)
   return () => {
     const head = fmt(opt)
-    const tail = mapStream.obj((row, _, cb) => {
+    const tail = mapStream.obj((row, cb) => {
       // fun dance to retain the json header field needed for our metadata
       const nrow = isObject(row)
         ? omit(row, '___header')

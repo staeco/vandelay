@@ -22,7 +22,7 @@ export const csv = (opt) => {
     skipComments: true
   })
   // convert into normal objects
-  const tail = mapStream.obj((row, _, cb) => {
+  const tail = mapStream.obj((row, cb) => {
     cb(null, omit(row, 'headers'))
   })
   return pumpify.obj(head, tail)
@@ -36,7 +36,7 @@ export const tsv = (opt) => {
     skipComments: true
   })
   // convert into normal objects
-  const tail = mapStream.obj((row, _, cb) => {
+  const tail = mapStream.obj((row, cb) => {
     cb(null, omit(row, 'headers'))
   })
   return pumpify.obj(head, tail)
@@ -71,7 +71,7 @@ export const json = (opt) => {
   const head = JSONStream.parse(opt.selector)
   let header
   head.once('header', (data) => header = data)
-  const tail = mapStream.obj((row, _, cb) => {
+  const tail = mapStream.obj((row, cb) => {
     if (header && typeof row === 'object') row.___header = header // internal attr, json header info for fetch stream
     cb(null, row)
   })

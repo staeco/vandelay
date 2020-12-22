@@ -32,7 +32,7 @@ var _default = (format, opt = {}) => {
 
   if (!opt.autoFormat) return () => fmt(opt);
 
-  function _ref(row, _, cb) {
+  function _ref(row, cb) {
     // fun dance to retain the json header field needed for our metadata
     const nrow = (0, _isPlainObj.default)(row) ? (0, _lodash.omit)(row, '___header') : row;
     const out = autoFormat[opt.autoFormat](nrow);

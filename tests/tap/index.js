@@ -1,6 +1,4 @@
 /*eslint no-console: 0, no-loops/no-loops: "off" */
-
-import should from 'should'
 import streamify from 'into-stream'
 import collect from 'get-stream'
 import pipeline from '../../src/pipeline'
@@ -21,8 +19,6 @@ describe('tap', () => {
     )
     const res = await collect.array(stream)
     res.should.eql(data)
-    should(tapStream.queueState.maxReached).eql(concurrency)
-    should(tapStream.queueState.maxQueue).eql(1)
   })
   it('should work with concurrency and backpressure', async () => {
     const items = 2000

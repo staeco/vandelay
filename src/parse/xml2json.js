@@ -6,7 +6,7 @@ export default (opt) => {
     strict: opt.strict || true,
     explicitArray: false
   }
-  const xml2JsonStream = mapStream.obj((row, _, cb) => {
+  const xml2JsonStream = mapStream.obj((row, cb) => {
     const str = row.toString()
     parseString(str, xmlOpt, (err, js) => {
       cb(err, JSON.stringify(js))
