@@ -14,7 +14,7 @@ const concurrent = (transform, options = {}) => {
 
   if (concurrency <= 1) {
     // no concurrency needed
-    const stream = new PassThrough(options);
+    const stream = new Transform(options);
     stream._transform = transform;
     return stream;
   }
@@ -23,23 +23,33 @@ const concurrent = (transform, options = {}) => {
   const stream = new Transform(options);
 
   stream._transform = (chunk, enc, cb) => {
-    function _ref(err, data) {
-      // eslint-disable-next-line
-      cb(err, data);
-      --queueState.inProgress;
-      stream.emit('free');
-      if (pendingFinish && isQueueFinished()) process.nextTick(pendingFinish);
-    }
-
-    const work = () => {
+    const work = cb => {
       ++queueState.inProgress;
-      transform(chunk, enc, _ref);
+      queueState.maxReached = Math.max(queueState.maxReached, queueState.inProgress);
+      transform(chunk, enc, (err, data) => {
+        if (cb) {
+          cb(err, data); // eslint-disable-line
+        } else {
+          if (err) stream.emit('error', err);
+          if (data) stream.push(data);
+        }
+
+        --queueState.inProgress;
+        stream.emit('free');
+        if (pendingFinish && isQueueFinished()) process.nextTick(pendingFinish);
+      });
     }; // got space, run it
 
 
-    if (queueState.inProgress < concurrency) return work(); // no space, add to queue
+    if (queueState.inProgress < concurrency) {
+      work();
+      cb();
+      return;
+    } // no space, add to queue
 
-    queueState.queue.push(work);
+
+    queueState.queue.push(work.bind(null, cb));
+    queueState.maxQueue = Math.max(queueState.maxQueue, queueState.queue.length);
   };
 
   stream._flush = cb => {
@@ -54,6 +64,8 @@ const concurrent = (transform, options = {}) => {
 
   const queueState = stream.queueState = {
     inProgress: 0,
+    maxReached: 0,
+    maxQueue: 0,
     queue: []
   };
 

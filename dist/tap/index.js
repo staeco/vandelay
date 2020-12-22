@@ -18,7 +18,7 @@ var _default = (fn, opt = {}) => {
   const tap = (row, _, cb) => {
     let meta; // pluck the ___meta attr we attached in fetch
 
-    if (row && typeof row === 'object') {
+    if (row?.___meta) {
       meta = row.___meta;
       delete row.___meta;
     }
