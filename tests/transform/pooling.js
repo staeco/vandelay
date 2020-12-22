@@ -4,8 +4,8 @@ import should from 'should'
 import streamify from 'into-stream'
 import collect from 'get-stream'
 import compile from 'vandelay-es6'
+import { PassThrough } from 'readable-stream'
 import pipeline from '../../src/pipeline'
-import through2 from 'through2'
 import transform from '../../src/transform'
 
 const data = [
@@ -43,7 +43,7 @@ describe.skip('transform with pooling', () => {
   })
   it.skip('should work fast with an async string identity function', async () => {
     const max = 10000
-    const thru = through2.obj()
+    const thru = new PassThrough({ objectMode: true })
     const write = () => {
       for (let i = 0; i < max; ++i) {
         thru.push({ test: 'abc' })

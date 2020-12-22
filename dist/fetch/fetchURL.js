@@ -5,8 +5,6 @@ exports.default = void 0;
 
 var _gotResumeNext = _interopRequireDefault(require("got-resume-next"));
 
-var _through = _interopRequireDefault(require("through2"));
-
 var _getStream = _interopRequireDefault(require("get-stream"));
 
 var _readableStream = require("readable-stream");
@@ -39,18 +37,20 @@ function _ref(acc, [k, v]) {
 
 const lowerObj = o => Object.entries(o).reduce(_ref, {});
 
-const retryWorthy = [420, 444, 408, 429, 449, 499];
+const retryWorthyStatuses = [420, 444, 408, 429, 449, 499];
+const retryWorthyCodes = ['ECONNRESET'];
 
 const shouldRetry = (_, original) => {
-  if (original?.code === 'ENOTFOUND') return false; // no point retrying on domains that dont exist
+  if (!original) return false; // malformed error
 
-  const res = original?.response;
+  if (original.code) return retryWorthyCodes.includes(original.code);
+  const res = original.response;
   if (!res) return false; // non-http error?
-  // their server having issues, give it another go
+  // they don't like the rate we are sending at
 
-  if (res.statusCode >= 500) return true; // they don't like the rate we are sending at
+  if (retryWorthyStatuses.includes(res.statusCode)) return true; // their server having issues, give it another go
 
-  if (retryWorthy.includes(res.statusCode)) return true; // they don't like what we're sending, no point retrying
+  if (res.statusCode >= 500) return true; // they don't like what we're sending, no point retrying
 
   if (res.statusCode >= 400) return false;
   return true;
@@ -73,7 +73,7 @@ var _default = (url, {
 } = {}) => {
   const decoded = unescape(url);
   let fullURL = context && decoded.includes('{') ? _urlTemplate.default.parse(decoded).expand(context) : url;
-  const out = (0, _through.default)();
+  const out = new _readableStream.PassThrough();
   let isCollectingError = false;
   const actualHeaders = lowerObj((0, _lodash.pickBy)({
     'User-Agent': _userAgent.default,

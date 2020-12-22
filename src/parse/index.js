@@ -1,8 +1,8 @@
-import through2 from 'through2'
 import pumpify from 'pumpify'
 import { omit } from 'lodash'
 import isObject from 'is-plain-obj'
 import bom from 'remove-bom-stream'
+import mapStream from '../streams/mapStream'
 import * as formats from './formats'
 import * as autoFormat from '../autoFormat'
 
@@ -15,7 +15,7 @@ export default (format, opt = {}) => {
   if (!opt.autoFormat) return () => fmt(opt)
   return () => {
     const head = fmt(opt)
-    const tail = through2.obj((row, _, cb) => {
+    const tail = mapStream.obj((row, _, cb) => {
       // fun dance to retain the json header field needed for our metadata
       const nrow = isObject(row)
         ? omit(row, '___header')

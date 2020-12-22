@@ -1,8 +1,7 @@
-import through from 'through2-concurrent'
 import { clone } from 'lodash'
+import mapStream from '../streams/mapStream'
 
 const defaultConcurrency = 8
-const defaultWaterMark = 16
 
 export default (fn, opt = {}) => {
   if (typeof fn !== 'function') throw new Error('Invalid function!')
@@ -26,8 +25,5 @@ export default (fn, opt = {}) => {
       })
       .catch(cb)
   }
-  return through.obj({
-    maxConcurrency: concurrency,
-    highWaterMark: Math.max(defaultWaterMark, concurrency)
-  }, tap)
+  return mapStream.obj(tap, { concurrency })
 }

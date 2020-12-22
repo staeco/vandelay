@@ -3,14 +3,13 @@
 exports.__esModule = true;
 exports.default = void 0;
 
-var _through2Concurrent = _interopRequireDefault(require("through2-concurrent"));
-
 var _lodash = require("lodash");
+
+var _mapStream = _interopRequireDefault(require("../streams/mapStream"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const defaultConcurrency = 8;
-const defaultWaterMark = 16;
 
 var _default = (fn, opt = {}) => {
   if (typeof fn !== 'function') throw new Error('Invalid function!');
@@ -36,10 +35,9 @@ var _default = (fn, opt = {}) => {
     }).catch(cb);
   };
 
-  return _through2Concurrent.default.obj({
-    maxConcurrency: concurrency,
-    highWaterMark: Math.max(defaultWaterMark, concurrency)
-  }, tap);
+  return _mapStream.default.obj(tap, {
+    concurrency
+  });
 };
 
 exports.default = _default;

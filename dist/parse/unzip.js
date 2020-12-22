@@ -9,11 +9,11 @@ var _merge = _interopRequireDefault(require("merge2"));
 
 var _duplexify = _interopRequireDefault(require("duplexify"));
 
-var _through = _interopRequireDefault(require("through2"));
-
 var _unzipper = _interopRequireDefault(require("unzipper"));
 
 var _readableStream = require("readable-stream");
+
+var _mapStream = _interopRequireDefault(require("../streams/mapStream"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -22,7 +22,7 @@ var _default = (parser, regex) => {
     end: false
   });
 
-  const dataStream = _pumpify.default.obj(_unzipper.default.Parse(), _through.default.obj((entry, _, cb) => {
+  const dataStream = _pumpify.default.obj(_unzipper.default.Parse(), _mapStream.default.obj((entry, _, cb) => {
     if (entry.type !== 'File' || !regex.test(entry.path)) {
       entry.autodrain();
       return cb();

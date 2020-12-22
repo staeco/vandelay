@@ -5,8 +5,6 @@ exports.default = void 0;
 
 var _pumpify = _interopRequireDefault(require("pumpify"));
 
-var _through = _interopRequireDefault(require("through2"));
-
 var _pSeries = _interopRequireDefault(require("p-series"));
 
 var _readableStream = require("readable-stream");
@@ -21,17 +19,19 @@ var _oauth = require("./oauth");
 
 var _fetchWithParser = _interopRequireDefault(require("./fetchWithParser"));
 
-var _multiStream = _interopRequireDefault(require("./multiStream"));
-
 var _sandbox = _interopRequireDefault(require("../sandbox"));
 
 var _mergeURL = _interopRequireDefault(require("../mergeURL"));
 
-var _pageStream = _interopRequireDefault(require("./pageStream"));
-
 var _hardClose = _interopRequireDefault(require("../hardClose"));
 
 var _parse = _interopRequireDefault(require("../parse"));
+
+var _mapStream = _interopRequireDefault(require("../streams/mapStream"));
+
+var _multiStream = _interopRequireDefault(require("../streams/multiStream"));
+
+var _pageStream = _interopRequireDefault(require("../streams/pageStream"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -105,7 +105,9 @@ const setupContext = (source, opt, getStream) => {
     const realStream = getStream(setupResult);
     out.url = realStream.url;
     out.abort = realStream.abort;
-    out.setPipeline(realStream, _through.default.obj());
+    out.setPipeline(realStream, new _readableStream.PassThrough({
+      objectMode: true
+    }));
   }).catch(err => {
     out.emit('error', err);
     (0, _hardClose.default)(out);
@@ -118,9 +120,10 @@ const createParser = (baseParser, nextPageParser) => {
   return () => {
     const base = baseParser();
     const nextPage = nextPageParser();
-    const read = (0, _through.default)();
-
-    const write = _through.default.obj();
+    const read = new _readableStream.PassThrough();
+    const write = new _readableStream.PassThrough({
+      objectMode: true
+    });
 
     const out = _duplexify.default.obj(read, write);
 
@@ -130,7 +133,7 @@ const createParser = (baseParser, nextPageParser) => {
 
 
     (0, _readableStream.pipeline)(read, base, fail);
-    (0, _readableStream.pipeline)(read, nextPage, _through.default.obj((nextPage, _, cb) => {
+    (0, _readableStream.pipeline)(read, nextPage, _mapStream.default.obj((nextPage, _, cb) => {
       out.emit('nextPage', nextPage);
       cb();
     }), fail);

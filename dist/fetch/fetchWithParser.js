@@ -3,11 +3,11 @@
 exports.__esModule = true;
 exports.default = void 0;
 
-var _through = _interopRequireDefault(require("through2"));
-
 var _readableStream = require("readable-stream");
 
 var _lodash = require("lodash");
+
+var _mapStream = _interopRequireDefault(require("../streams/mapStream"));
 
 var _fetchURL = _interopRequireDefault(require("./fetchURL"));
 
@@ -49,9 +49,7 @@ var _default = ({
   };
 
   const parse = parser();
-  const out = (0, _readableStream.pipeline)(req, parse, (0, _through.default)({
-    objectMode: true
-  }, map), err => {
+  const out = (0, _readableStream.pipeline)(req, parse, _mapStream.default.obj(map), err => {
     if (err) out.emit('error', err);
   }); // forward some props and events
 

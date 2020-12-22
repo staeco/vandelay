@@ -1,7 +1,6 @@
 import got from 'got-resume-next'
-import through2 from 'through2'
 import collect from 'get-stream'
-import { pipeline } from 'readable-stream'
+import { pipeline, PassThrough } from 'readable-stream'
 import template from 'url-template'
 import { CookieJar } from 'tough-cookie'
 import { pickBy } from 'lodash'
@@ -20,20 +19,25 @@ const lowerObj = (o) =>
     return acc
   }, {})
 
-const retryWorthy = [
+const retryWorthyStatuses = [
   420, 444, 408, 429, 449, 499
 ]
+const retryWorthyCodes = [
+  'ECONNRESET'
+]
 const shouldRetry = (_, original) => {
-  if (original?.code === 'ENOTFOUND') return false // no point retrying on domains that dont exist
+  if (!original) return false // malformed error
 
-  const res = original?.response
+  if (original.code) return retryWorthyCodes.includes(original.code)
+
+  const res = original.response
   if (!res) return false // non-http error?
+
+  // they don't like the rate we are sending at
+  if (retryWorthyStatuses.includes(res.statusCode)) return true
 
   // their server having issues, give it another go
   if (res.statusCode >= 500) return true
-
-  // they don't like the rate we are sending at
-  if (retryWorthy.includes(res.statusCode)) return true
 
   // they don't like what we're sending, no point retrying
   if (res.statusCode >= 400) return false
@@ -47,7 +51,7 @@ export default (url, { attempts = 10, headers = {}, query, timeout, connectTimeo
     ? template.parse(decoded).expand(context)
     : url
 
-  const out = through2()
+  const out = new PassThrough()
   let isCollectingError = false
 
   const actualHeaders = lowerObj(pickBy({

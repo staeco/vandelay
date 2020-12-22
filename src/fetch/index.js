@@ -1,18 +1,18 @@
 import pumpify from 'pumpify'
-import through2 from 'through2'
 import pSeries from 'p-series'
-import { pipeline } from 'readable-stream'
+import { pipeline, PassThrough } from 'readable-stream'
 import duplexify from 'duplexify'
 import url from 'url'
 import fetchURL from './fetchURL'
 import { getToken as getOAuthToken } from './oauth'
 import fetchWithParser from './fetchWithParser'
-import multiStream from './multiStream'
 import sandbox from '../sandbox'
 import mergeURL from '../mergeURL'
-import pageStream from './pageStream'
 import hardClose from '../hardClose'
 import parse from '../parse'
+import mapStream from '../streams/mapStream'
+import multiStream from '../streams/multiStream'
+import pageStream from '../streams/pageStream'
 
 const defaultConcurrency = 8
 const getFetchOptions = (source, opt, setupResult = {}) => ({
@@ -74,7 +74,7 @@ const setupContext = (source, opt, getStream) => {
       const realStream = getStream(setupResult)
       out.url = realStream.url
       out.abort = realStream.abort
-      out.setPipeline(realStream, through2.obj())
+      out.setPipeline(realStream, new PassThrough({ objectMode: true }))
     })
     .catch((err) => {
       out.emit('error', err)
@@ -89,8 +89,8 @@ const createParser = (baseParser, nextPageParser) => {
     const base = baseParser()
     const nextPage = nextPageParser()
 
-    const read = through2()
-    const write = through2.obj()
+    const read = new PassThrough()
+    const write = new PassThrough({ objectMode: true })
     const out = duplexify.obj(read, write)
     const fail = (err) => err && out.emit('error', err)
 
@@ -98,7 +98,7 @@ const createParser = (baseParser, nextPageParser) => {
     // we relay data events from the base parser
     // and a nextPage event from that parser
     pipeline(read, base, fail)
-    pipeline(read, nextPage, through2.obj((nextPage, _, cb) => {
+    pipeline(read, nextPage, mapStream.obj((nextPage, _, cb) => {
       out.emit('nextPage', nextPage)
       cb()
     }), fail)

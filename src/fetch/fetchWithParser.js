@@ -1,6 +1,6 @@
-import through2 from 'through2'
 import { pipeline } from 'readable-stream'
 import { pickBy } from 'lodash'
+import mapStream from '../streams/mapStream'
 import fetchURLPlain from './fetchURL'
 import hardClose from '../hardClose'
 
@@ -36,7 +36,7 @@ export default ({ url, parser, source }, opt) => {
   const out = pipeline(
     req,
     parse,
-    through2({ objectMode: true }, map),
+    mapStream.obj(map),
     (err) => {
       if (err) out.emit('error', err)
     }

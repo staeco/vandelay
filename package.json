@@ -1,6 +1,6 @@
 {
   "name": "vandelay",
-  "version": "8.5.3",
+  "version": "8.6.0",
   "description": "Imports, exports, and ETL",
   "main": "dist/index.js",
   "keywords": [
@@ -37,9 +37,9 @@
     "build": "babel src --out-dir dist",
     "clean": "rimraf dist",
     "lint": "eslint src tests --fix",
-    "test:plain": "NODE_ENV=testing mocha tests --require @babel/register --recursive --reporter spec --bail --exit --timeout 60000",
-    "test": "NODE_ENV=testing nyc mocha tests --require @babel/register --recursive --reporter spec --bail --exit --timeout 60000 -- --trace-warnings --trace-deprecation",
-    "test:debug": "NODE_ENV=testing nyc mocha tests --inspect-brk=0.0.0.0 --require @babel/register --recursive --reporter spec --bail --timeout 60000 -- --trace-warnings --trace-deprecation"
+    "test:plain": "NODE_ENV=testing mocha tests --require @babel/register --recursive --reporter spec --bail --exit --timeout 90000",
+    "test": "NODE_ENV=testing nyc mocha tests --require @babel/register --recursive --reporter spec --bail --exit --timeout 90000 -- --trace-warnings --trace-deprecation",
+    "test:debug": "NODE_ENV=testing nyc mocha tests --inspect-brk=0.0.0.0 --require @babel/register --recursive --reporter spec --bail --timeout 90000 -- --trace-warnings --trace-deprecation"
   },
   "engines": {
     "node": ">=13"
@@ -92,16 +92,17 @@
     "stream-exhaust": "^1.0.2",
     "superagent": "^6.0.0",
     "threads": "^1.6.3",
-    "through2": "^4.0.0",
-    "through2-concurrent": "github:contra/through2-concurrent#update",
     "tough-cookie": "^4.0.0",
-    "unzipper": "^0.10.1",
+    "unzipper": "github:kinolaev/node-unzipper#patch-1",
     "url-template": "^2.0.8",
     "verrazzano": "^2.0.1",
     "vm2": "^3.6.0",
     "wkx": "^0.5.0",
     "xlsx-parse-stream": "^1.0.0",
     "xml2js": "^0.4.19"
+  },
+  "resolutions": {
+    "unzipper": "github:kinolaev/node-unzipper#patch-1"
   },
   "babel": {
     "extends": "@stae/babel-node",

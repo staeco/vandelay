@@ -7,8 +7,6 @@ var _csvParser = _interopRequireDefault(require("csv-parser"));
 
 var _xlsxParseStream = _interopRequireDefault(require("xlsx-parse-stream"));
 
-var _through = _interopRequireDefault(require("through2"));
-
 var _verrazzano = require("verrazzano");
 
 var _duplexify = _interopRequireDefault(require("duplexify"));
@@ -24,6 +22,8 @@ var _gtfsStream = _interopRequireDefault(require("gtfs-stream"));
 var _lodash = require("lodash");
 
 var _ndjson = require("ndjson");
+
+var _mapStream = _interopRequireDefault(require("../streams/mapStream"));
 
 var _unzip = _interopRequireDefault(require("./unzip"));
 
@@ -52,7 +52,7 @@ const csv = opt => {
     skipComments: true
   }); // convert into normal objects
 
-  const tail = _through.default.obj(_ref2);
+  const tail = _mapStream.default.obj(_ref2);
 
   return _pumpify.default.obj(head, tail);
 };
@@ -79,7 +79,7 @@ const tsv = opt => {
     skipComments: true
   }); // convert into normal objects
 
-  const tail = _through.default.obj(_ref4);
+  const tail = _mapStream.default.obj(_ref4);
 
   return _pumpify.default.obj(head, tail);
 };
@@ -112,9 +112,9 @@ exports.ndjson = ndjson;
 
 const json = opt => {
   if (Array.isArray(opt.selector)) {
-    const inStream = (0, _through.default)();
+    const inStream = new _readableStream.PassThrough();
 
-    const outStream = _through.default.obj();
+    const outStream = _mapStream.default.obj();
 
     function _ref6(err) {
       if (err) outStream.emit('error', err);
@@ -136,7 +136,7 @@ const json = opt => {
   let header;
   head.once('header', data => header = data);
 
-  const tail = _through.default.obj((row, _, cb) => {
+  const tail = _mapStream.default.obj((row, _, cb) => {
     if (header && typeof row === 'object') row.___header = header; // internal attr, json header info for fetch stream
 
     cb(null, row);

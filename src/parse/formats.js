@@ -1,14 +1,14 @@
 import csvStream from 'csv-parser'
 import excelStream from 'xlsx-parse-stream'
-import through2 from 'through2'
 import { from } from 'verrazzano'
 import duplexify from 'duplexify'
 import pumpify from 'pumpify'
-import { pipeline } from 'readable-stream'
+import { pipeline, PassThrough } from 'readable-stream'
 import JSONStream from 'jsonstream-next'
 import parseGTFS from 'gtfs-stream'
 import { omit } from 'lodash'
 import { parse as ndParse } from 'ndjson'
+import mapStream from '../streams/mapStream'
 import unzip from './unzip'
 import xml2json from './xml2json'
 
@@ -22,7 +22,7 @@ export const csv = (opt) => {
     skipComments: true
   })
   // convert into normal objects
-  const tail = through2.obj((row, _, cb) => {
+  const tail = mapStream.obj((row, _, cb) => {
     cb(null, omit(row, 'headers'))
   })
   return pumpify.obj(head, tail)
@@ -36,7 +36,7 @@ export const tsv = (opt) => {
     skipComments: true
   })
   // convert into normal objects
-  const tail = through2.obj((row, _, cb) => {
+  const tail = mapStream.obj((row, _, cb) => {
     cb(null, omit(row, 'headers'))
   })
   return pumpify.obj(head, tail)
@@ -56,8 +56,8 @@ export const ndjson = (opt) => {
 
 export const json = (opt) => {
   if (Array.isArray(opt.selector)) {
-    const inStream = through2()
-    const outStream = through2.obj()
+    const inStream = new PassThrough()
+    const outStream = mapStream.obj()
     opt.selector.forEach((selector) =>
       pipeline(inStream, json({ ...opt, selector }), outStream, (err) => {
         if (err) outStream.emit('error', err)
@@ -71,7 +71,7 @@ export const json = (opt) => {
   const head = JSONStream.parse(opt.selector)
   let header
   head.once('header', (data) => header = data)
-  const tail = through2.obj((row, _, cb) => {
+  const tail = mapStream.obj((row, _, cb) => {
     if (header && typeof row === 'object') row.___header = header // internal attr, json header info for fetch stream
     cb(null, row)
   })

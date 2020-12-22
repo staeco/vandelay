@@ -1,5 +1,5 @@
-import through2 from 'through2'
-import { pipeline, finished } from 'readable-stream'
+import { pipeline, finished, PassThrough } from 'readable-stream'
+import mapStream from '../streams/mapStream'
 import hardClose from '../hardClose'
 
 const maxConcurrency = 2
@@ -30,7 +30,7 @@ const softClose = (i) => {
 export default ({ startPage = 0, waitForNextPage, fetchNextPage, concurrent = maxConcurrency, onError } = {}) => {
   // concurrency can either be 1 or 2, 2 will start loading the next page once it reads a first datum from the current page
   const actualConcurrency = Math.min(maxConcurrency, concurrent)
-  const out = through2.obj()
+  const out = new PassThrough({ objectMode: true })
   out.nextPage = startPage
   out.running = []
   out.nextPageSelectorQueue = []
@@ -96,14 +96,15 @@ export default ({ startPage = 0, waitForNextPage, fetchNextPage, concurrent = ma
     // kick off regular pagination
     pipeline(
       src,
-      through2.obj((chunk, _, cb) => {
+      mapStream.obj((chunk, _, cb) => {
         if (!src._gotData) {
           src._gotData = true
           schedule()
         }
         cb(null, chunk)
-      }), fin)
-      .pipe(out, { end: false })
+      }),
+      fin
+    ).pipe(out, { end: false })
   }
 
   // kick it all off

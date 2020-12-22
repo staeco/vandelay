@@ -5,7 +5,7 @@ exports.default = void 0;
 
 var _xml2js = require("xml2js");
 
-var _through = _interopRequireDefault(require("through2"));
+var _mapStream = _interopRequireDefault(require("../streams/mapStream"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -15,7 +15,7 @@ var _default = opt => {
     explicitArray: false
   };
 
-  const xml2JsonStream = _through.default.obj((row, _, cb) => {
+  const xml2JsonStream = _mapStream.default.obj((row, _, cb) => {
     const str = row.toString();
     (0, _xml2js.parseString)(str, xmlOpt, (err, js) => {
       cb(err, JSON.stringify(js));

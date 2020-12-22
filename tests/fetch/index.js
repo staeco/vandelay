@@ -7,7 +7,7 @@ import express from 'express'
 import getPort from 'get-port'
 import parseRange from 'range-parser'
 import parseBody from 'body-parser'
-import through2 from 'through2'
+import { PassThrough } from 'readable-stream'
 import compile from 'vandelay-es6'
 import pipeline from '../../src/pipeline'
 import { createHash } from 'crypto'
@@ -269,7 +269,7 @@ describe('fetch', () => {
       fetchURL: (url, opt) => {
         should.exist(url)
         should.exist(opt)
-        const stream = through2.obj()
+        const stream = new PassThrough({ objectMode: true })
         stream.write(JSON.stringify({ data: sample }))
         stream.url = expectedURL
         process.nextTick(() => stream.end())
@@ -1007,12 +1007,13 @@ describe('fetch', () => {
     should(gotRes).equal(true)
   })
   it('should request a gcloud excel file, testing for race conditions', async () => {
+    const max = 6
     const source = {
       url: GCLOUD_URL,
       parser: parse('excel')
     }
-    const sources = new Array(4).fill(source)
-    const stream = fetch(sources, { concurrency: 100 })
+    const sources = new Array(max).fill(source)
+    const stream = fetch(sources, { concurrency: max })
     stream.url().should.equal(source.url)
 
     const res = await collect.array(stream)
@@ -1040,7 +1041,7 @@ describe('fetch', () => {
     res.length.should.eql(32767)
     should(gotRes).equal(true)
   })
-  it.skip('should request a gcloud excel file that gets interrupted, with backpressure', async () => {
+  it('should request a gcloud excel file that gets interrupted, with backpressure', async () => {
     const source = {
       url: GCLOUD_URL,
       parser: parse('excel')

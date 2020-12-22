@@ -3,8 +3,6 @@
 exports.__esModule = true;
 exports.default = void 0;
 
-var _through = _interopRequireDefault(require("through2"));
-
 var _pumpify = _interopRequireDefault(require("pumpify"));
 
 var _lodash = require("lodash");
@@ -12,6 +10,8 @@ var _lodash = require("lodash");
 var _isPlainObj = _interopRequireDefault(require("is-plain-obj"));
 
 var _removeBomStream = _interopRequireDefault(require("remove-bom-stream"));
+
+var _mapStream = _interopRequireDefault(require("../streams/mapStream"));
 
 var formats = _interopRequireWildcard(require("./formats"));
 
@@ -43,7 +43,7 @@ var _default = (format, opt = {}) => {
   return () => {
     const head = fmt(opt);
 
-    const tail = _through.default.obj(_ref);
+    const tail = _mapStream.default.obj(_ref);
 
     return _pumpify.default.obj((0, _removeBomStream.default)(), head, tail);
   };

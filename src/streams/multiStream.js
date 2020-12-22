@@ -1,6 +1,5 @@
 /* eslint no-loops/no-loops: "off" */
-import through2 from 'through2'
-import { finished } from 'readable-stream'
+import { finished, PassThrough } from 'readable-stream'
 import hardClose from '../hardClose'
 
 const getURL = (stream) =>
@@ -29,7 +28,7 @@ const softClose = (i) => {
 export default ({ concurrent = 8, onError, inputs = [] } = {}) => {
   if (inputs.length === 0) throw new Error('No inputs specified!')
 
-  const out = through2.obj()
+  const out = new PassThrough({ objectMode: true })
   out.setMaxListeners(0)
   out.remaining = Array.from(inputs)
   out.running = []
