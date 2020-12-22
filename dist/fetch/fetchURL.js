@@ -38,7 +38,7 @@ function _ref(acc, [k, v]) {
 const lowerObj = o => Object.entries(o).reduce(_ref, {});
 
 const retryWorthyStatuses = [420, 444, 408, 429, 449, 499];
-const retryWorthyCodes = ['ECONNRESET'];
+const retryWorthyCodes = ['ECONNRESET', 'ECONNREFUSED', 'ECONNABORTED', 'ENETDOWN', 'ENETRESET', 'ENETUNREACH', 'EHOSTUNREACH', 'EHOSTDOWN'];
 
 const shouldRetry = (_, original) => {
   if (!original) return false; // malformed error

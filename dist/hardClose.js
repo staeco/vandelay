@@ -13,7 +13,7 @@ var _default = stream => {
   stream._closed = true;
   stream.write = _ref; // kill ability for anything to write anymore, its over
 
-  if (stream.end) return stream.end();
+  if (stream.end) return stream.end(null);
   if (stream.destroy) return stream.destroy();
   throw new Error('Invalid stream - no end or destroy');
 };

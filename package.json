@@ -1,6 +1,6 @@
 {
   "name": "vandelay",
-  "version": "8.6.5",
+  "version": "8.6.6",
   "description": "Imports, exports, and ETL",
   "main": "dist/index.js",
   "keywords": [
@@ -102,7 +102,8 @@
     "xml2js": "^0.4.19"
   },
   "resolutions": {
-    "unzipper": "github:kinolaev/node-unzipper#patch-1"
+    "unzipper": "github:kinolaev/node-unzipper#patch-1",
+    "readable-stream": "^3.6.0"
   },
   "babel": {
     "extends": "@stae/babel-node",

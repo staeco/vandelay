@@ -23,7 +23,9 @@ const retryWorthyStatuses = [
   420, 444, 408, 429, 449, 499
 ]
 const retryWorthyCodes = [
-  'ECONNRESET'
+  'ECONNRESET', 'ECONNREFUSED', 'ECONNABORTED',
+  'ENETDOWN', 'ENETRESET', 'ENETUNREACH',
+  'EHOSTUNREACH', 'EHOSTDOWN'
 ]
 const shouldRetry = (_, original) => {
   if (!original) return false // malformed error

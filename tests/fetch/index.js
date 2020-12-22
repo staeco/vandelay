@@ -82,6 +82,10 @@ describe('fetch', () => {
     app.get('/file.json', (req, res) => {
       res.json({ data: sample })
     })
+    app.get('/big-file.json', (req, res) => {
+      const { count } = req.query
+      res.json({ data: new Array(parseInt(count) || 1000).fill(sample[0]) })
+    })
     app.get('/404.json', (req, res) => {
       res.status(404).send('404').end()
     })
@@ -485,6 +489,25 @@ describe('fetch', () => {
       { a: 4, b: 5, c: 6, ___meta: { row: 1, url: source.url, source } },
       { a: 7, b: 8, c: 9, ___meta: { row: 2, url: source.url, source } }
     ])
+  })
+  it('should work with multiple sources testing for race conditions', async () => {
+    const sources = 100
+    const expected = 4000
+    const source = {
+      url: `http://localhost:${port}/big-file.json?count=${expected}`,
+      parser: parse('json', { selector: 'data.*' })
+    }
+    // create a slow stream that takes 1ms per item
+    const pressure = tap(async (data) => {
+      await new Promise((resolve) => setTimeout(resolve, 1))
+      return data
+    }, { concurrency: sources })
+    const stream = pipeline(
+      fetch(new Array(sources).fill(source)),
+      pressure
+    )
+    const res = await collect.array(stream)
+    should(res.length).eql(expected * sources)
   })
   it('should request with selector pagination', async () => {
     const source = {
