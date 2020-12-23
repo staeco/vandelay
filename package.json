@@ -1,6 +1,6 @@
 {
   "name": "vandelay",
-  "version": "8.6.6",
+  "version": "8.6.7",
   "description": "Imports, exports, and ETL",
   "main": "dist/index.js",
   "keywords": [
@@ -48,6 +48,7 @@
     "@babel/cli": "^7.4.4",
     "@babel/core": "^7.4.5",
     "@babel/register": "^7.4.4",
+    "@fast-csv/format": "^4.3.5",
     "@istanbuljs/nyc-config-babel": "^3.0.0",
     "@stae/babel-node": "^1.0.0",
     "@stae/linters": "^1.0.0",
@@ -69,7 +70,7 @@
   },
   "dependencies": {
     "camelcase": "^6.0.0",
-    "csv-parser": "^3.0.0",
+    "csv-parser": "github:contra/csv-parser",
     "duplexify": "^4.0.0",
     "get-stream": "^6.0.0",
     "got-resume-next": "^2.1.1",

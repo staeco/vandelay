@@ -5,6 +5,7 @@ import getPort from 'get-port'
 import should from 'should'
 import JSONStream from 'jsonstream-next'
 import { Readable, PassThrough } from 'readable-stream'
+import { format as csvify } from '@fast-csv/format'
 import pipeline from '../../src/pipeline'
 import fetch from '../../src/fetch'
 import transform from '../../src/transform'
@@ -28,6 +29,22 @@ describe('pipeline', () => {
       pipeline(
         Readable.from(new Array(parseInt(count)).fill(sample[0])),
         JSONStream.stringify(),
+        res,
+        (err) => {
+          if (err) res.emit('error', err)
+        })
+    })
+    app.get('/big-file.csv', (req, res) => {
+      const { count = 1000 } = req.query
+      res.type('csv')
+
+      const data = [
+        Object.keys(sample[0]),
+        ...new Array(parseInt(count)).fill(Object.values(sample[0]))
+      ]
+      pipeline(
+        Readable.from(data),
+        csvify(),
         res,
         (err) => {
           if (err) res.emit('error', err)
@@ -60,9 +77,8 @@ describe('pipeline', () => {
     const sources = 10
     const expected = 4000
     const source = {
-      url: `http://localhost:${port}/big-file.json?count=${expected}`,
-      parser: 'json',
-      parserOptions: { selector: '*' }
+      url: `http://localhost:${port}/big-file.csv?count=${expected}`,
+      parser: 'csv'
     }
     // create a slow stream that takes 1ms per item
     const pressure = tap(async (data) => {
@@ -84,6 +100,29 @@ describe('pipeline', () => {
       }`, { concurrency: sources }),
       new PassThrough({ objectMode: true }),
       bigPressure
+    )
+    const res = await collect.array(stream)
+    should(res.length).eql(expected * sources)
+  })
+  it('should work with a realistic csv pipeline', async () => {
+    const sources = 4
+    const expected = 4000
+    const source = {
+      url: `http://localhost:${port}/big-file.csv?count=${expected}`,
+      parser: 'csv'
+    }
+    // create a slow stream that takes 1ms per item
+    const pressure = tap(async (data) => {
+      await new Promise((resolve) => setTimeout(resolve, 1))
+      return data
+    }, { concurrency: expected })
+    const stream = pipeline(
+      fetch(new Array(sources).fill(source)),
+      transform(`module.exports = async (row) => {
+        await new Promise((resolve) => setTimeout(resolve, 1))
+        return row
+      }`, { concurrency: expected }),
+      pressure
     )
     const res = await collect.array(stream)
     should(res.length).eql(expected * sources)
