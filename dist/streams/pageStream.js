@@ -15,7 +15,7 @@ const maxConcurrency = 2;
 
 const getURL = stream => stream.first ? getURL(stream.first) : typeof stream.url === 'function' ? stream.url() : stream.url;
 
-const closeIt = i => {
+const abortChild = i => {
   if (!i.readable) return;
 
   if (i.abort) {
@@ -28,7 +28,7 @@ const closeIt = i => {
 
 const softClose = i => {
   i._closed = true;
-  i.end(null);
+  i.end();
 }; // merges a bunch of streams, unordered - and has some special error management
 // so one wont fail the whole bunch
 // keep this aligned w/ multiStream.js
@@ -52,7 +52,7 @@ var _default = ({
 
   out.abort = () => {
     (0, _hardClose.default)(out);
-    out.running.forEach(closeIt);
+    out.running.forEach(abortChild);
   };
 
   out.url = getURL.bind(null, out);
@@ -126,10 +126,10 @@ var _default = ({
     }), fin).pipe(out, {
       end: false
     });
-  }; // kick it all off
+  };
 
+  schedule(); // kick it all off
 
-  schedule();
   return out;
 };
 

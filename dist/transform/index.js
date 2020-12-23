@@ -5,7 +5,7 @@ exports.default = void 0;
 
 var _threads = require("threads");
 
-var _stream = require("stream");
+var _readableStream = require("readable-stream");
 
 var _isPlainObj = _interopRequireDefault(require("is-plain-obj"));
 
@@ -119,7 +119,7 @@ var _default = (transformer, opt = {}) => {
   }
 
   if (transformFn.pool) {
-    (0, _stream.finished)(outStream, _ref3);
+    (0, _readableStream.finished)(outStream, _ref3);
   }
 
   return outStream;

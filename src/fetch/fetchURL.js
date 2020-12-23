@@ -1,6 +1,6 @@
 import got from 'got-resume-next'
 import collect from 'get-stream'
-import { pipeline, PassThrough } from 'stream'
+import { pipeline, PassThrough } from 'readable-stream'
 import template from 'url-template'
 import { CookieJar } from 'tough-cookie'
 import { pickBy } from 'lodash'

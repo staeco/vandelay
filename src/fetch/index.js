@@ -1,6 +1,6 @@
 import pumpify from 'pumpify'
 import pSeries from 'p-series'
-import { pipeline, PassThrough } from 'stream'
+import { pipeline, PassThrough } from 'readable-stream'
 import duplexify from 'duplexify'
 import url from 'url'
 import fetchURL from './fetchURL'
@@ -83,28 +83,25 @@ const setupContext = (source, opt, getStream) => {
   return out
 }
 
-const createParser = (baseParser, nextPageParser) => {
-  if (!nextPageParser) return baseParser
-  return () => {
-    const base = baseParser()
-    const nextPage = nextPageParser()
+const createParser = (baseParser, nextPageParser) => () => {
+  const base = baseParser()
+  const nextPage = nextPageParser()
 
-    const read = new PassThrough()
-    const write = new PassThrough({ objectMode: true })
-    const out = duplexify.obj(read, write)
-    const fail = (err) => err && out.emit('error', err)
+  const read = new PassThrough()
+  const write = new PassThrough({ objectMode: true })
+  const out = duplexify.obj(read, write)
+  const fail = (err) => err && out.emit('error', err)
 
-    // plumbing, read goes to both parsers
-    // we relay data events from the base parser
-    // and a nextPage event from that parser
-    pipeline(read, base, fail)
-    pipeline(read, nextPage, mapStream.obj((nextPage, cb) => {
-      out.emit('nextPage', nextPage)
-      cb()
-    }), fail)
-    pipeline(base, write, fail)
-    return out
-  }
+  // plumbing, read goes to both parsers
+  // we relay data events from the base parser
+  // and a nextPage event from that parser
+  pipeline(read, base, fail)
+  pipeline(read, nextPage, mapStream.obj((nextPage, cb) => {
+    out.emit('nextPage', nextPage)
+    cb()
+  }), fail)
+  pipeline(base, write, fail)
+  return out
 }
 
 const fetchStream = (source, opt = {}, raw = false) => {
@@ -149,7 +146,9 @@ const fetchStream = (source, opt = {}, raw = false) => {
       ? parse(source.parser, { ...source.parserOptions, selector: source.pagination.nextPageSelector })
       : null
 
-    const parser = createParser(baseParser, nextPageParser)
+    const parser = nextPageParser
+      ? createParser(baseParser, nextPageParser)
+      : baseParser
 
     return pageStream({
       startPage: source.pagination.startPage,

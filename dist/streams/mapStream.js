@@ -3,12 +3,12 @@
 exports.__esModule = true;
 exports.default = void 0;
 
-var _stream = require("stream");
+var _readableStream = require("readable-stream");
 
 var _pipelinePipe = require("pipeline-pipe");
 
 const mapStream = (work, options = {}) => {
-  if (!work) return new _stream.PassThrough(options);
+  if (!work) return new _readableStream.PassThrough(options);
   const concurrency = options.concurrency || 1;
 
   function _ref(chunk, _, cb) {
@@ -17,7 +17,7 @@ const mapStream = (work, options = {}) => {
 
   if (concurrency <= 1) {
     // no concurrency needed
-    const stream = new _stream.Transform(options);
+    const stream = new _readableStream.Transform(options);
     stream._transform = _ref;
     return stream;
   }

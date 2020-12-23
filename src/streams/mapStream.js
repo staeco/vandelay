@@ -1,4 +1,4 @@
-import { Transform, PassThrough } from 'stream'
+import { Transform, PassThrough } from 'readable-stream'
 import { ParallelTransform } from 'pipeline-pipe'
 
 const mapStream = (work, options = {}) => {

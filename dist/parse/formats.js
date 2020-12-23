@@ -13,7 +13,7 @@ var _duplexify = _interopRequireDefault(require("duplexify"));
 
 var _pumpify = _interopRequireDefault(require("pumpify"));
 
-var _stream = require("stream");
+var _readableStream = require("readable-stream");
 
 var _jsonstreamNext = _interopRequireDefault(require("jsonstream-next"));
 
@@ -112,7 +112,7 @@ exports.ndjson = ndjson;
 
 const json = opt => {
   if (Array.isArray(opt.selector)) {
-    const inStream = new _stream.PassThrough();
+    const inStream = new _readableStream.PassThrough();
 
     const outStream = _mapStream.default.obj();
 
@@ -120,7 +120,7 @@ const json = opt => {
       if (err) outStream.emit('error', err);
     }
 
-    opt.selector.forEach(selector => (0, _stream.pipeline)(inStream, json({ ...opt,
+    opt.selector.forEach(selector => (0, _readableStream.pipeline)(inStream, json({ ...opt,
       selector
     }), outStream, _ref6));
     return _duplexify.default.obj(inStream, outStream);

@@ -11,7 +11,7 @@ var _duplexify = _interopRequireDefault(require("duplexify"));
 
 var _unzipper = _interopRequireDefault(require("unzipper"));
 
-var _stream = require("stream");
+var _readableStream = require("readable-stream");
 
 var _mapStream = _interopRequireDefault(require("../streams/mapStream"));
 
@@ -28,10 +28,10 @@ var _default = (parser, regex) => {
       return cb();
     }
 
-    out.add((0, _stream.pipeline)(entry, parser(), cb));
+    out.add((0, _readableStream.pipeline)(entry, parser(), cb));
   }));
 
-  (0, _stream.finished)(dataStream, () => out.end(null));
+  (0, _readableStream.finished)(dataStream, () => out.end(null));
   return _duplexify.default.obj(dataStream, out);
 };
 

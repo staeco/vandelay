@@ -1,4 +1,4 @@
-import { pipeline } from 'stream'
+import { pipeline } from 'readable-stream'
 import { pickBy } from 'lodash'
 import mapStream from '../streams/mapStream'
 import fetchURLPlain from './fetchURL'
@@ -38,7 +38,11 @@ export default ({ url, parser, source }, opt) => {
     parse,
     mapStream.obj(map),
     (err) => {
-      if (err) out.emit('error', err)
+      if (err) {
+        err.source = source
+        err.url = req.url
+        out.emit('error', err)
+      }
     }
   )
 
@@ -50,9 +54,5 @@ export default ({ url, parser, source }, opt) => {
     req.abort()
     hardClose(out)
   }
-  out.on('error', (err) => {
-    err.source = source
-    err.url = req.url
-  })
   return out
 }

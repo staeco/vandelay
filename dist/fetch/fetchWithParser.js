@@ -3,7 +3,7 @@
 exports.__esModule = true;
 exports.default = void 0;
 
-var _stream = require("stream");
+var _readableStream = require("readable-stream");
 
 var _lodash = require("lodash");
 
@@ -49,8 +49,12 @@ var _default = ({
   };
 
   const parse = parser();
-  const out = (0, _stream.pipeline)(req, parse, _mapStream.default.obj(map), err => {
-    if (err) out.emit('error', err);
+  const out = (0, _readableStream.pipeline)(req, parse, _mapStream.default.obj(map), err => {
+    if (err) {
+      err.source = source;
+      err.url = req.url;
+      out.emit('error', err);
+    }
   }); // forward some props and events
 
   parse.once('nextPage', (...a) => out.emit('nextPage', ...a));
@@ -62,10 +66,6 @@ var _default = ({
     (0, _hardClose.default)(out);
   };
 
-  out.on('error', err => {
-    err.source = source;
-    err.url = req.url;
-  });
   return out;
 };
 

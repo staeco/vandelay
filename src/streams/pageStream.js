@@ -10,7 +10,7 @@ const getURL = (stream) =>
       ? stream.url()
       : stream.url
 
-const closeIt = (i) => {
+const abortChild = (i) => {
   if (!i.readable) return
   if (i.abort) {
     i._closed = true
@@ -21,7 +21,7 @@ const closeIt = (i) => {
 
 const softClose = (i) => {
   i._closed = true
-  i.end(null)
+  i.end()
 }
 
 // merges a bunch of streams, unordered - and has some special error management
@@ -36,7 +36,7 @@ export default ({ startPage = 0, waitForNextPage, fetchNextPage, concurrent = ma
   out.nextPageSelectorQueue = []
   out.abort = () => {
     hardClose(out)
-    out.running.forEach(closeIt)
+    out.running.forEach(abortChild)
   }
   out.url = getURL.bind(null, out)
 
@@ -107,7 +107,6 @@ export default ({ startPage = 0, waitForNextPage, fetchNextPage, concurrent = ma
     ).pipe(out, { end: false })
   }
 
-  // kick it all off
-  schedule()
+  schedule() // kick it all off
   return out
 }

@@ -1,5 +1,5 @@
 /* eslint-disable no-loops/no-loops */
-import { pipeline } from 'stream'
+import { pipeline } from 'readable-stream'
 import ex from 'stream-exhaust'
 
 const pipe = (...s) => {
