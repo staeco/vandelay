@@ -7,7 +7,7 @@ var _gotResumeNext = _interopRequireDefault(require("got-resume-next"));
 
 var _getStream = _interopRequireDefault(require("get-stream"));
 
-var _readableStream = require("readable-stream");
+var _stream = require("stream");
 
 var _urlTemplate = _interopRequireDefault(require("url-template"));
 
@@ -73,7 +73,7 @@ var _default = (url, {
 } = {}) => {
   const decoded = unescape(url);
   let fullURL = context && decoded.includes('{') ? _urlTemplate.default.parse(decoded).expand(context) : url;
-  const out = new _readableStream.PassThrough();
+  const out = new _stream.PassThrough();
   let isCollectingError = false;
   const actualHeaders = lowerObj((0, _lodash.pickBy)({
     'User-Agent': _userAgent.default,
@@ -123,7 +123,7 @@ var _default = (url, {
   function _ref5() {
     if (isCollectingError) return;
     if (debug) debug('Got a first response, starting stream');
-    (0, _readableStream.pipeline)(req, out, _ref4);
+    (0, _stream.pipeline)(req, out, _ref4);
   }
 
   try {

@@ -3,7 +3,7 @@
 exports.__esModule = true;
 exports.default = void 0;
 
-var _readableStream = require("readable-stream");
+var _stream = require("stream");
 
 var _lodash = require("lodash");
 
@@ -49,7 +49,7 @@ var _default = ({
   };
 
   const parse = parser();
-  const out = (0, _readableStream.pipeline)(req, parse, _mapStream.default.obj(map), err => {
+  const out = (0, _stream.pipeline)(req, parse, _mapStream.default.obj(map), err => {
     if (err) {
       err.source = source;
       err.url = req.url;
