@@ -1029,7 +1029,7 @@ describe('fetch', () => {
     res.length.should.eql(77)
     should(gotRes).equal(true)
   })
-  it.skip('should request a gcloud excel file, testing for race conditions', async () => {
+  it('should request a gcloud excel file, testing for race conditions', async () => {
     const max = 6
     const source = {
       url: GCLOUD_URL,
@@ -1042,7 +1042,7 @@ describe('fetch', () => {
     const res = await collect.array(stream)
     res.length.should.eql(32767 * sources.length)
   })
-  it.skip('should request a gcloud excel file that gets interrupted', async () => {
+  it('should request a gcloud excel file that gets interrupted', async () => {
     const source = {
       url: GCLOUD_URL,
       parser: parse('excel')
@@ -1064,7 +1064,7 @@ describe('fetch', () => {
     res.length.should.eql(32767)
     should(gotRes).equal(true)
   })
-  it.skip('should request a gcloud excel file that gets interrupted, with backpressure', async () => {
+  it('should request a gcloud excel file that gets interrupted, with backpressure', async () => {
     const source = {
       url: GCLOUD_URL,
       parser: parse('excel')
