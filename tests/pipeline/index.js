@@ -4,7 +4,7 @@ import express from 'express'
 import getPort from 'get-port'
 import should from 'should'
 import JSONStream from 'jsonstream-next'
-import { Readable, PassThrough } from 'readable-stream'
+import { Readable, PassThrough } from 'stream'
 import { format as csvify } from '@fast-csv/format'
 import pipeline from '../../src/pipeline'
 import fetch from '../../src/fetch'
@@ -74,7 +74,7 @@ describe('pipeline', () => {
     should(res.length).eql(expected * sources)
   })
   it('should work with a complex pipeline', async () => {
-    const sources = 10
+    const sources = 2
     const expected = 4000
     const source = {
       url: `http://localhost:${port}/big-file.csv?count=${expected}`,
@@ -105,7 +105,7 @@ describe('pipeline', () => {
     should(res.length).eql(expected * sources)
   })
   it('should work with a realistic csv pipeline', async () => {
-    const sources = 4
+    const sources = 2
     const expected = 4000
     const source = {
       url: `http://localhost:${port}/big-file.csv?count=${expected}`,

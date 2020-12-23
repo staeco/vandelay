@@ -7,7 +7,7 @@ import express from 'express'
 import getPort from 'get-port'
 import parseRange from 'range-parser'
 import parseBody from 'body-parser'
-import { PassThrough } from 'readable-stream'
+import { PassThrough } from 'stream'
 import compile from 'vandelay-es6'
 import pipeline from '../../src/pipeline'
 import { createHash } from 'crypto'
@@ -491,7 +491,7 @@ describe('fetch', () => {
     ])
   })
   it('should work with multiple sources testing for race conditions', async () => {
-    const sources = 100
+    const sources = 5
     const expected = 4000
     const source = {
       url: `http://localhost:${port}/big-file.json?count=${expected}`,
@@ -501,7 +501,7 @@ describe('fetch', () => {
     const pressure = tap(async (data) => {
       await new Promise((resolve) => setTimeout(resolve, 1))
       return data
-    }, { concurrency: sources })
+    }, { concurrency: 100 })
     const stream = pipeline(
       fetch(new Array(sources).fill(source)),
       pressure

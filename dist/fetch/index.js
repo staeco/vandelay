@@ -7,7 +7,7 @@ var _pumpify = _interopRequireDefault(require("pumpify"));
 
 var _pSeries = _interopRequireDefault(require("p-series"));
 
-var _readableStream = require("readable-stream");
+var _stream = require("stream");
 
 var _duplexify = _interopRequireDefault(require("duplexify"));
 
@@ -105,7 +105,7 @@ const setupContext = (source, opt, getStream) => {
     const realStream = getStream(setupResult);
     out.url = realStream.url;
     out.abort = realStream.abort;
-    out.setPipeline(realStream, new _readableStream.PassThrough({
+    out.setPipeline(realStream, new _stream.PassThrough({
       objectMode: true
     }));
   }).catch(err => {
@@ -120,8 +120,8 @@ const createParser = (baseParser, nextPageParser) => {
   return () => {
     const base = baseParser();
     const nextPage = nextPageParser();
-    const read = new _readableStream.PassThrough();
-    const write = new _readableStream.PassThrough({
+    const read = new _stream.PassThrough();
+    const write = new _stream.PassThrough({
       objectMode: true
     });
 
@@ -132,12 +132,12 @@ const createParser = (baseParser, nextPageParser) => {
     // and a nextPage event from that parser
 
 
-    (0, _readableStream.pipeline)(read, base, fail);
-    (0, _readableStream.pipeline)(read, nextPage, _mapStream.default.obj((nextPage, cb) => {
+    (0, _stream.pipeline)(read, base, fail);
+    (0, _stream.pipeline)(read, nextPage, _mapStream.default.obj((nextPage, cb) => {
       out.emit('nextPage', nextPage);
       cb();
     }), fail);
-    (0, _readableStream.pipeline)(base, write, fail);
+    (0, _stream.pipeline)(base, write, fail);
     return out;
   };
 };

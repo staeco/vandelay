@@ -3,7 +3,7 @@ import express from 'express'
 import getPort from 'get-port'
 import should from 'should'
 import JSONStream from 'jsonstream-next'
-import { Readable, PassThrough } from 'readable-stream'
+import { Readable, PassThrough } from 'stream'
 import pipeline from '../../src/pipeline'
 import fetch from '../../src/fetch'
 import transform from '../../src/transform'
@@ -60,7 +60,7 @@ describe('pipeline.exhaust', () => {
     )
   })
   it('should work with a complex pipeline', (done) => {
-    const sources = 10
+    const sources = 2
     const expected = 4000
     const source = {
       url: `http://localhost:${port}/big-file.json?count=${expected}`,
@@ -72,11 +72,11 @@ describe('pipeline.exhaust', () => {
     const pressure = tap(async (data) => {
       await new Promise((resolve) => setTimeout(resolve, 1))
       return data
-    }, { concurrency: sources })
+    }, { concurrency: 1000 })
     const bigPressure = tap(async (data) => {
       await new Promise((resolve) => setTimeout(resolve, 2))
       res.push(data)
-    }, { concurrency: sources })
+    }, { concurrency: 64 })
     pipeline.exhaust(
       fetch(new Array(sources).fill(source)),
       new PassThrough({ objectMode: true }),
@@ -85,7 +85,7 @@ describe('pipeline.exhaust', () => {
       transform(`module.exports = async (row) => {
         await new Promise((resolve) => setTimeout(resolve, 1))
         return row
-      }`),
+      }`, { concurrency: 32 }),
       new PassThrough({ objectMode: true }),
       bigPressure,
       new PassThrough({ objectMode: true }),

@@ -1,5 +1,5 @@
 import { spawn, Pool, Worker } from 'threads'
-import { finished } from 'readable-stream'
+import { finished } from 'stream'
 import isObject from 'is-plain-obj'
 import { transform as transformObject } from 'object-transform-stack'
 import memo from 'moize'

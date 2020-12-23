@@ -4,7 +4,7 @@ import should from 'should'
 import streamify from 'into-stream'
 import collect from 'get-stream'
 import compile from 'vandelay-es6'
-import { PassThrough } from 'readable-stream'
+import { PassThrough } from 'stream'
 import pipeline from '../../src/pipeline'
 import transform from '../../src/transform'
 

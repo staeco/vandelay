@@ -2,7 +2,7 @@ import pumpify from 'pumpify'
 import merge from 'merge2'
 import duplexify from 'duplexify'
 import zip from 'unzipper'
-import { finished, pipeline } from 'readable-stream'
+import { finished, pipeline } from 'stream'
 import mapStream from '../streams/mapStream'
 
 export default (parser, regex) => {

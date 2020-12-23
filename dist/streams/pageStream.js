@@ -3,7 +3,7 @@
 exports.__esModule = true;
 exports.default = void 0;
 
-var _readableStream = require("readable-stream");
+var _stream = require("stream");
 
 var _mapStream = _interopRequireDefault(require("../streams/mapStream"));
 
@@ -43,7 +43,7 @@ var _default = ({
 } = {}) => {
   // concurrency can either be 1 or 2, 2 will start loading the next page once it reads a first datum from the current page
   const actualConcurrency = Math.min(maxConcurrency, concurrent);
-  const out = new _readableStream.PassThrough({
+  const out = new _stream.PassThrough({
     objectMode: true
   });
   out.nextPage = startPage;
@@ -108,7 +108,7 @@ var _default = ({
 
     if (waitForNextPage) {
       src.once('nextPage', schedule);
-      (0, _readableStream.finished)(src, fin);
+      (0, _stream.finished)(src, fin);
       src.pipe(out, {
         end: false
       });
@@ -116,7 +116,7 @@ var _default = ({
     } // kick off regular pagination
 
 
-    (0, _readableStream.pipeline)(src, _mapStream.default.obj((chunk, cb) => {
+    (0, _stream.pipeline)(src, _mapStream.default.obj((chunk, cb) => {
       if (!src._gotData) {
         src._gotData = true;
         schedule();

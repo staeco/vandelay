@@ -3,7 +3,7 @@
 exports.__esModule = true;
 exports.default = void 0;
 
-var _readableStream = require("readable-stream");
+var _stream = require("stream");
 
 var _hardClose = _interopRequireDefault(require("../hardClose"));
 
@@ -36,7 +36,7 @@ var _default = ({
   inputs = []
 } = {}) => {
   if (inputs.length === 0) throw new Error('No inputs specified!');
-  const out = new _readableStream.PassThrough({
+  const out = new _stream.PassThrough({
     objectMode: true
   });
   out.setMaxListeners(0);
@@ -93,7 +93,7 @@ var _default = ({
     src.pipe(out, {
       end: false
     });
-    (0, _readableStream.finished)(src, done.bind(null, src));
+    (0, _stream.finished)(src, done.bind(null, src));
   };
 
   schedule(); // kick it all off

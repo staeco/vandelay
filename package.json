@@ -1,6 +1,6 @@
 {
   "name": "vandelay",
-  "version": "8.6.8",
+  "version": "8.7.0",
   "description": "Imports, exports, and ETL",
   "main": "dist/index.js",
   "keywords": [
@@ -89,12 +89,12 @@
     "pipeline-pipe": "^0.1.4",
     "pumpify": "^2.0.0",
     "qs": "^6.6.0",
-    "readable-stream": "^3.6.0",
     "remove-bom-stream": "^1.2.0",
     "stream-exhaust": "^1.0.2",
     "superagent": "^6.0.0",
     "threads": "^1.6.3",
     "tough-cookie": "^4.0.0",
+    "unzipper": "github:kinolaev/node-unzipper#patch-1",
     "url-template": "^2.0.8",
     "verrazzano": "^2.0.1",
     "vm2": "^3.6.0",
@@ -103,8 +103,7 @@
     "xml2js": "^0.4.19"
   },
   "resolutions": {
-    "unzipper": "github:kinolaev/node-unzipper#patch-1",
-    "readable-stream": "^3.6.0"
+    "unzipper": "github:kinolaev/node-unzipper#patch-1"
   },
   "babel": {
     "extends": "@stae/babel-node",

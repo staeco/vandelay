@@ -1,4 +1,4 @@
-import { pipeline, finished, PassThrough } from 'readable-stream'
+import { pipeline, finished, PassThrough } from 'stream'
 import mapStream from '../streams/mapStream'
 import hardClose from '../hardClose'
 
