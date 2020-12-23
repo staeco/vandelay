@@ -1,4 +1,4 @@
-import { pipeline } from 'readable-stream'
+import { pipeline } from 'stream'
 import { pickBy } from 'lodash'
 import mapStream from '../streams/mapStream'
 import fetchURLPlain from './fetchURL'

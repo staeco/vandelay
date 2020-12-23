@@ -1,6 +1,6 @@
 import pumpify from 'pumpify'
 import pSeries from 'p-series'
-import { pipeline, PassThrough } from 'readable-stream'
+import { pipeline, PassThrough } from 'stream'
 import duplexify from 'duplexify'
 import url from 'url'
 import fetchURL from './fetchURL'
