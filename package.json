@@ -34,7 +34,7 @@
   },
   "scripts": {
     "preversion": "npm run clean && npm run build",
-    "build": "babel src --out-dir dist",
+    "build": "npm run clean && babel src --out-dir dist",
     "clean": "rimraf dist",
     "lint": "eslint src tests --fix",
     "test:plain": "NODE_ENV=testing mocha tests --require @babel/register --recursive --reporter spec --bail --exit --timeout 90000",
