@@ -503,9 +503,20 @@ describe('fetch', () => {
       return data
     }, { concurrency: 100 })
     const stream = pipeline(
-      fetch(new Array(sources).fill(source)),
+      fetch(new Array(sources).fill(source), { concurrency: sources }),
       pressure
     )
+    const res = await collect.array(stream)
+    should(res.length).eql(expected * sources)
+  })
+  it('should work with multiple sources and small concurrency', async () => {
+    const sources = 7
+    const expected = 5000
+    const source = {
+      url: `http://localhost:${port}/big-file.json?count=${expected}`,
+      parser: parse('json', { selector: 'data.*' })
+    }
+    const stream = fetch(new Array(sources).fill(source), { concurrency: 4 })
     const res = await collect.array(stream)
     should(res.length).eql(expected * sources)
   })
