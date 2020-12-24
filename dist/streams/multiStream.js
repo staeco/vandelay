@@ -79,7 +79,7 @@ var _default = ({
     const toRun = concurrent - out.running.length;
     if (toRun === 0) return;
 
-    for (let i = 0; i <= toRun; i++) {
+    for (let i = 0; i < toRun; i++) {
       if (out.remaining.length === 0) break;
       run(out.remaining.shift());
     }
