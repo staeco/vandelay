@@ -46,7 +46,7 @@ const getTransformFunction = memo.deep((transformer, opt = {}) => {
   // already was a function - basically do nothing here
   if (typeof transformer !== 'function') throw new Error('Invalid transform function!')
   return transformer
-})
+}, { maxSize: 8 })
 
 export default (transformer, opt = {}) => {
   const transformFn = getTransformFunction(transformer, opt)

@@ -325,4 +325,84 @@ describe('transform', () => {
     process.removeListener('uncaughtException', fail)
     process.removeListener('uncaughtRejection', fail)
   })
+  it('should have fixed inner concurrency', async () => {
+    const map = `
+    import memo from 'moize'
+
+    const state = { count: 0 }
+    const fn = memo.promise(async () =>
+      new Promise((resolve) => {
+        setTimeout(() => {
+          ++state.count
+          resolve()
+        }, 10)
+      })
+    )
+    export default async (row) => {
+      const res = await fn()
+      if (state.count !== 1) throw new Error('Count increased more than once!')
+      return row
+    }`
+    const fail = (err) => {
+      throw new Error(`Fail! Error escaped: ${err?.message}`)
+    }
+    process.on('uncaughtException', fail)
+    process.on('uncaughtRejection', fail)
+    const stream = pipeline(streamify.object(data), transform(map, {
+      concurrency: 16,
+      externalModules: [ 'moize' ],
+      compiler: compile,
+      onSuccess: (record, old) => {
+        should.exist(record)
+        should.exist(old)
+        should.equal(record, old)
+      },
+      onError: fail
+    }))
+    const res = await collect.array(stream)
+    res.should.eql(data)
+
+    process.removeListener('uncaughtException', fail)
+    process.removeListener('uncaughtRejection', fail)
+  })
+  it('should have fixed outer concurrency', async () => {
+    const state = { count: 0 }
+    const map = `
+    import memo from 'moize'
+
+    const fn = memo.promise(async () =>
+      new Promise((resolve) => {
+        setTimeout(() => {
+          ++state.count
+          resolve()
+        }, 10)
+      })
+    )
+    export default async (row) => {
+      const res = await fn()
+      return row
+    }`
+    const fail = (err) => {
+      throw new Error(`Fail! Error escaped: ${err?.message}`)
+    }
+    process.on('uncaughtException', fail)
+    process.on('uncaughtRejection', fail)
+    const stream = pipeline(streamify.object(data), transform(map, {
+      concurrency: 16,
+      externalModules: [ 'moize' ],
+      compiler: compile,
+      unsafeGlobals: { state },
+      onSuccess: (record, old) => {
+        should.exist(record)
+        should.exist(old)
+        should.equal(record, old)
+      },
+      onError: fail
+    }))
+    const res = await collect.array(stream)
+    res.should.eql(data)
+    should(state.count).eql(1)
+    process.removeListener('uncaughtException', fail)
+    process.removeListener('uncaughtRejection', fail)
+  })
 })

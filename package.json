@@ -1,6 +1,6 @@
 {
   "name": "vandelay",
-  "version": "8.7.4",
+  "version": "8.7.5",
   "description": "Imports, exports, and ETL",
   "main": "dist/index.js",
   "keywords": [
@@ -79,7 +79,7 @@
     "jsonstream-next": "^3.0.0",
     "jsonstream-paths": "^1.1.1",
     "lodash": "^4.17.15",
-    "moize": "^5.4.7",
+    "moize": "^6.0.0",
     "moment": "^2.24.0",
     "ndjson": "^2.0.0",
     "object-transform-stack": "^3.0.0",

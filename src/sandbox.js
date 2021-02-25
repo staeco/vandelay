@@ -48,6 +48,7 @@ const sandbox = (code, opt = {}) => {
   const vm = new NodeVM({
     console: opt.console,
     timeout: opt.timeout,
+    sandbox: opt.unsafeGlobals,
     nesting: false,
     require: {
       external: {

@@ -26,6 +26,7 @@ const sample = [
 const SHP_FILE = 'http://www.longbeach.gov/ti/media-library/documents/gis/data-catalog/bikeways/'
 
 // ArcGIS does not handle range headers, so this is good to test. This is Jefferson County Speed Limits.
+// From: https://data.lojic.org/datasets/f36b2c8164714b258840dce66909ba9a_1
 const ARCGIS_URL = 'https://opendata.arcgis.com/datasets/f36b2c8164714b258840dce66909ba9a_1.geojson'
 
 // Socrata does support range but error-prone, so this is good to test. This is NYC BIS Property Data.
@@ -922,7 +923,7 @@ describe('fetch', () => {
       }, 1000)
     })
     const res = await collect.array(stream)
-    res.length.should.eql(34289)
+    res.length.should.eql(34318)
     res[0].___meta.should.eql({
       header: {
         name: 'Jefferson_County_KY_Street_Centerlines',

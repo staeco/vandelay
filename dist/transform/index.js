@@ -69,6 +69,8 @@ const getTransformFunction = _moize.default.deep((transformer, opt = {}) => {
 
   if (typeof transformer !== 'function') throw new Error('Invalid transform function!');
   return transformer;
+}, {
+  maxSize: 8
 });
 
 var _default = (transformer, opt = {}) => {
