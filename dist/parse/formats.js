@@ -34,7 +34,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function _ref({
   header
 }) {
-  return header?.trim();
+  return header == null ? void 0 : header.trim();
 }
 
 function _ref2(row, cb) {
@@ -62,7 +62,7 @@ exports.csv = csv;
 function _ref3({
   header
 }) {
-  return header?.trim();
+  return header == null ? void 0 : header.trim();
 }
 
 function _ref4(row, cb) {
@@ -87,7 +87,7 @@ const tsv = opt => {
 exports.tsv = tsv;
 
 function _ref5(header) {
-  return header?.trim();
+  return header == null ? void 0 : header.trim();
 }
 
 const excel = opt => {

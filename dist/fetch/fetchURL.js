@@ -105,14 +105,14 @@ var _default = (url, {
     const orig = err.original || err;
     if (debug) debug('Got error while fetching', orig);
 
-    if (orig?.response) {
+    if (orig != null && orig.response) {
       orig.response.text = orig.response.rawBody ? orig.response.rawBody.toString('utf8') // for whatever reason, got buffered the response
       : await (0, _getStream.default)(orig.response, {
         maxBuffer: sizeLimit
       }); // nothing buffered - keep reading
     }
 
-    out.emit('error', (0, _httpError.default)(orig, orig?.response));
+    out.emit('error', (0, _httpError.default)(orig, orig == null ? void 0 : orig.response));
     out.abort();
   }
 

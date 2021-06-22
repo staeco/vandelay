@@ -1,6 +1,6 @@
 {
   "name": "vandelay",
-  "version": "8.7.5",
+  "version": "8.8.0",
   "description": "Imports, exports, and ETL",
   "main": "dist/index.js",
   "keywords": [
@@ -59,14 +59,14 @@
     "get-port": "^5.0.0",
     "graceful-fs": "^4.1.11",
     "into-stream": "^6.0.0",
-    "mocha": "^8.0.0",
+    "mocha": "^9.0.0",
     "nyc": "^15.0.0",
     "range-parser": "^1.2.0",
     "rimraf": "^3.0.0",
     "should": "^13.0.0",
     "tempfile": "^3.0.0",
     "vandelay-es6": "^2.0.0",
-    "xlsx": "^0.16.3"
+    "xlsx": "^0.17.0"
   },
   "dependencies": {
     "camelcase": "^6.0.0",
@@ -86,7 +86,7 @@
     "p-series": "^2.1.0",
     "p-timeout": "^4.0.0",
     "parse-decimal-number": "^1.0.0",
-    "pipeline-pipe": "^0.1.4",
+    "pipeline-pipe": "^0.3.0",
     "pumpify": "^2.0.0",
     "qs": "^6.6.0",
     "remove-bom-stream": "^1.2.0",

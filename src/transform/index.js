@@ -50,6 +50,7 @@ const getTransformFunction = memo.deep((transformer, opt = {}) => {
 
 export default (transformer, opt = {}) => {
   const transformFn = getTransformFunction(transformer, opt)
+  let lastPreviousRow
   const transform = async (record, meta) => {
     if (opt.onBegin) await pWrap(opt.onBegin(record, meta), 'onBegin')
 
@@ -71,7 +72,9 @@ export default (transformer, opt = {}) => {
     // transform it
     let transformed
     try {
-      transformed = await pWrap(transformFn(record, meta), 'transform')
+      const previousRow = lastPreviousRow
+      lastPreviousRow = record
+      transformed = await pWrap(transformFn(record, { ...meta, previousRow }), 'transform')
     } catch (err) {
       if (opt.onError) await pWrap(opt.onError(err, record, meta), 'onError')
       return

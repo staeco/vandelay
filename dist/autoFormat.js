@@ -152,7 +152,7 @@ const infer = v => {
 exports.infer = infer;
 
 function _ref2(v, k) {
-  return [infer(v), k?.trim()];
+  return [infer(v), k == null ? void 0 : k.trim()];
 }
 
 const simple = obj => transformObject(obj, _ref2);

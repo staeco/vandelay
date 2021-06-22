@@ -13,15 +13,15 @@ const rewriteError = info => {
 
 var _default = (err, res) => {
   const base = {
-    code: res?.code || err.code,
-    status: res?.statusCode || err.statusCode,
-    headers: res?.headers || err.headers,
-    body: res?.text || err.text
+    code: (res == null ? void 0 : res.code) || err.code,
+    status: (res == null ? void 0 : res.statusCode) || err.statusCode,
+    headers: (res == null ? void 0 : res.headers) || err.headers,
+    body: (res == null ? void 0 : res.text) || err.text
   };
   const nerror = rewriteError({
     code: base.code,
     status: base.status,
-    statusMessage: res?.statusMessage || err.statusMessage
+    statusMessage: (res == null ? void 0 : res.statusMessage) || err.statusMessage
   });
   nerror.requestError = true;
   nerror.code = base.code;

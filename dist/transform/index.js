@@ -51,7 +51,7 @@ const getTransformFunction = _moize.default.deep((transformer, opt = {}) => {
   if (typeof transformer === 'string' && opt.pooling === true) {
     const pool = (0, _threads.Pool)(_ref, opt.concurrency || defaultConcurrency);
 
-    const transformFn = async (record, meta) => pool.queue(async (work) => work(transformer, {
+    const transformFn = async (record, meta) => pool.queue(async work => work(transformer, {
       timeout: opt.timeout
     }, record, meta));
 
@@ -75,6 +75,7 @@ const getTransformFunction = _moize.default.deep((transformer, opt = {}) => {
 
 var _default = (transformer, opt = {}) => {
   const transformFn = getTransformFunction(transformer, opt);
+  let lastPreviousRow;
 
   const transform = async (record, meta) => {
     if (opt.onBegin) await pWrap(opt.onBegin(record, meta), 'onBegin'); // filter
@@ -99,7 +100,11 @@ var _default = (transformer, opt = {}) => {
     let transformed;
 
     try {
-      transformed = await pWrap(transformFn(record, meta), 'transform');
+      const previousRow = lastPreviousRow;
+      lastPreviousRow = record;
+      transformed = await pWrap(transformFn(record, { ...meta,
+        previousRow
+      }), 'transform');
     } catch (err) {
       if (opt.onError) await pWrap(opt.onError(err, record, meta), 'onError');
       return;

@@ -83,11 +83,13 @@ const setupContext = (source, opt, getStream) => {
   }
 
   if (source.setup) {
+    var _source$setup;
+
     if (typeof source.setup === 'string') {
       source.setup = (0, _sandbox.default)(source.setup, opt.setup);
     }
 
-    const setupFn = source.setup?.default || source.setup;
+    const setupFn = ((_source$setup = source.setup) == null ? void 0 : _source$setup.default) || source.setup;
     if (typeof setupFn !== 'function') throw new Error('Invalid setup function!');
     preRun.push(setupFn);
   }
