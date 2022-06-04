@@ -1,7 +1,7 @@
 "use strict";
 
 exports.__esModule = true;
-exports.default = exports.getDefaultFunction = void 0;
+exports.getDefaultFunction = exports.default = void 0;
 
 var _vm = require("vm2");
 
@@ -49,7 +49,7 @@ const sandbox = (code, opt = {}) => {
     nesting: false,
     require: {
       external: {
-        modules: opt.externalModules
+        modules: opt.externalModules || []
       },
       builtin: opt.coreModules || allowedBuiltins,
       mock: opt.mockModules
@@ -73,12 +73,15 @@ const sandbox = (code, opt = {}) => {
 
     return new Promise((resolve, reject) => {
       internalDomain.on('error', reject); // report async errors
+      // hack for issue when using HTTP agents and domains... https://github.com/nodejs/node/issues/40999#issuecomment-1002719169=
 
-      let out;
-      internalDomain.run(() => {
-        out = fn(...args);
-      });
-      resolve(out);
+      setTimeout(() => {
+        let out;
+        internalDomain.run(() => {
+          out = fn(...args);
+        });
+        resolve(out);
+      }, 0);
     });
   };
 };

@@ -1,7 +1,7 @@
 "use strict";
 
 exports.__esModule = true;
-exports.default = exports.formats = void 0;
+exports.formats = exports.default = void 0;
 
 var _pumpify = _interopRequireDefault(require("pumpify"));
 

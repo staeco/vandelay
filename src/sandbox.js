@@ -52,7 +52,7 @@ const sandbox = (code, opt = {}) => {
     nesting: false,
     require: {
       external: {
-        modules: opt.externalModules
+        modules: opt.externalModules || []
       },
       builtin: opt.coreModules || allowedBuiltins,
       mock: opt.mockModules
@@ -75,11 +75,15 @@ const sandbox = (code, opt = {}) => {
     const internalDomain = domains.create()
     return new Promise((resolve, reject) => {
       internalDomain.on('error', reject) // report async errors
-      let out
-      internalDomain.run(() => {
-        out = fn(...args)
-      })
-      resolve(out)
+
+      // hack for issue when using HTTP agents and domains... https://github.com/nodejs/node/issues/40999#issuecomment-1002719169=
+      setTimeout(() => {
+        let out
+        internalDomain.run(() => {
+          out = fn(...args)
+        })
+        resolve(out)
+      }, 0)
     })
   }
 }

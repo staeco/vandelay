@@ -123,7 +123,7 @@ const fetchStream = (source, opt = {}, raw = false) => {
   if (typeof source.parser === 'string') {
     if (source.parserOptions && typeof source.parserOptions !== 'object') throw new Error('Invalid source parserOptions')
   } else if (typeof source.parser !== 'function') {
-    throw new Error('Invalid parser function')
+    throw new TypeError('Invalid parser function')
   }
   if (source.headers && typeof source.headers !== 'object') throw new Error('Invalid headers object')
   if (source.oauth && typeof source.oauth !== 'object') throw new Error('Invalid oauth object')

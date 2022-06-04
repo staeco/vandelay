@@ -1,7 +1,7 @@
 "use strict";
 
 exports.__esModule = true;
-exports.gtfs = exports.gtfsrt = exports.shp = exports.kmz = exports.kml = exports.gpx = exports.gdb = exports.html = exports.xml = exports.json = exports.ndjson = exports.excel = exports.tsv = exports.csv = void 0;
+exports.xml = exports.tsv = exports.shp = exports.ndjson = exports.kmz = exports.kml = exports.json = exports.html = exports.gtfsrt = exports.gtfs = exports.gpx = exports.gdb = exports.excel = exports.csv = void 0;
 
 var _csvParser = _interopRequireDefault(require("csv-parser"));
 
@@ -34,7 +34,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function _ref({
   header
 }) {
-  return header == null ? void 0 : header.trim();
+  return header?.trim();
 }
 
 function _ref2(row, cb) {
@@ -62,7 +62,7 @@ exports.csv = csv;
 function _ref3({
   header
 }) {
-  return header == null ? void 0 : header.trim();
+  return header?.trim();
 }
 
 function _ref4(row, cb) {
@@ -87,7 +87,7 @@ const tsv = opt => {
 exports.tsv = tsv;
 
 function _ref5(header) {
-  return header == null ? void 0 : header.trim();
+  return header?.trim();
 }
 
 const excel = opt => {

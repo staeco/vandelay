@@ -83,13 +83,11 @@ const setupContext = (source, opt, getStream) => {
   }
 
   if (source.setup) {
-    var _source$setup;
-
     if (typeof source.setup === 'string') {
       source.setup = (0, _sandbox.default)(source.setup, opt.setup);
     }
 
-    const setupFn = ((_source$setup = source.setup) == null ? void 0 : _source$setup.default) || source.setup;
+    const setupFn = source.setup?.default || source.setup;
     if (typeof setupFn !== 'function') throw new Error('Invalid setup function!');
     preRun.push(setupFn);
   }
@@ -170,7 +168,7 @@ const fetchStream = (source, opt = {}, raw = false) => {
   if (typeof source.parser === 'string') {
     if (source.parserOptions && typeof source.parserOptions !== 'object') throw new Error('Invalid source parserOptions');
   } else if (typeof source.parser !== 'function') {
-    throw new Error('Invalid parser function');
+    throw new TypeError('Invalid parser function');
   }
 
   if (source.headers && typeof source.headers !== 'object') throw new Error('Invalid headers object');

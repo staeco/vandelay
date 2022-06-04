@@ -1,6 +1,6 @@
 {
   "name": "vandelay",
-  "version": "8.8.0",
+  "version": "8.9.0",
   "description": "Imports, exports, and ETL",
   "main": "dist/index.js",
   "keywords": [
@@ -59,14 +59,14 @@
     "get-port": "^5.0.0",
     "graceful-fs": "^4.1.11",
     "into-stream": "^6.0.0",
-    "mocha": "^9.0.0",
+    "mocha": "^10.0.0",
     "nyc": "^15.0.0",
     "range-parser": "^1.2.0",
     "rimraf": "^3.0.0",
     "should": "^13.0.0",
     "tempfile": "^3.0.0",
     "vandelay-es6": "^2.0.0",
-    "xlsx": "^0.17.0"
+    "xlsx": "^0.18.5"
   },
   "dependencies": {
     "camelcase": "^6.0.0",
@@ -89,12 +89,12 @@
     "pipeline-pipe": "^0.3.0",
     "pumpify": "^2.0.0",
     "qs": "^6.6.0",
-    "remove-bom-stream": "^1.2.0",
+    "remove-bom-stream": "^2.0.0",
     "stream-exhaust": "^1.0.2",
-    "superagent": "^6.0.0",
+    "superagent": "^7.0.0",
     "threads": "^1.6.3",
     "tough-cookie": "^4.0.0",
-    "unzipper": "github:kinolaev/node-unzipper#patch-1",
+    "unzipper": "github:ZJONSSON/node-unzipper",
     "url-template": "^2.0.8",
     "verrazzano": "^2.0.1",
     "vm2": "^3.6.0",
@@ -103,7 +103,7 @@
     "xml2js": "^0.4.19"
   },
   "resolutions": {
-    "unzipper": "github:kinolaev/node-unzipper#patch-1"
+    "unzipper": "github:ZJONSSON/node-unzipper"
   },
   "babel": {
     "extends": "@stae/babel-node",

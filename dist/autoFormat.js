@@ -1,7 +1,7 @@
 "use strict";
 
 exports.__esModule = true;
-exports.extreme = exports.aggressive = exports.simple = exports.infer = void 0;
+exports.simple = exports.infer = exports.extreme = exports.aggressive = void 0;
 
 var _parseDecimalNumber = _interopRequireDefault(require("parse-decimal-number"));
 
@@ -152,7 +152,7 @@ const infer = v => {
 exports.infer = infer;
 
 function _ref2(v, k) {
-  return [infer(v), k == null ? void 0 : k.trim()];
+  return [infer(v), k?.trim()];
 }
 
 const simple = obj => transformObject(obj, _ref2);
