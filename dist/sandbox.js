@@ -30,7 +30,8 @@ const getDefaultFunction = (code, opt) => {
   const transformFn = out.default || out;
   if (typeof transformFn !== 'function') throw new Error('Invalid transform function!');
   return transformFn;
-};
+}; // setTimeout(0) is for issue when using HTTP agents and domains... https://github.com/nodejs/node/issues/40999#issuecomment-1002719169=
+
 
 exports.getDefaultFunction = getDefaultFunction;
 
@@ -62,28 +63,29 @@ const sandbox = (code, opt = {}) => {
 
   topDomain.on('error', _ref); // swallow async errors
 
-  topDomain.run(() => {
+  function _ref2() {
     fn = vm.run(script, 'compiled-transform.js');
-  });
-  if (fn == null) throw new Error('Failed to export something!');
-  return (...args) => {
+  }
+
+  setTimeout(() => {
+    topDomain.run(_ref2);
+    if (fn == null) throw new Error('Failed to export something!');
+  }, 0);
+  return (...args) => new Promise((resolve, reject) => {
     // internalDomain is for evaluating the transform function
     // any errors thrown inside the transform fn are caught here
     const internalDomain = _domain.default.create();
 
-    return new Promise((resolve, reject) => {
-      internalDomain.on('error', reject); // report async errors
-      // hack for issue when using HTTP agents and domains... https://github.com/nodejs/node/issues/40999#issuecomment-1002719169=
+    internalDomain.on('error', reject); // report async errors
 
-      setTimeout(() => {
-        let out;
-        internalDomain.run(() => {
-          out = fn(...args);
-        });
-        resolve(out);
-      }, 0);
-    });
-  };
+    setTimeout(() => {
+      let out;
+      internalDomain.run(() => {
+        out = fn(...args);
+      });
+      resolve(out);
+    }, 0);
+  });
 };
 
 var _default = sandbox;
