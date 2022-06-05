@@ -9,6 +9,8 @@ var _domain = _interopRequireDefault(require("domain"));
 
 var _util = require("util");
 
+var _process = require("process");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const defaultSandbox = {
@@ -39,9 +41,6 @@ function _ref() {}
 
 const sandbox = (code, opt = {}) => {
   let fn;
-
-  const topDomain = _domain.default.create();
-
   const script = new _vm.VMScript(opt.compiler ? opt.compiler(code) : code);
   const vm = new _vm.NodeVM({
     console: opt.console,
@@ -61,31 +60,35 @@ const sandbox = (code, opt = {}) => {
   if (opt.globals) addIn(vm, opt.globals); // topDomain is for evaluating the script
   // any errors thrown outside the transform fn are caught here
 
+  const topDomain = _domain.default.create();
+
   topDomain.on('error', _ref); // swallow async errors
 
   function _ref2() {
     fn = vm.run(script, 'compiled-transform.js');
   }
 
-  setTimeout(() => {
+  (0, _process.nextTick)(() => {
     topDomain.run(_ref2);
     if (fn == null) throw new Error('Failed to export something!');
-  }, 0);
-  return (...args) => new Promise((resolve, reject) => {
+  });
+  return (...args) => {
     // internalDomain is for evaluating the transform function
     // any errors thrown inside the transform fn are caught here
     const internalDomain = _domain.default.create();
 
-    internalDomain.on('error', reject); // report async errors
+    return new Promise((resolve, reject) => {
+      internalDomain.on('error', reject); // report async errors
 
-    setTimeout(() => {
-      let out;
-      internalDomain.run(() => {
-        out = fn(...args);
+      (0, _process.nextTick)(() => {
+        let out;
+        internalDomain.run(() => {
+          out = fn(...args);
+        });
+        resolve(out);
       });
-      resolve(out);
-    }, 0);
-  });
+    });
+  };
 };
 
 var _default = sandbox;

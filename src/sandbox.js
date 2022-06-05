@@ -1,6 +1,7 @@
 import { NodeVM, VMScript } from 'vm2'
 import domains from 'domain'
 import { TextEncoder, TextDecoder } from 'util'
+import { nextTick } from 'process'
 
 const defaultSandbox = {
   URL, URLSearchParams,
@@ -44,7 +45,6 @@ export const getDefaultFunction = (code, opt) => {
 // setTimeout(0) is for issue when using HTTP agents and domains... https://github.com/nodejs/node/issues/40999#issuecomment-1002719169=
 const sandbox = (code, opt = {}) => {
   let fn
-  const topDomain = domains.create()
   const script = new VMScript(opt.compiler ? opt.compiler(code) : code)
   const vm = new NodeVM({
     console: opt.console,
@@ -65,26 +65,28 @@ const sandbox = (code, opt = {}) => {
 
   // topDomain is for evaluating the script
   // any errors thrown outside the transform fn are caught here
+  const topDomain = domains.create()
   topDomain.on('error', () => {}) // swallow async errors
-  setTimeout(() => {
+  nextTick(() => {
     topDomain.run(() => {
       fn = vm.run(script, 'compiled-transform.js')
     })
     if (fn == null) throw new Error('Failed to export something!')
-  }, 0)
-  return (...args) =>
-    new Promise((resolve, reject) => {
-      // internalDomain is for evaluating the transform function
-      // any errors thrown inside the transform fn are caught here
-      const internalDomain = domains.create()
+  })
+  return (...args) => {
+    // internalDomain is for evaluating the transform function
+    // any errors thrown inside the transform fn are caught here
+    const internalDomain = domains.create()
+    return new Promise((resolve, reject) => {
       internalDomain.on('error', reject) // report async errors
-      setTimeout(() => {
+      nextTick(() => {
         let out
         internalDomain.run(() => {
           out = fn(...args)
         })
         resolve(out)
-      }, 0)
+      })
     })
+  }
 }
 export default sandbox
