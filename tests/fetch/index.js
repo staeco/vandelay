@@ -85,7 +85,7 @@ describe('fetch', () => {
     })
     app.get('/big-file.json', (req, res) => {
       const { count } = req.query
-      res.json({ data: new Array(parseInt(count) || 1000).fill(sample[0]) })
+      res.json({ data: Array.from({ length: parseInt(count) || 1000 }).fill(sample[0]) })
     })
     app.get('/404.json', (req, res) => {
       res.status(404).send('404').end()
@@ -503,7 +503,7 @@ describe('fetch', () => {
       return data
     }, { concurrency: 100 })
     const stream = pipeline(
-      fetch(new Array(sources).fill(source), { concurrency: sources }),
+      fetch(Array.from({ length: sources }).fill(source), { concurrency: sources }),
       pressure
     )
     const res = await collect.array(stream)
@@ -516,7 +516,7 @@ describe('fetch', () => {
       url: `http://localhost:${port}/big-file.json?count=${expected}`,
       parser: parse('json', { selector: 'data.*' })
     }
-    const stream = fetch(new Array(sources).fill(source), { concurrency: 4 })
+    const stream = fetch(Array.from({ length: sources }).fill(source), { concurrency: 4 })
     const res = await collect.array(stream)
     should(res.length).eql(expected * sources)
   })
@@ -833,6 +833,31 @@ describe('fetch', () => {
       done()
     })
   })
+  it('should continue with a 429 and pagination', (done) => {
+    fetch({
+      url: `http://localhost:${port}/429.json`,
+      parser: parse('json', { selector: 'data.*' }),
+      pagination: {
+        limitParam: 'limit',
+        offsetParam: 'offset',
+        limit: 1
+      }
+    }, {
+      attempts: 3,
+      onError: ({ error, canContinue }) => {
+        should.exist(error)
+        should.exist(error.status)
+        should.exist(error.attempt)
+        error.status.should.equal(429)
+        error.message.should.equal('Server responded with "Too Many Requests"')
+        error.body.should.equal('429')
+        should(error.code).eql('ERR_NON_2XX_3XX_RESPONSE')
+        should(error.attempt).equal(3)
+        should.equal(canContinue, false)
+        done()
+      }
+    })
+  })
   it('should allow continuing via onError', (done) => {
     fetch([
       {
@@ -922,7 +947,7 @@ describe('fetch', () => {
       }, 1000)
     })
     const res = await collect.array(stream)
-    res.length.should.eql(34599)
+    res.length.should.eql(34606)
     res[0].___meta.should.eql({
       header: {
         name: 'Jefferson_County_KY_Street_Centerlines',
@@ -969,7 +994,7 @@ describe('fetch', () => {
     const res = await collect.array(pipeline(stream, pressure, (err) => {
       if (err) stream.emit('error', err)
     }))
-    res.length.should.eql(34289)
+    res.length.should.eql(34606)
     res[0].___meta.should.eql({
       header: {
         name: 'Jefferson_County_KY_Street_Centerlines',
@@ -1046,7 +1071,7 @@ describe('fetch', () => {
       url: GCLOUD_URL,
       parser: parse('excel')
     }
-    const sources = new Array(max).fill(source)
+    const sources = Array.from({ length: max }).fill(source)
     const stream = fetch(sources, { concurrency: max })
     stream.url().should.equal(source.url)
 

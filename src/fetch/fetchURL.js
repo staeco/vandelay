@@ -30,7 +30,7 @@ const retryWorthyCodes = [
 const shouldRetry = (_, original) => {
   if (!original) return false // malformed error
 
-  if (original.code) return retryWorthyCodes.includes(original.code)
+  if (retryWorthyCodes.includes(original.code)) return true
 
   const res = original.response
   if (!res) return false // non-http error?
@@ -95,6 +95,7 @@ export default (url, { attempts = 10, headers = {}, query, timeout, connectTimeo
             ? orig.response.rawBody.toString('utf8') // for whatever reason, got buffered the response
             : await collect(orig.response, { maxBuffer: sizeLimit }) // nothing buffered - keep reading
         }
+        orig.attempt = req.transfer.attempt
         out.emit('error', httpError(orig, orig?.response))
         out.abort()
       })

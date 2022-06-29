@@ -43,7 +43,7 @@ const retryWorthyCodes = ['ECONNRESET', 'ECONNREFUSED', 'ECONNABORTED', 'ENETDOW
 const shouldRetry = (_, original) => {
   if (!original) return false; // malformed error
 
-  if (original.code) return retryWorthyCodes.includes(original.code);
+  if (retryWorthyCodes.includes(original.code)) return true;
   const res = original.response;
   if (!res) return false; // non-http error?
   // they don't like the rate we are sending at
@@ -112,6 +112,7 @@ var _default = (url, {
       }); // nothing buffered - keep reading
     }
 
+    orig.attempt = req.transfer.attempt;
     out.emit('error', (0, _httpError.default)(orig, orig?.response));
     out.abort();
   }

@@ -67,7 +67,7 @@ describe('pipeline', () => {
       return data
     }, { concurrency: sources })
     const stream = pipeline(
-      fetch(new Array(sources).fill(source)),
+      fetch(Array.from({ length: sources }).fill(source)),
       pressure
     )
     const res = await collect.array(stream)
@@ -90,7 +90,7 @@ describe('pipeline', () => {
       return data
     }, { concurrency: sources / 2 })
     const stream = pipeline(
-      fetch(new Array(sources).fill(source)),
+      fetch(Array.from({ length: sources }).fill(source)),
       new PassThrough({ objectMode: true }),
       pressure,
       new PassThrough({ objectMode: true }),
@@ -117,7 +117,7 @@ describe('pipeline', () => {
       return data
     }, { concurrency: expected })
     const stream = pipeline(
-      fetch(new Array(sources).fill(source)),
+      fetch(Array.from({ length: sources }).fill(source)),
       transform(`module.exports = async (row) => {
         await new Promise((resolve) => setTimeout(resolve, 1))
         return row

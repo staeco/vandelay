@@ -100,7 +100,7 @@ const renamePatterns = {
   }
 }
 
-const msftDate = /\/Date\((\d+)(?:([-+])(\d+))?\)\//i
+const msftDate = /\/date\((\d+)(?:([+-])(\d+))?\)\//i
 const parseMicrosoftDate = (v) => {
   const res = msftDate.exec(v)
   if (!res) return

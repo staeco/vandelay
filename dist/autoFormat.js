@@ -95,7 +95,7 @@ const renamePatterns = {
     delete o[elat];
   }
 };
-const msftDate = /\/Date\((\d+)(?:([-+])(\d+))?\)\//i;
+const msftDate = /\/date\((\d+)(?:([+-])(\d+))?\)\//i;
 
 const parseMicrosoftDate = v => {
   const res = msftDate.exec(v);

@@ -50,7 +50,7 @@ describe('pipeline.exhaust', () => {
       res.push(data)
     }, { concurrency: sources })
     pipeline.exhaust(
-      fetch(new Array(sources).fill(source)),
+      fetch(Array.from({ length: sources }).fill(source)),
       pressure,
       (err) => {
         should.not.exist(err)
@@ -78,7 +78,7 @@ describe('pipeline.exhaust', () => {
       res.push(data)
     }, { concurrency: 64 })
     pipeline.exhaust(
-      fetch(new Array(sources).fill(source)),
+      fetch(Array.from({ length: sources }).fill(source)),
       new PassThrough({ objectMode: true }),
       pressure,
       new PassThrough({ objectMode: true }),

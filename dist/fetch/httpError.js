@@ -16,7 +16,8 @@ var _default = (err, res) => {
     code: res?.code || err.code,
     status: res?.statusCode || err.statusCode,
     headers: res?.headers || err.headers,
-    body: res?.text || err.text
+    body: res?.text || err.text,
+    attempt: res?.attempt || err.attempt
   };
   const nerror = rewriteError({
     code: base.code,
@@ -28,6 +29,7 @@ var _default = (err, res) => {
   nerror.status = base.status;
   nerror.headers = base.headers;
   nerror.body = base.body;
+  nerror.attempt = base.attempt;
   return nerror;
 };
 

@@ -8,7 +8,7 @@ describe('tap', () => {
   it('should work with concurrency', async () => {
     const items = 2000
     const concurrency = 64
-    const data = new Array(items).fill({ a: 1, b: 2, c: 3 })
+    const data = Array.from({ length: items }).fill({ a: 1, b: 2, c: 3 })
     const tapStream = tap(async (row) => {
       await new Promise((resolve) => setTimeout(resolve, 10))
       return row
@@ -23,7 +23,7 @@ describe('tap', () => {
   it('should work with concurrency and backpressure', async () => {
     const items = 2000
     const concurrency = 64
-    const data = new Array(items).fill({ a: 1, b: 2, c: 3 })
+    const data = Array.from({ length: items }).fill({ a: 1, b: 2, c: 3 })
     const tapStream = tap(async (row) => {
       await new Promise((resolve) => setTimeout(resolve, 10))
       return row
