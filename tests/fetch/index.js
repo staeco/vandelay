@@ -947,7 +947,7 @@ describe('fetch', () => {
       }, 1000)
     })
     const res = await collect.array(stream)
-    res.length.should.eql(34606)
+    res.length.should.eql(34665)
     res[0].___meta.should.eql({
       header: {
         name: 'Jefferson_County_KY_Street_Centerlines',
@@ -994,7 +994,7 @@ describe('fetch', () => {
     const res = await collect.array(pipeline(stream, pressure, (err) => {
       if (err) stream.emit('error', err)
     }))
-    res.length.should.eql(34606)
+    res.length.should.eql(34665)
     res[0].___meta.should.eql({
       header: {
         name: 'Jefferson_County_KY_Street_Centerlines',
