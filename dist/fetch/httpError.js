@@ -2,7 +2,6 @@
 
 exports.__esModule = true;
 exports.default = void 0;
-
 const rewriteError = info => {
   if (info.status && info.status >= 400) return new Error(`Server responded with "${info.statusMessage}"`);
   if (info.code === 'ENOTFOUND') return new Error('Failed to resolve server host');
@@ -10,7 +9,6 @@ const rewriteError = info => {
   if (typeof info.code === 'string' && info.code.includes('TIMEDOUT')) return new Error('Server took too long to respond');
   return new Error('Failed to connect to server');
 };
-
 var _default = (err, res) => {
   const base = {
     code: res?.code || err.code,
@@ -32,6 +30,5 @@ var _default = (err, res) => {
   nerror.attempt = base.attempt;
   return nerror;
 };
-
 exports.default = _default;
 module.exports = exports.default;

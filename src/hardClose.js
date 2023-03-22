@@ -3,8 +3,12 @@
 export default (stream) => {
   if (stream._closed) return // already hard closed
   stream._closed = true
-  stream.write = () => {} // kill ability for anything to write anymore, its over
-  if (stream.end) return stream.end(null)
-  if (stream.destroy) return stream.destroy()
-  throw new Error('Invalid stream - no end or destroy')
+  stream.write = () => false // kill ability for anything to write anymore, its over
+
+  // wait a tick for any remaining rows to process
+  process.nextTick(() => {
+    if (stream.end) return stream.end(null)
+    if (stream.destroy) return stream.destroy()
+    throw new Error('Invalid stream - no end or destroy')
+  })
 }

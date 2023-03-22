@@ -16,7 +16,7 @@ const expected = {
     District: '',
     Neighborhood: 'Old Fair Oaks',
     OccurenceStartDate: '2009-03-26T17:10:00.000Z',
-    OccurenceEndDate: '2009-03-26T17:19:59.000Z',
+    OccurenceEndDate: '2009-03-26T17:20:00.000Z',
     ReportDate: '2009-03-26T17:39:00.000Z',
     OccurenceLocation: '9300 Block of Fair O',
     OccurenceCity: 'Fair Oaks',
